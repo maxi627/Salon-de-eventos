@@ -2,13 +2,12 @@ import logging
 import os
 
 import redis
+from app.config import cache_config, factory
 from flask import Flask
 from flask_caching import Cache
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_sqlalchemy import SQLAlchemy
-
-from app.config import cache_config, factory
 
 # Configuración de logging
 logging.basicConfig(level=logging.INFO)

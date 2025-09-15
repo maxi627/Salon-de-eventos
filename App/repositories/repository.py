@@ -8,9 +8,7 @@ T = TypeVar('T')
 class Repository_add(ABC):
     @abstractmethod
     def add(self, entity: T) -> T:
-        db.session.add(entity)
-        db.session.commit()
-        return entity
+        pass
     
 class Repository_get(ABC):
     @abstractmethod

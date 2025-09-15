@@ -40,15 +40,13 @@ class TestingConfig(Config):
     SQLALCHEMY_RECORD_QUERIES = True
     TESTING = True
     SQLALCHEMY_DATABASE_URI = os.getenv('TEST_DB_URI')
-    CACHE_REDIS_HOST = os.getenv('REDIS_HOST')
-    CACHE_REDIS_PORT = os.getenv('REDIS_PORT')
-    CACHE_REDIS_DB = os.getenv('REDIS_DB')
-    CACHE_REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
+    CACHE_TYPE = "SimpleCache"
+    CACHE_DEFAULT_TIMEOUT = 300
 
     @staticmethod
     def init_app(app):
-        """Valida las variables de entorno críticas para pruebas."""
-        Config.validate_required_env_vars(['TEST_DB_URI', 'REDIS_HOST', 'REDIS_PORT'])
+        Config.validate_required_env_vars(['TEST_DB_URI'])
+
 
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.getenv("PROD_DATABASE_URI")

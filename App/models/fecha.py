@@ -1,5 +1,7 @@
 from dataclasses import dataclass
+
 from app import db
+
 
 @dataclass
 class Fecha(db.Model):
