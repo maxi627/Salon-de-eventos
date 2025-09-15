@@ -1,4 +1,4 @@
-from app import cache, redis_client  # Se asume que redis_client está configurado
+from app import cache, redis_client, db # Se asume que redis_client está configurado
 from app.models import Administrador
 from app.repositories import AdministradorRepository
 from contextlib import contextmanager
@@ -6,7 +6,7 @@ import time
 
 class AdministradorService:
     """
-    Servicio para gestionar administradors con soporte de caché y bloqueos en Redis para concurrencia.
+    Servicio para gestionar administradores con soporte de caché y bloqueos en Redis para concurrencia.
     """
     CACHE_TIMEOUT = 300  # Tiempo de expiración de caché en segundos
     REDIS_LOCK_TIMEOUT = 10  # Tiempo de bloqueo en Redis en segundos
@@ -28,11 +28,11 @@ class AdministradorService:
             finally:
                 redis_client.delete(lock_key)
         else:
-            raise Exception(f"El recurso está bloqueado para la administrador {administrador_id}.")
+            raise Exception(f"El recurso está bloqueado para el administrador {administrador_id}.")
 
     def all(self) -> list[Administrador]:
         """
-        Obtiene la lista de todas las administradors, con caché.
+        Obtiene la lista de todos los administradores, con caché.
         """
         cached_administradors = cache.get('administradors')
         if cached_administradors is None:
@@ -44,7 +44,7 @@ class AdministradorService:
 
     def add(self, administrador: Administrador) -> Administrador:
         """
-        Agrega una nueva administrador y actualiza la caché.
+        Agrega un nuevo administrador y actualiza la caché.
         """
         new_administrador = self.repository.add(administrador)
         cache.set(f'administrador_{new_administrador.id}', new_administrador, timeout=self.CACHE_TIMEOUT)
@@ -53,32 +53,36 @@ class AdministradorService:
 
     def update(self, administrador_id: int, updated_administrador: Administrador) -> Administrador:
         """
-        Actualiza una administrador existente.
-        :param administrador_id: ID de la administrador a actualizar.
-        :param updated_administrador: Datos de la administrador actualizados.
+        Actualiza un administrador existente.
+        :param administrador_id: ID del administrador a actualizar.
+        :param updated_administrador: Datos del administrador actualizados.
         :return: Objeto Administrador actualizado.
         """
         with self.redis_lock(administrador_id):
             existing_administrador = self.find(administrador_id)
             if not existing_administrador:
-                raise Exception(f"Administrador con ID {administrador_id} no encontrada.")
+                raise Exception(f"Administrador con ID {administrador_id} no encontrado.")
 
-            # Actualizar los atributos del objeto existente
-            existing_administrador.producto_id = updated_administrador.producto_id
-            existing_administrador.fecha_administrador = updated_administrador.fecha_administrador
-            existing_administrador.direccion_envio = updated_administrador.direccion_envio
+            # --- CORREGIDO ---
+            # Actualizar los atributos correctos del objeto existente (heredados de Persona)
+            existing_administrador.nombre = updated_administrador.nombre
+            existing_administrador.apellido = updated_administrador.apellido
+            existing_administrador.correo = updated_administrador.correo
+            existing_administrador.dni = updated_administrador.dni
 
-            saved_administrador = self.repository.save(existing_administrador)
+            # Guardar los cambios en la base de datos
+            db.session.commit()
+            # --- FIN DE LA CORRECCIÓN ---
 
             # Actualizar la caché
-            cache.set(f'administrador_{administrador_id}', saved_administrador, timeout=self.CACHE_TIMEOUT)
-            cache.delete('administradors')  # Invalida la lista de administradors en caché
+            cache.set(f'administrador_{administrador_id}', existing_administrador, timeout=self.CACHE_TIMEOUT)
+            cache.delete('administradors')  # Invalida la lista de administradores en caché
 
-            return saved_administrador
+            return existing_administrador
 
     def delete(self, administrador_id: int) -> bool:
         """
-        Elimina una administrador por su ID y actualiza la caché.
+        Elimina un administrador por su ID y actualiza la caché.
         """
         with self.redis_lock(administrador_id):
             deleted = self.repository.delete(administrador_id)
@@ -89,7 +93,7 @@ class AdministradorService:
 
     def find(self, administrador_id: int) -> Administrador:
         """
-        Busca una administrador por su ID, con caché.
+        Busca un administrador por su ID, con caché.
         """
         cached_administrador = cache.get(f'administrador_{administrador_id}')
         if cached_administrador is None:

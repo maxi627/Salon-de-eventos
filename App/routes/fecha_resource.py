@@ -2,8 +2,9 @@ from flask import Blueprint, request
 from marshmallow import ValidationError
 
 from app import limiter  # Usar el limiter global
+from app.config import ResponseBuilder
 from app.mapping import FechaSchema, ResponseSchema
-from app.services import FechaService, ResponseBuilder
+from app.services import FechaService
 
 Fecha = Blueprint('Fecha', __name__)
 service = FechaService()

@@ -2,8 +2,9 @@ from flask import Blueprint, request
 from marshmallow import ValidationError
 
 from app import limiter  # Usar el limiter global
+from app.config import ResponseBuilder
 from app.mapping import AdministradorSchema, ResponseSchema
-from app.services import AdministradorService, ResponseBuilder
+from app.services import AdministradorService
 
 Administrador = Blueprint('Administrador', __name__)
 service = AdministradorService()
@@ -99,27 +100,5 @@ def delete(id):
     except Exception as e:
         response_builder.add_message("Error deleting Administrador").add_status_code(500).add_data(str(e))
         return response_schema.dump(response_builder.build()), 500
-@Administrador.route('/administrador/<int:id>/manage', methods=['POST'])
-@limiter.limit("5 per minute")
-def manage(id):
-    response_builder = ResponseBuilder()
-    try:
-        json_data = request.json
-        if not json_data or 'cantidad' not in json_data:
-            raise ValidationError("Cantidad no proporcionada")
-
-        cantidad = json_data['cantidad']
-        
-        # Llamar a la función de gestión de administrador
-        updated_administrador = service.manage_administrador(id, cantidad)
-
-        # Devolver el administrador actualizado
-        response_builder.add_message("Administrador updated").add_status_code(200).add_data(updated_administrador)
-        return response_schema.dump(response_builder.build()), 200
-
-    except ValidationError as err:
-        response_builder.add_message("Validation error").add_status_code(422).add_data(err.messages)
-        return response_schema.dump(response_builder.build()), 422
-    except Exception as e:
-        response_builder.add_message("Error managing administrador").add_status_code(500).add_data(str(e))
-        return response_schema.dump(response_builder.build()), 500
+    
+    

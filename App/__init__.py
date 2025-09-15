@@ -2,12 +2,13 @@ import logging
 import os
 
 import redis
-from app.config import cache_config, factory
 from flask import Flask
 from flask_caching import Cache
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_sqlalchemy import SQLAlchemy
+
+from app.config import cache_config, factory
 
 # Configuración de logging
 logging.basicConfig(level=logging.INFO)
@@ -69,16 +70,27 @@ def create_app():
     except Exception as e:
         raise RuntimeError(f"Error al inicializar extensiones: {e}")
 
-    # Registrar Blueprints
+    # CORREGIDO: Registrar Blueprints
     try:
-        from app.routes import Stock
-        app.register_blueprint(Stock, url_prefix='/api/v1')
+        # Importa todos tus recursos/rutas
+        from app.routes.administrador_resource import Administrador
+        from app.routes.fecha_resource import Fecha
+        from app.routes.persona_resource import Persona
+        from app.routes.reserva_resource import Reserva
+        from app.routes.usuario_resource import Usuario
+
+        # Registra cada Blueprint en la aplicación
+        app.register_blueprint(Administrador, url_prefix='/api/v1')
+        app.register_blueprint(Usuario, url_prefix='/api/v1')
+        app.register_blueprint(Fecha, url_prefix='/api/v1')
+        app.register_blueprint(Reserva, url_prefix='/api/v1')
+        app.register_blueprint(Persona, url_prefix='/api/v1')
+    
     except ImportError as e:
         raise RuntimeError(f"Error al registrar blueprints: {e}")
-
-    # Ruta de prueba
-    @app.route('/ping', methods=['GET'])
-    def ping():
-        return {"message": "El servicio de stocks está en funcionamiento"}
-
+        # Ruta de prueba
+        @app.route('/ping', methods=['GET'])
+        def ping():
+            return {"message": "El servicio de stocks está en funcionamiento"}
+    
     return app

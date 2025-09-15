@@ -2,6 +2,7 @@ from flask import Blueprint, request
 from marshmallow import ValidationError
 
 from app import limiter  # Usar el limiter global
+from app.config import ResponseBuilder
 from app.mapping import ResponseSchema, UsuarioSchema
 from app.services import ResponseBuilder, UsuarioService
 

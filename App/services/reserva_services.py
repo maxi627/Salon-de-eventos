@@ -64,15 +64,17 @@ class ReservaService:
         with self.redis_lock(reserva_id):
             existing_reserva = self.find(reserva_id)
             if not existing_reserva:
-                raise Exception(f"Reserva con ID {reserva_id} no encontrado.")
+                raise Exception(f"Reserva con ID {reserva_id} no encontrada.")
 
+            # --- CORREGIDO ---
             # Actualizar los atributos del objeto existente
-            existing_reserva.nombre = updated_reserva.nombre
-            existing_reserva.apellido = updated_reserva.apellido
-            existing_reserva.dni = updated_reserva.dni
-            existing_reserva.correo = updated_reserva.correo
-
+            existing_reserva.estado = updated_reserva.estado
+            existing_reserva.fecha_vencimiento = updated_reserva.fecha_vencimiento
+            
+            # Guardar los cambios en la base de datos
             db.session.commit()
+            # --- FIN DE LA CORRECCIÓN ---
+
             # Actualizar caché
             cache.set(f'reserva_{reserva_id}', existing_reserva, timeout=self.CACHE_TIMEOUT)
             cache.delete('reservas')  # Invalida la lista de reservas en caché

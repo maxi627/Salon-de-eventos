@@ -1,4 +1,4 @@
-from app import cache, redis_client  # Se asume que redis_client está configurado
+from app import cache, redis_client, db # Se asume que redis_client está configurado
 from app.models import Fecha
 from app.repositories import FechaRepository
 from contextlib import contextmanager
@@ -63,18 +63,20 @@ class FechaService:
             if not existing_fecha:
                 raise Exception(f"Fecha con ID {fecha_id} no encontrada.")
 
-            # Actualizar los atributos del objeto existente
-            existing_fecha.producto_id = updated_fecha.producto_id
-            existing_fecha.fecha_fecha = updated_fecha.fecha_fecha
-            existing_fecha.direccion_envio = updated_fecha.direccion_envio
+            # --- CORREGIDO ---
+            # Actualizar los atributos correctos del modelo Fecha
+            existing_fecha.dia = updated_fecha.dia
+            existing_fecha.estado = updated_fecha.estado
 
-            saved_fecha = self.repository.save(existing_fecha)
+            # Guardar los cambios en la base de datos
+            db.session.commit()
+            # --- FIN DE LA CORRECCIÓN ---
 
             # Actualizar la caché
-            cache.set(f'fecha_{fecha_id}', saved_fecha, timeout=self.CACHE_TIMEOUT)
+            cache.set(f'fecha_{fecha_id}', existing_fecha, timeout=self.CACHE_TIMEOUT)
             cache.delete('fechas')  # Invalida la lista de fechas en caché
 
-            return saved_fecha
+            return existing_fecha
 
     def delete(self, fecha_id: int) -> bool:
         """
