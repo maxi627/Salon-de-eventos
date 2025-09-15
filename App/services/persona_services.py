@@ -53,30 +53,29 @@ class PersonaService:
         cache.delete('personas')
         return new_persona
 
+
     def update(self, persona_id: int, updated_persona: Persona) -> Persona:
         """
         Actualiza una persona existente.
-        :param persona_id: ID de la persona a actualizar.
-        :param updated_persona: Datos de la persona actualizados.
-        :return: Objeto Persona actualizado.
         """
         with self.redis_lock(persona_id):
             existing_persona = self.find(persona_id)
             if not existing_persona:
                 raise Exception(f"Persona con ID {persona_id} no encontrada.")
 
-            # Actualizar los atributos del objeto existente
-            existing_persona.producto_id = updated_persona.producto_id
-            existing_persona.fecha_persona = updated_persona.fecha_persona
-            existing_persona.direccion_envio = updated_persona.direccion_envio
+            existing_persona.nombre = updated_persona.nombre
+            existing_persona.apellido = updated_persona.apellido
+            existing_persona.correo = updated_persona.correo
+            existing_persona.dni = updated_persona.dni
 
-            saved_persona = self.repository.save(existing_persona)
+            # Guardar los cambios en la base de datos
+            db.session.commit()
 
             # Actualizar la caché
-            cache.set(f'persona_{persona_id}', saved_persona, timeout=self.CACHE_TIMEOUT)
-            cache.delete('personas')  # Invalida la lista de personas en caché
+            cache.set(f'persona_{persona_id}', existing_persona, timeout=self.CACHE_TIMEOUT)
+            cache.delete('personas')
 
-            return saved_persona
+            return existing_persona
 
     def delete(self, persona_id: int) -> bool:
         """
