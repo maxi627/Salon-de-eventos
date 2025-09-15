@@ -100,27 +100,3 @@ def delete(id):
     except Exception as e:
         response_builder.add_message("Error deleting Usuario").add_status_code(500).add_data(str(e))
         return response_schema.dump(response_builder.build()), 500
-@Usuario.route('/usuario/<int:id>/manage', methods=['POST'])
-@limiter.limit("5 per minute")
-def manage(id):
-    response_builder = ResponseBuilder()
-    try:
-        json_data = request.json
-        if not json_data or 'cantidad' not in json_data:
-            raise ValidationError("Cantidad no proporcionada")
-
-        cantidad = json_data['cantidad']
-        
-        # Llamar a la función de gestión de usuario
-        updated_usuario = service.manage_usuario(id, cantidad)
-
-        # Devolver el usuario actualizado
-        response_builder.add_message("Usuario updated").add_status_code(200).add_data(updated_usuario)
-        return response_schema.dump(response_builder.build()), 200
-
-    except ValidationError as err:
-        response_builder.add_message("Validation error").add_status_code(422).add_data(err.messages)
-        return response_schema.dump(response_builder.build()), 422
-    except Exception as e:
-        response_builder.add_message("Error managing usuario").add_status_code(500).add_data(str(e))
-        return response_schema.dump(response_builder.build()), 500

@@ -1,11 +1,10 @@
 {
-    "python.testing.unittestArgs": [
-        "-v",
-        "-s",
-        "./app",
-        "-p",
-        "*test.py"
-    ],
-    "python.testing.pytestEnabled": false,
-    "python.testing.unittestEnabled": true
+    // Habilita pytest como el runner de tests
+    "python.testing.pytestEnabled": true,
+    // Deshabilita unittest
+    "python.testing.unittestEnabled": false,
+    // Argumentos para pytest (le decimos que busque los tests en la carpeta 'app')
+    "python.testing.pytestArgs": [
+        "app"
+    ]
 }
