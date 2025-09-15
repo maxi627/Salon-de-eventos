@@ -1,8 +1,10 @@
-from app import cache, redis_client, db # Se asume que redis_client está configurado
+import time
+from contextlib import contextmanager
+
+from app.extensions import cache, db, redis_client
 from app.models import Fecha
 from app.repositories import FechaRepository
-from contextlib import contextmanager
-import time
+
 
 class FechaService:
     """

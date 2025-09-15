@@ -1,5 +1,7 @@
 from marshmallow import Schema, fields, post_load, validate
+
 from app.models import Administrador
+
 
 class AdministradorSchema(Schema):
     id = fields.Int(dump_only=True)
@@ -11,5 +13,5 @@ class AdministradorSchema(Schema):
 
     @post_load
     def make_admin(self, data, **kwargs):
-        data["tipo"] = "administrador"
+        # data["tipo"] = "administrador" # SQLAlchemy lo hace automáticamente
         return Administrador(**data)

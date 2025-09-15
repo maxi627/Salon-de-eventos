@@ -1,96 +1,37 @@
-import logging
 import os
 
-import redis
 from flask import Flask
-from flask_caching import Cache
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-from flask_sqlalchemy import SQLAlchemy
 
-from app.config import cache_config, factory
+from app.config import factory
+# Importa las instancias desde el nuevo archivo extensions.py
+from app.extensions import cache, db, limiter
 
-# Configuración de logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
-# Instancia global de extensiones
-db = SQLAlchemy()
-cache = Cache()
-
-# Obtener las variables de entorno
-redis_host = os.getenv('REDIS_HOST', 'localhost')
-redis_port = int(os.getenv('REDIS_PORT', 6379))
-redis_password = os.getenv('REDIS_PASSWORD', '')
-redis_db = int(os.getenv('REDIS_DB', 0))
-
-# URI de Redis para Flask-Limiter
-redis_uri = f"redis://:{redis_password}@{redis_host}:{redis_port}/{redis_db}"
-
-# Crear una instancia de Redis para otras operaciones
-redis_client = redis.StrictRedis(
-    host=redis_host,
-    port=redis_port,
-    db=redis_db,
-    password=redis_password,
-    decode_responses=True
-)
-
-# Inicializar Flask-Limiter con Redis como backend
-limiter = Limiter(
-    key_func=get_remote_address,
-    default_limits=["10 per minute"],
-    storage_uri=redis_uri  # Se usa la URI de Redis
-)
-
-# Verificar la conexión a Redis
-try:
-    redis_client.ping()
-    logger.info("Conexión a Redis exitosa.")
-except redis.ConnectionError as e:
-    logger.error(f"Error al conectar con Redis: {e}")
-
-def create_app():
-    """Crea e inicializa la aplicación Flask."""
+def create_app(config_name=None):
     app = Flask(__name__)
 
-    # Cargar configuración según el entorno
-    app_context = os.getenv('FLASK_ENV', 'development')
-    try:
-        app.config.from_object(factory(app_context))
-        app.config.update(cache_config)  # Agregar configuración de caché al app.config
-    except Exception as e:
-        raise RuntimeError(f"Error al cargar la configuración para el entorno {app_context}: {e}")
-
-    # Inicializar extensiones
-    try:
-        db.init_app(app)
-        cache.init_app(app, config=cache_config)
-        limiter.init_app(app)  #  Inicializa Flask-Limiter con la app
-    except Exception as e:
-        raise RuntimeError(f"Error al inicializar extensiones: {e}")
-
-    # CORREGIDO: Registrar Blueprints
-    try:
-        # Importa todos tus recursos/rutas
-        from app.routes.administrador_resource import Administrador
-        from app.routes.fecha_resource import Fecha
-        from app.routes.persona_resource import Persona
-        from app.routes.reserva_resource import Reserva
-        from app.routes.usuario_resource import Usuario
-
-        # Registra cada Blueprint en la aplicación
-        app.register_blueprint(Administrador, url_prefix='/api/v1')
-        app.register_blueprint(Usuario, url_prefix='/api/v1')
-        app.register_blueprint(Fecha, url_prefix='/api/v1')
-        app.register_blueprint(Reserva, url_prefix='/api/v1')
-        app.register_blueprint(Persona, url_prefix='/api/v1')
+    if config_name is None:
+        config_name = os.getenv('FLASK_ENV', 'development')
     
-    except ImportError as e:
-        raise RuntimeError(f"Error al registrar blueprints: {e}")
-        # Ruta de prueba
-        @app.route('/ping', methods=['GET'])
-        def ping():
-            return {"message": "El servicio de stocks está en funcionamiento"}
-    
+    # Carga la configuración correcta (development, testing, etc.)
+    app.config.from_object(factory(config_name))
+
+    # Inicializa las extensiones con la app
+    db.init_app(app)
+    cache.init_app(app)
+    limiter.init_app(app)
+
+    # Importa y registra los Blueprints (rutas)
+    from app.routes.administrador_resource import Administrador
+    from app.routes.fecha_resource import Fecha
+    from app.routes.persona_resource import Persona
+    from app.routes.reserva_resource import Reserva
+    from app.routes.usuario_resource import Usuario
+
+    app.register_blueprint(Administrador, url_prefix='/api/v1')
+    app.register_blueprint(Usuario, url_prefix='/api/v1')
+    app.register_blueprint(Fecha, url_prefix='/api/v1')
+    app.register_blueprint(Reserva, url_prefix='/api/v1')
+    app.register_blueprint(Persona, url_prefix='/api/v1')
+
     return app

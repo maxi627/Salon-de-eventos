@@ -1,2 +1,6 @@
-from app.services import (administrador_services, fecha_services,
-                          persona_services, reserva_services, usuario_services)
+
+from .administrador_services import AdministradorService
+from .fecha_services import FechaService
+from .persona_services import PersonaService
+from .reserva_services import ReservaService
+from .usuario_services import UsuarioService

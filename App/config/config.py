@@ -36,16 +36,11 @@ class DevelopmentConfig(Config):
         Config.validate_required_env_vars(['DEV_DATABASE_URI', 'REDIS_HOST', 'REDIS_PORT'])
 
 class TestingConfig(Config):
-    SQLALCHEMY_TRACK_MODIFICATIONS = True
-    SQLALCHEMY_RECORD_QUERIES = True
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = os.getenv('TEST_DB_URI')
+    # --- CORREGIDO: Define la URI directamente ---
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     CACHE_TYPE = "SimpleCache"
     CACHE_DEFAULT_TIMEOUT = 300
-
-    @staticmethod
-    def init_app(app):
-        Config.validate_required_env_vars(['TEST_DB_URI'])
 
 
 class ProductionConfig(Config):

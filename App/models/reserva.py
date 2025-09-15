@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
-from app import db
+
+from app.extensions import db
+
 
 @dataclass
 class Reserva(db.Model):

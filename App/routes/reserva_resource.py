@@ -1,10 +1,10 @@
 from flask import Blueprint, request
 from marshmallow import ValidationError
 
-from app import limiter  # Usar el limiter global
 from app.config import ResponseBuilder
+from app.extensions import limiter  # Usar el limiter global
 from app.mapping import ReservaSchema, ResponseSchema
-from app.services import ReservaService, ResponseBuilder
+from app.services import ReservaService
 
 Reserva = Blueprint('Reserva', __name__)
 service = ReservaService()

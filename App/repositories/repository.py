@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, TypeVar
 
-from app import db
+from app.extensions import db
 
 T = TypeVar('T')
 

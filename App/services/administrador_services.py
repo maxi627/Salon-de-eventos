@@ -1,4 +1,4 @@
-from app import cache, redis_client, db # Se asume que redis_client está configurado
+from app.extensions import cache, redis_client, db # Se asume que redis_client está configurado
 from app.models import Administrador
 from app.repositories import AdministradorRepository
 from contextlib import contextmanager

@@ -1,9 +1,7 @@
 import time
 from contextlib import contextmanager
 
-from app import (cache, db,  # Se asume que redis_client está configurado
-                 redis_client)
-# --- MODIFICADO ---
+from app.extensions import cache, db, redis_client
 from app.models import Fecha, Reserva
 from app.repositories import ReservaRepository
 from app.services.fecha_services import \

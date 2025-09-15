@@ -1,13 +1,12 @@
 from dataclasses import dataclass
 
-from app import db
+from app.extensions import db
 
 
 @dataclass
 class Persona(db.Model):
     __tablename__ = 'persona'
-    __abstract__ = True # Clase abstracta para herencia
-    
+
     id: int = db.Column('id', db.Integer, primary_key=True, autoincrement=True)
     apellido: str = db.Column('apellido', db.String, nullable=False)
     correo: str = db.Column('correo', db.String, nullable=False)
@@ -19,4 +18,3 @@ class Persona(db.Model):
         'polymorphic_identity': 'persona',
         'polymorphic_on': tipo
     }
-

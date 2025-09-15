@@ -1,8 +1,10 @@
-from app import cache, redis_client  # Se asume que redis_client está configurado
+import time
+from contextlib import contextmanager
+
+from app.extensions import cache, db, redis_client
 from app.models import Persona
 from app.repositories import PersonaRepository
-from contextlib import contextmanager
-import time
+
 
 class PersonaService:
     """

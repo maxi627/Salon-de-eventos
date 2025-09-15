@@ -1,10 +1,10 @@
 from flask import Blueprint, request
 from marshmallow import ValidationError
 
-from app import limiter  # Usar el limiter global
 from app.config import ResponseBuilder
+from app.extensions import limiter
 from app.mapping import PersonaSchema, ResponseSchema
-from app.services import PersonaService, ResponseBuilder
+from app.services import PersonaService
 
 Persona = Blueprint('Persona', __name__)
 service = PersonaService()

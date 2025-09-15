@@ -1,9 +1,12 @@
-from app import cache, redis_client  # Se asume que redis_client está configurado
+import time
+from contextlib import contextmanager
+
+from app import db
+from app.extensions import cache, db, redis_client
 from app.models import Usuario
 from app.repositories import UsuarioRepository
-from contextlib import contextmanager
-import time
-from app import db
+
+
 class UsuarioService:
     """
     Servicio para gestionar usuarios con soporte de caché y bloqueos en Redis para concurrencia.

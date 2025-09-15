@@ -1,6 +1,6 @@
 from typing import List
 
-from app import db
+from app.extensions import db
 from app.models import Persona
 
 from .repository import (Repository_add, Repository_delete, Repository_get,

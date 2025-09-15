@@ -1,7 +1,9 @@
 from typing import List
-from app import db
+
+from app.extensions import db
 from app.models import Usuario
-from .repository import (Repository_add, Repository_delete, Repository_get)
+
+from .repository import Repository_add, Repository_delete, Repository_get
 
 
 class UsuarioRepository(Repository_add, Repository_get, Repository_delete):
