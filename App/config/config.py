@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-load_dotenv(os.path.join(basedir, ".env"))  # Carga las variables del entorno
+load_dotenv(os.path.join(basedir, "..", ".env"))  # Ajusta la ruta según tu estructura
 
 class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -41,6 +41,7 @@ class TestingConfig(Config):
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     CACHE_TYPE = "SimpleCache"
     CACHE_DEFAULT_TIMEOUT = 300
+
 
 
 class ProductionConfig(Config):

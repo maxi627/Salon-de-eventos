@@ -4,31 +4,33 @@ FROM python:3.10-slim-bullseye
 # Variables de entorno
 ENV FLASK_ENV=development \
     PYTHONUNBUFFERED=1 \
-    PATH=$PATH:/home/flaskapp/.local/bin
+    PYTHONPATH=/home/flaskapp
 
-# Crear un usuario no root y establecer el directorio de trabajo
+# Crear usuario y directorio de trabajo
 RUN useradd --create-home --home-dir /home/flaskapp flaskapp
 WORKDIR /home/flaskapp
 
-# Instalar dependencias del sistema necesarias (libpq-dev para PostgreSQL)
+# Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-# Copiar el archivo de dependencias primero y luego instalar
+# --- SECCIÓN DE COPIA SIMPLIFICADA ---
+# Copiar solo requirements.txt (desde la raíz del contexto, que ahora es 'App')
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar los archivos del proyecto al contenedor
-COPY . /home/flaskapp/
+# Copiar TODO el código (desde la raíz del contexto 'App') a la nueva carpeta 'app' del contenedor
+COPY . ./app/
+# --- FIN DE LA CORRECCIÓN ---
 
-# Cambiar a usuario flaskapp
+# Cambiar de usuario
 USER flaskapp
 
-# Exponer el puerto de Flask
+# Exponer puerto
 EXPOSE 5000
 
-# Comando para ejecutar la aplicación
-ENTRYPOINT [ "python", "main.py" ]
+# Ejecutar la aplicación desde su nueva ubicación
+ENTRYPOINT [ "python", "app/main.py" ]

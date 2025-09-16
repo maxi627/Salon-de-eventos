@@ -1,0 +1,88 @@
+# Ubicación: /app/docker-compose.yml
+# Comando para ejecutar (desde la raíz del proyecto): docker-compose -f app/docker-compose.yml up --build
+
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15.6
+    container_name: salon_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DEV_DB}
+    env_file:
+      - ../App/.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../App/db_init:/docker-entrypoint-initdb.d
+    networks:
+      - red1
+    restart: always
+    # --- SECCIÓN NUEVA: VERIFICACIÓN DE SALUD ---
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DEV_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.0
+    container_name: redis_service
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    # RUTA CORREGIDA: Sube un nivel
+    env_file:
+      - ../App/.env
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    networks:
+      - red1
+    restart: always
+
+  app:
+    container_name: salon_app
+    build:
+      context: ../App
+      dockerfile: Dockerfile
+    env_file:
+      - ../App/.env
+    networks:
+      - red1
+    # --- LÍNEA MODIFICADA: AHORA ESPERA A QUE LA DB ESTÉ SANA ---
+    depends_on:
+      db:
+        condition: service_healthy # <-- ¡La clave está aquí!
+      redis:
+        condition: service_started # Redis no necesita healthcheck, con que inicie es suficiente
+    restart: on-failure
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.salonapp.rule=Host(`localhost`)"
+      - "traefik.http.routers.salonapp.entrypoints=web"
+      - "traefik.http.services.salonapp.loadbalancer.server.port=5000"
+
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--api.dashboard=true"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - red1
+    restart: always
+
+networks:
+  red1:
+    driver: bridge
+
+volumes:
+  postgres_data:
