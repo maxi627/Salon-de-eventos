@@ -1,4 +1,5 @@
 from flask import Blueprint, request
+from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
 
 from app.config import ResponseBuilder
@@ -43,6 +44,8 @@ def one(id):
 
 @Reserva.route('/reserva', methods=['POST'])
 @limiter.limit("5 per minute")
+@jwt_required()
+
 def add():
     response_builder = ResponseBuilder()
     try:

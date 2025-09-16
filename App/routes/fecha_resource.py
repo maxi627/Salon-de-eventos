@@ -5,6 +5,7 @@ from app.config import ResponseBuilder
 from app.extensions import limiter
 from app.mapping import FechaSchema, ResponseSchema
 from app.services import FechaService
+from app.utils.decorators import admin_required
 
 Fecha = Blueprint('Fecha', __name__)
 service = FechaService()
@@ -43,6 +44,7 @@ def one(id):
 
 @Fecha.route('/fecha', methods=['POST'])
 @limiter.limit("5 per minute")
+@admin_required()
 def add():
     response_builder = ResponseBuilder()
     try:
@@ -63,6 +65,7 @@ def add():
 
 @Fecha.route('/fecha/<int:id>', methods=['PUT'])
 @limiter.limit("5 per minute")
+@admin_required()
 def update(id):
     response_builder = ResponseBuilder()
     try:
@@ -88,6 +91,7 @@ def update(id):
 
 @Fecha.route('/fecha/<int:id>', methods=['DELETE'])
 @limiter.limit("3 per minute")
+@admin_required()
 def delete(id):
     response_builder = ResponseBuilder()
     try:

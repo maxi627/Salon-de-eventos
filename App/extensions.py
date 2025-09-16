@@ -4,13 +4,14 @@ import os
 
 import redis
 from flask_caching import Cache
+from flask_jwt_extended import JWTManager
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 cache = Cache()
-
+jwt = JWTManager()
 redis_host = os.getenv('REDIS_HOST', 'localhost')
 redis_port = int(os.getenv('REDIS_PORT', 6379))
 redis_password = os.getenv('REDIS_PASSWORD', '')

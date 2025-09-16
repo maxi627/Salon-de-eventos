@@ -27,10 +27,12 @@ class PersonaRepository(Repository_add, Repository_get, Repository_delete):
         try:
             Persona = self.get_by_id(id)
             if Persona:
-                db.session.delete(Persona)  
-                db.session.commit()  
+                db.session.delete(Persona)
+                db.session.commit()
                 return True
             return False
         except Exception as e:
             db.session.rollback()  # Deshace la transacción si hay un error
             raise e  # Propaga la excepción para manejo externo
+    def get_by_email(self, correo: str) -> Persona:
+        return Persona.query.filter_by(correo=correo).first()

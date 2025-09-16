@@ -7,7 +7,7 @@ load_dotenv(os.path.join(basedir, "..", ".env"))  # Ajusta la ruta según tu est
 
 class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
     @staticmethod
     def init_app(app):
         """Método para inicializar configuraciones adicionales si es necesario."""
