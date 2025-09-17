@@ -138,3 +138,50 @@
   border-color: #f39c12;
   cursor: not-allowed;
 }
+
+.calendar-legend {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.legend-color-box {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Reutilizamos los colores del calendario para consistencia */
+.legend-color-box.disponible {
+  background-color: #eaf7ff;
+  border-color: var(--color-primario);
+}
+
+.legend-color-box.pendiente {
+  background-color: #fef9c3;
+  border-color: #facc15;
+}
+
+.legend-color-box.reservada {
+  background-color: #fce8e6;
+  border-color: #e74c3c;
+}
+
+.legend-color-box.past {
+  background-color: #f0f0f0;
+  border-color: #b0b0b0;
+}

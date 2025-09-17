@@ -112,6 +112,25 @@ function Reservas() {
           {isLoading ? <p>Cargando calendario...</p> : renderCalendar()}
         </div>
       </div>
+      {/* Añadimos el cuadro de la leyenda aquí */}
+      <div className="calendar-legend">
+        <div className="legend-item">
+          <span className="legend-color-box disponible"></span>
+          <span>Disponible</span>
+        </div>
+        <div className="legend-item">
+          <span className="legend-color-box pendiente"></span>
+          <span>Pendiente de Aprobación</span>
+        </div>
+        <div className="legend-item">
+          <span className="legend-color-box reservada"></span>
+          <span>Reservado</span>
+        </div>
+        <div className="legend-item">
+          <span className="legend-color-box past"></span>
+          <span>No Disponible / Pasado</span>
+        </div>
+      </div>
       {message && <p className="message-area">{message}</p>}
     </div>
   );
