@@ -1,5 +1,6 @@
 from typing import List
 
+# 1. Asegúrate de que esta línea esté presente
 from sqlalchemy.orm import joinedload
 
 from app.extensions import db
@@ -16,22 +17,23 @@ class ReservaRepository(Repository_add, Repository_get, Repository_delete):
             db.session.commit()  
             return entity
         except Exception as e:
-            db.session.rollback()  # Deshace la transacción si hay un error
-            raise e  # Propaga la excepción para manejo externo
+            db.session.rollback()
+            raise e
 
     def get_all(self) -> List[Reserva]:
+        # 2. Esta es la función corregida que carga todo
         return Reserva.query.options(
             joinedload(Reserva.usuario), 
             joinedload(Reserva.fecha)
         ).all()
 
     def get_by_id(self, id: int) -> Reserva:
-        # TAMBIÉN LO APLICAMOS AQUÍ PARA ASEGURARNOS
+        # 3. Aplicamos la misma corrección aquí
         return Reserva.query.options(
-            joinedload(Reserva.usuario), 
+            joinedload(Reserva.usuario),
             joinedload(Reserva.fecha)
         ).filter_by(id=id).first()
-        
+
     def delete(self, id: int) -> bool:
         try:
             reserva = self.get_by_id(id)

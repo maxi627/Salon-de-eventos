@@ -73,7 +73,7 @@ class ReservaService:
                 
                 # 4. Agregar la reserva y la fecha actualizada a la sesión
                 db.session.add(reserva)
-                db.session.add(fecha_a_reservar)
+                
 
                 # 5. Guardar ambos cambios en la base de datos en una sola transacción
                 db.session.commit()
