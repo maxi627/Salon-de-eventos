@@ -16,6 +16,7 @@ response_schema = ResponseSchema()
 # Aplicar limitadores específicos en las rutas
 @Administrador.route('/administrador', methods=['GET'])
 @limiter.limit("5 per minute")
+@admin_required()
 def all():
     response_builder = ResponseBuilder()
     try:
@@ -28,6 +29,7 @@ def all():
 
 @Administrador.route('/administrador/<int:id>', methods=['GET'])
 @limiter.limit("5 per minute")
+@admin_required()
 def one(id):
     response_builder = ResponseBuilder()
     try:

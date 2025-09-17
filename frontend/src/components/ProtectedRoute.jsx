@@ -23,3 +23,4 @@ function ProtectedRoute() {
   // Si el token es válido y el rol es correcto, muestra el contenido de la ruta
   return <Outlet />;
 }
+export default ProtectedRoute; 

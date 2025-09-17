@@ -1,5 +1,7 @@
 from typing import List
 
+from sqlalchemy.orm import joinedload
+
 from app.extensions import db
 from app.models import Reserva
 
@@ -18,7 +20,10 @@ class ReservaRepository(Repository_add, Repository_get, Repository_delete):
             raise e  # Propaga la excepción para manejo externo
 
     def get_all(self) -> List[Reserva]:
-        return Reserva.query.all()
+        return Reserva.query.options(
+            joinedload(Reserva.usuario), 
+            joinedload(Reserva.fecha)
+        ).all()
 
     def get_by_id(self, id: int) -> Reserva:
         return Reserva.query.get(id)
