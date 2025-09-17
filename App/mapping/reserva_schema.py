@@ -9,7 +9,7 @@ class ReservaSchema(Schema):
 
     usuario_id = fields.Int(required=True)
     fecha_id = fields.Int(required=True)
-
+    comprobante_url = fields.Str(load_only=True, required=False)
     @post_load
     def make_reserva(self, data, **kwargs):
         return Reserva(**data)

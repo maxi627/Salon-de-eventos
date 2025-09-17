@@ -132,3 +132,9 @@
   cursor: not-allowed;
   text-decoration: line-through;
 }
+.calendar-day.pendiente {
+  background-color: #fef3cd;
+  color: #f39c12;
+  border-color: #f39c12;
+  cursor: not-allowed;
+}

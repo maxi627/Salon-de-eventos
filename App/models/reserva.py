@@ -12,6 +12,7 @@ class Reserva(db.Model):
     fecha_creacion = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     fecha_vencimiento = db.Column(db.DateTime, nullable=True)
     estado = db.Column(db.String(20), nullable=False, default='pendiente')  # 'pendiente', 'confirmada', 'cancelada'
+    comprobante_url = db.Column(db.String(256), nullable=True) # Guarda la ruta al archivo
 
     # Relaciones
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)

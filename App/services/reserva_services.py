@@ -68,8 +68,8 @@ class ReservaService:
                 raise Exception(f"La fecha seleccionada ya no está disponible.")
 
             try:
-                # 3. Actualizar el estado de la fecha a 'reservada'
-                fecha_a_reservar.estado = 'reservada'
+                # 3. Actualizar el estado de la fecha a 'pendiente'
+                fecha_a_reservar.estado = 'pendiente'
                 
                 # 4. Agregar la reserva y la fecha actualizada a la sesión
                 db.session.add(reserva)

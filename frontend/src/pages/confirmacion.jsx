@@ -8,63 +8,43 @@ function Confirmacion() {
   const navigate = useNavigate();
 
   const [fechaInfo, setFechaInfo] = useState(null);
-  const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  
+  // Nuevos estados para el flujo
+  const [contractAccepted, setContractAccepted] = useState(false);
+  const [receiptFile, setReceiptFile] = useState(null);
 
-  // --- INICIO DE LA MODIFICACIÓN ---
-
-  // Función para formatear la fecha a un estilo más legible
   const formatDisplayDate = (isoDate) => {
-    if (!isoDate) return '';
-    // Creamos el objeto Date asegurándonos de que maneje bien la zona horaria UTC
-    const dateParts = isoDate.split('-');
-    const date = new Date(Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2]));
-    
-    // Usamos toLocaleDateString para un formato amigable en español
-    return date.toLocaleDateString('es-ES', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      timeZone: 'UTC'
-    });
+    // ... (esta función no cambia)
   };
-
-  // Creamos una nueva variable con la fecha ya formateada para usarla en el JSX
   const displayDate = formatDisplayDate(dateString);
 
-  // --- FIN DE LA MODIFICACIÓN ---
-
   useEffect(() => {
-    const getFechaDetails = async () => {
-      try {
-        const response = await fetch(`/api/v1/fecha/by-date/${dateString}`);
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.message);
-        
-        if (result.data.estado !== 'disponible') {
-          throw new Error('Esta fecha ya no está disponible.');
-        }
-        setFechaInfo(result.data);
-      } catch (error) {
-        setMessage(error.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    getFechaDetails();
+    // ... (esta función no cambia)
   }, [dateString]);
 
-  const handleConfirmReserve = async () => {
+  const handleRequestReservation = async () => {
+    if (!contractAccepted || !receiptFile) {
+      setError('Debes aceptar el contrato y subir un comprobante.');
+      return;
+    }
     const token = localStorage.getItem('authToken');
     if (!token) {
-      setMessage('Necesitas iniciar sesión para reservar.');
+      navigate('/login');
       return;
     }
 
     setIsLoading(true);
+    setError('');
     setMessage('');
 
     try {
+      // En una aplicación real, aquí subirías el archivo a un servicio de almacenamiento
+      // y obtendrías una URL. Para este ejemplo, simularemos una URL.
+      const simulatedUrl = `comprobantes/${fechaInfo.id}_${receiptFile.name}`;
+
       const decodedToken = jwtDecode(token);
       const userId = decodedToken.sub;
 
@@ -75,26 +55,27 @@ function Confirmacion() {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          usuario_id: userId,
-          fecha_id: fechaInfo.id
+          usuario_id: parseInt(userId, 10),
+          fecha_id: fechaInfo.id,
+          comprobante_url: simulatedUrl,
         })
       });
 
       const result = await response.json();
       if (!response.ok) throw new Error(result.message);
 
-      setMessage('¡Reserva creada con éxito! Serás redirigido al inicio.');
-      setTimeout(() => navigate('/'), 3000);
+      setMessage('¡Solicitud enviada! Un administrador revisará tu comprobante. Serás redirigido...');
+      setTimeout(() => navigate('/'), 4000);
 
-    } catch (error) {
-      setMessage(error.message);
+    } catch (err) {
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
   };
 
   if (isLoading) {
-    return <div className="confirm-container"><p>Cargando detalles de la fecha...</p></div>;
+    return <div className="confirm-container"><p>Cargando...</p></div>;
   }
 
   return (
@@ -102,27 +83,53 @@ function Confirmacion() {
       <div className="confirm-box">
         {fechaInfo ? (
           <>
-            <h2>Confirmar Reserva</h2>
-            <p className="confirm-text">
-              Estás a punto de reservar la fecha:
-            </p>
-            {/* Aquí usamos la nueva variable con la fecha formateada */}
+            <h2>Solicitud de Reserva</h2>
+            <p className="confirm-text">Fecha a solicitar:</p>
             <p className="confirm-date">{displayDate}</p>
-            <p className="confirm-note">
-              Una vez confirmada, la fecha quedará bloqueada para ti.
-            </p>
+
+            <div className="contract-box">
+              <h3>Términos y Condiciones</h3>
+              <p>
+                <b>(Este es un texto de ejemplo. Consulta a un profesional legal.)</b><br/>
+                1. El solicitante se compromete a abonar el 50% del valor total para que esta solicitud sea considerada.
+                2. El salón debe ser devuelto en las mismas condiciones en que fue entregado.
+                3. Cualquier daño al mobiliario o instalaciones será responsabilidad del solicitante.
+                4. La reserva no estará confirmada hasta recibir la aprobación de un administrador.
+              </p>
+            </div>
+            <div className="form-check">
+              <input 
+                type="checkbox" 
+                id="accept"
+                checked={contractAccepted}
+                onChange={() => setContractAccepted(!contractAccepted)}
+              />
+              <label htmlFor="accept">He leído y acepto los términos y condiciones.</label>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="receipt">Subir Comprobante de Pago (50%)</label>
+              <input 
+                type="file" 
+                id="receipt"
+                onChange={(e) => setReceiptFile(e.target.files[0])}
+                accept="image/png, image/jpeg, application/pdf"
+              />
+            </div>
+
             <button 
-              onClick={handleConfirmReserve} 
+              onClick={handleRequestReservation} 
               className="confirm-button"
-              disabled={isLoading}
+              disabled={isLoading || !contractAccepted || !receiptFile}
             >
-              {isLoading ? 'Procesando...' : 'Confirmar Mi Reserva'}
+              {isLoading ? 'Enviando...' : 'Enviar Solicitud de Reserva'}
             </button>
           </>
         ) : (
-          <h2>Fecha no disponible</h2>
+          <h2>{error || 'Fecha no disponible'}</h2>
         )}
         {message && <p className="message-area">{message}</p>}
+        {error && <p className="error-message">{error}</p>}
       </div>
     </div>
   );

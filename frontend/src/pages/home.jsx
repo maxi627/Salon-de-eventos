@@ -12,7 +12,7 @@ function Home() {
   return (
     <>
       <section className="home">
-        <img src="/public/foto_home.webp" alt="Gente celebrando en un evento" />
+        <img src="/foto_home.webp" alt="Gente celebrando en un evento" />
         <div>
             <h1>Bienvenidos a nuestro Salón de Eventos</h1>
             <p>Donde tus momentos se vuelven inolvidables</p>

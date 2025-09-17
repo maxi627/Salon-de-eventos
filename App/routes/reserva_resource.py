@@ -6,6 +6,7 @@ from app.config import ResponseBuilder
 from app.extensions import limiter  # Usar el limiter global
 from app.mapping import ReservaSchema, ResponseSchema
 from app.services import ReservaService
+from app.utils.decorators import admin_required
 
 Reserva = Blueprint('Reserva', __name__)
 service = ReservaService()
@@ -102,4 +103,29 @@ def delete(id):
             return response_schema.dump(response_builder.build()), 404
     except Exception as e:
         response_builder.add_message("Error deleting Reserva").add_status_code(500).add_data(str(e))
+        return response_schema.dump(response_builder.build()), 500
+@Reserva.route('/reserva/<int:id>/approve', methods=['PUT'])
+@jwt_required()
+@admin_required()
+def approve(id):
+    response_builder = ResponseBuilder()
+    try:
+        # Aquí iría la lógica en el servicio para cambiar el estado
+        # de la reserva a 'confirmada' y el de la fecha a 'reservada'.
+        # Por simplicidad, lo hacemos aquí directamente por ahora.
+        
+        reserva = service.find(id)
+        if not reserva:
+            response_builder.add_message("Reserva no encontrada").add_status_code(404)
+            return response_schema.dump(response_builder.build()), 404
+
+        reserva.estado = 'confirmada'
+        reserva.fecha.estado = 'reservada'
+        db.session.commit()
+
+        response_builder.add_message("Reserva aprobada con éxito").add_status_code(200)
+        return response_schema.dump(response_builder.build()), 200
+
+    except Exception as e:
+        response_builder.add_message("Error al aprobar la reserva").add_status_code(500).add_data(str(e))
         return response_schema.dump(response_builder.build()), 500
