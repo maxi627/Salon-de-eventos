@@ -1,6 +1,6 @@
 from typing import List
 
-# 1. Asegúrate de que esta línea esté presente
+# 1. Importa 'joinedload' de la librería SQLAlchemy
 from sqlalchemy.orm import joinedload
 
 from app.extensions import db
@@ -21,14 +21,15 @@ class ReservaRepository(Repository_add, Repository_get, Repository_delete):
             raise e
 
     def get_all(self) -> List[Reserva]:
-        # 2. Esta es la función corregida que carga todo
+        # 2. ESTA ES LA FUNCIÓN CORREGIDA
+        # Le decimos a la consulta que cargue las relaciones 'usuario' y 'fecha'
         return Reserva.query.options(
             joinedload(Reserva.usuario), 
             joinedload(Reserva.fecha)
         ).all()
 
     def get_by_id(self, id: int) -> Reserva:
-        # 3. Aplicamos la misma corrección aquí
+        # 3. APLICAMOS LA MISMA CORRECCIÓN AQUÍ
         return Reserva.query.options(
             joinedload(Reserva.usuario),
             joinedload(Reserva.fecha)

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
+import EditReservationModal from '../components/EditReservationModal'; // Asegúrate de que esta ruta es correcta
 import './AdminPanel.css';
-import EditReservationModal from '../components/EditReservationModal'; // Asegúrate de que esta ruta sea correcta
 
 function AdminPanel() {
   const [reservas, setReservas] = useState([]);
@@ -20,15 +20,13 @@ function AdminPanel() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
-      if (response.status === 401) {
-          throw new Error('Tu sesión ha expirado. Por favor, inicia sesión de nuevo.');
-      }
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Error al obtener las reservas.' }));
-        throw new Error(errorData.message || 'No tienes permiso o hubo un error.');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'No tienes permiso o hubo un error al cargar las reservas.');
       }
       
       const data = await response.json();
+      // Ordenamos las reservas por fecha para una mejor visualización
       const sortedReservas = data.data.sort((a, b) => new Date(a.fecha?.dia) - new Date(b.fecha?.dia));
       setReservas(sortedReservas);
 
@@ -53,6 +51,7 @@ function AdminPanel() {
     setSelectedReservation(null);
   };
 
+  // Esta función se llama desde el modal para refrescar la lista de reservas
   const handleUpdate = () => {
     fetchReservas(); 
     handleCloseModal();
@@ -82,10 +81,8 @@ function AdminPanel() {
             {reservas.length > 0 ? (
               reservas.map(reserva => (
                 <tr key={reserva.id}>
+                  {/* --- CORRECCIÓN DE VISUALIZACIÓN APLICADA --- */}
                   <td>{reserva.fecha?.dia || 'N/A'}</td>
-                  
-                  {/* --- CORRECCIÓN APLICADA AQUÍ --- */}
-                  {/* Accedemos a las propiedades nombre y apellido del objeto usuario */}
                   <td>{`${reserva.usuario?.nombre || ''} ${reserva.usuario?.apellido || ''}`}</td>
                   <td>{reserva.usuario?.correo || 'N/A'}</td>
 
