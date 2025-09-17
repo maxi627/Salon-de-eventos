@@ -3,6 +3,70 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import './confirmacion.css';
 
+// 1. Creamos un componente separado para el texto del contrato.
+//    Esto hace que el componente principal `Confirmacion` sea mucho más limpio.
+const ContractTerms = () => (
+  <>
+    <h3>Términos y Condiciones</h3>
+    <p>
+      <strong>Contrato de Alquiler de Salón de Eventos.</strong>
+    </p>
+    <p>
+      El presente contrato se celebra entre EL LOCADOR (propietario del salón) y EL LOCATARIO 
+      (usuario que realiza la reserva a través de la página web, cuyos datos personales se 
+      registran en el formulario de reserva), sujeto a las siguientes cláusulas:
+    </p>
+    
+    {/* Usamos una lista ordenada (<ol>) para las cláusulas */}
+    <ol>
+      <li>
+        <strong>Objeto:</strong> EL LOCADOR alquila a EL LOCATARIO el salón de eventos 
+        ubicado en Bolivar 1425, para uso exclusivo en la fecha y horario acordados en la reserva.
+      </li>
+      <li>
+        <strong>Uso y Responsabilidad:</strong> EL LOCADOR no se responsabiliza por el tipo 
+        de actividad o evento que se realice, siempre que sea lícito. Queda prohibida la venta 
+        de entradas, la venta o suministro de alcohol a menores de edad, el consumo de 
+        sustancias ilegales y cualquier actividad contraria a la ley. EL LOCATARIO es único 
+        responsable por cualquier daño material, accidente o hecho ocurrido durante el evento, 
+        así como de las acciones de los invitados y terceros que ingresen al salón.
+      </li>
+      <li>
+        <strong>Cumplimiento Legal:</strong> EL LOCATARIO asume toda responsabilidad por cumplir 
+        con las disposiciones legales vigentes en materia de seguridad, salubridad y control de 
+        menores. En caso de incumplimiento, EL LOCADOR queda totalmente exento de toda 
+        responsabilidad civil, penal o administrativa.
+      </li>
+      <li>
+        <strong>Daños y Limpieza:</strong> EL LOCATARIO deberá restituir el salón en las mismas 
+        condiciones en que lo recibió, siendo responsable por cualquier daño ocasionado a las 
+        instalaciones, mobiliario o equipamiento. Los gastos de reparación o reposición correrán 
+        por cuenta del LOCATARIO.
+      </li>
+      <li>
+        <strong>Pagos y Cancelaciones:</strong> El LOCATARIO deberá abonar la seña establecida 
+        al momento de la reserva. En caso de cancelación con menos de 7 días de anticipación, no 
+        habrá devolución de la seña. En caso de cancelación por parte del LOCADOR por causas de 
+        fuerza mayor, se reintegrará el monto abonado sin derecho a reclamos adicionales.
+      </li>
+      <li>
+        <strong>Penalidades:</strong> En caso de incumplimiento de alguna cláusula, EL LOCADOR 
+        podrá suspender el evento sin derecho a reclamo o reembolso, además de iniciar las 
+        acciones legales correspondientes.
+      </li>
+      <li>
+        <strong>Aceptación Digital:</strong> La aceptación del presente contrato mediante el 
+        sistema de reservas online equivale a la firma manuscrita y constituye plena conformidad 
+        legal por parte de EL LOCATARIO.
+      </li>
+      <li>
+        <strong>Firma y Conformidad:</strong> Ambas partes declaran haber leído y comprendido 
+        el presente contrato, aceptando las cláusulas aquí establecidas.
+      </li>
+    </ol>
+  </>
+);
+
 function Confirmacion() {
   const { dateString } = useParams();
   const navigate = useNavigate();
@@ -12,11 +76,9 @@ function Confirmacion() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   
-  // Estados para el nuevo flujo de solicitud
   const [contractAccepted, setContractAccepted] = useState(false);
   const [receiptFile, setReceiptFile] = useState(null);
 
-  // Función para formatear la fecha a un estilo más legible
   const formatDisplayDate = (isoDate) => {
     if (!isoDate) return '';
     const dateParts = isoDate.split('-');
@@ -45,7 +107,7 @@ function Confirmacion() {
         setFechaInfo(result.data);
       } catch (err) {
         setError(err.message);
-        setFechaInfo(null); // Aseguramos que no se muestre el formulario si hay error
+        setFechaInfo(null);
       } finally {
         setIsLoading(false);
       }
@@ -54,7 +116,6 @@ function Confirmacion() {
   }, [dateString]);
 
   const handleRequestReservation = async () => {
-    // Validaciones iniciales
     if (!contractAccepted) {
       setError('Debes aceptar los términos y condiciones.');
       return;
@@ -74,14 +135,10 @@ function Confirmacion() {
     setMessage('');
 
     try {
-      // En una aplicación real, aquí subirías el archivo a un servicio de almacenamiento (como AWS S3, Firebase Storage, etc.)
-      // y obtendrías una URL. Para este ejemplo, simularemos una URL basada en el nombre del archivo.
       const simulatedUrl = `comprobantes/${fechaInfo.id}_${receiptFile.name}`;
-
       const decodedToken = jwtDecode(token);
       const userId = decodedToken.sub;
 
-      // Se envía la solicitud de reserva al backend
       const response = await fetch('/api/v1/reserva', {
         method: 'POST',
         headers: {
@@ -91,7 +148,7 @@ function Confirmacion() {
         body: JSON.stringify({
           usuario_id: parseInt(userId, 10),
           fecha_id: fechaInfo.id,
-          comprobante_url: simulatedUrl, // Se envía la URL simulada
+          comprobante_url: simulatedUrl,
         })
       });
 
@@ -99,7 +156,7 @@ function Confirmacion() {
       if (!response.ok) throw new Error(result.message);
 
       setMessage('¡Solicitud enviada con éxito! Un administrador la revisará a la brevedad. Serás redirigido...');
-      setTimeout(() => navigate('/'), 4000); // Redirige al inicio
+      setTimeout(() => navigate('/'), 4000);
 
     } catch (err) {
       setError(err.message);
@@ -121,17 +178,11 @@ function Confirmacion() {
             <p className="confirm-text">Fecha a solicitar:</p>
             <p className="confirm-date">{displayDate}</p>
 
-            {/* SECCIÓN DEL CONTRATO */}
             <div className="contract-box">
-              <h3>Términos y Condiciones</h3>
-              <p>
-                <b>(Este es un texto de ejemplo. Consulta a un profesional legal.)</b><br/>
-                1. El solicitante se compromete a abonar el 50% del valor total para que esta solicitud sea considerada.
-                2. El salón debe ser devuelto en las mismas condiciones en que fue entregado.
-                3. Cualquier daño al mobiliario o instalaciones será responsabilidad del solicitante.
-                4. La reserva no estará confirmada hasta recibir la aprobación de un administrador.
-              </p>
+              {/* 2. Usamos el nuevo componente aquí. ¡Mucho más limpio! */}
+              <ContractTerms />
             </div>
+            
             <div className="form-check">
               <input 
                 type="checkbox" 
@@ -142,7 +193,6 @@ function Confirmacion() {
               <label htmlFor="accept">He leído y acepto los términos y condiciones.</label>
             </div>
 
-            {/* SECCIÓN DE SUBIDA DE ARCHIVO */}
             <div className="form-group">
               <label htmlFor="receipt">Subir Comprobante de Pago (50%)</label>
               <input 
@@ -153,7 +203,6 @@ function Confirmacion() {
               />
             </div>
 
-            {/* BOTÓN DE ENVÍO */}
             <button 
               onClick={handleRequestReservation} 
               className="confirm-button"
@@ -163,11 +212,9 @@ function Confirmacion() {
             </button>
           </>
         ) : (
-          // Mensaje si la fecha no está disponible o hubo un error al cargar
           <h2>{error || 'Fecha no disponible'}</h2>
         )}
 
-        {/* ÁREA DE MENSAJES PARA EL USUARIO */}
         {message && <p className="message-area">{message}</p>}
         {error && <p className="error-message">{error}</p>}
       </div>

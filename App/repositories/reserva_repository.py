@@ -1,6 +1,5 @@
 from typing import List
 
-# 1. Importa 'joinedload' de la librería SQLAlchemy
 from sqlalchemy.orm import joinedload
 
 from app.extensions import db

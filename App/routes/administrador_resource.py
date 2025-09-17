@@ -47,8 +47,8 @@ def one(id):
 
 @Administrador.route('/administrador', methods=['POST'])
 @limiter.limit("5 per minute")
-@admin_required()
-@jwt_required()
+# @admin_required()
+# @jwt_required()
 def add():
     response_builder = ResponseBuilder()
     try:
