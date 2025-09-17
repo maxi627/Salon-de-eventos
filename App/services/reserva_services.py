@@ -92,24 +92,34 @@ class ReservaService:
                 db.session.rollback()
                 raise e
 
-    def update(self, reserva_id: int, updated_reserva: Reserva) -> Reserva:
+    def update(self, reserva_id: int, updated_data: dict) -> Reserva:
         """
-        Actualiza una reserva existente.
+        Actualiza una reserva existente con nuevos datos.
+        Este método será usado por el administrador.
         """
         with self.redis_lock(reserva_id):
-            existing_reserva = self.find(reserva_id)
-            if not existing_reserva:
+            reserva_a_actualizar = self.find(reserva_id)
+            if not reserva_a_actualizar:
                 raise Exception(f"Reserva con ID {reserva_id} no encontrada.")
 
-            existing_reserva.estado = updated_reserva.estado
-            existing_reserva.fecha_vencimiento = updated_reserva.fecha_vencimiento
+            # Actualizamos campo por campo si viene en los datos
+            for key, value in updated_data.items():
+                if hasattr(reserva_a_actualizar, key):
+                    setattr(reserva_a_actualizar, key, value)
             
+            # Lógica especial para aprobación
+            if updated_data.get('estado') == 'confirmada':
+                reserva_a_actualizar.fecha.estado = 'reservada'
+
             db.session.commit()
 
-            cache.set(f'reserva_{reserva_id}', existing_reserva, timeout=self.CACHE_TIMEOUT)
+            # Invalidar cachés relevantes
+            cache.set(f'reserva_{reserva_id}', reserva_a_actualizar, timeout=self.CACHE_TIMEOUT)
             cache.delete('reservas')
+            cache.delete(f'fecha_{reserva_a_actualizar.fecha_id}')
+            cache.delete('fechas')
 
-            return existing_reserva
+            return reserva_a_actualizar
 
     def delete(self, reserva_id: int) -> bool:
         """

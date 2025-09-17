@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './reservas.css'; // Asegúrate que el nombre del CSS coincida
+import './reservas.css';
 
 function Reservas() {
   const navigate = useNavigate();
@@ -10,7 +10,6 @@ function Reservas() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Carga las fechas que tienen un estado definido (ej. 'reservada')
     const fetchFechas = async () => {
       try {
         const response = await fetch('/api/v1/fecha');
@@ -30,13 +29,24 @@ function Reservas() {
     fetchFechas();
   }, []);
 
-  // Navega a la página de confirmación con la fecha seleccionada
+  // --- LÓGICA DE NAVEGACIÓN ACTUALIZADA ---
   const handleDateClick = (dayDate) => {
+    // 1. Verificamos si el usuario ha iniciado sesión.
+    const token = localStorage.getItem('authToken');
+
+    if (!token) {
+      // 2. Si no hay token, mostramos un mensaje y detenemos la ejecución.
+      setMessage('Debes iniciar sesión para poder seleccionar una fecha.');
+      // Opcional: hacemos que el mensaje desaparezca después de unos segundos.
+      setTimeout(() => setMessage(''), 3000);
+      return; 
+    }
+
+    // 3. Si hay un token, procedemos a la navegación como antes.
     const dateString = dayDate.toISOString().split('T')[0];
     navigate(`/reservar/${dateString}`);
   };
 
-  // Permite cambiar de mes, bloqueando la navegación al pasado
   const changeMonth = (offset) => {
     const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1);
     const today = new Date();
@@ -48,7 +58,6 @@ function Reservas() {
     setCurrentDate(newDate);
   };
 
-  // Construye el calendario visual
   const renderCalendar = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -73,10 +82,10 @@ function Reservas() {
       if (isPast) {
         className += ' past';
         isDisabled = true;
-      } else if (fechaInfo) { // La fecha está en la BD (es una excepción)
+      } else if (fechaInfo) {
         className += ` ${fechaInfo.estado}`;
         if (fechaInfo.estado !== 'disponible') isDisabled = true;
-      } else { // La fecha no está en la BD, por lo tanto está disponible
+      } else {
         className += ' disponible';
       }
 
@@ -112,7 +121,6 @@ function Reservas() {
           {isLoading ? <p>Cargando calendario...</p> : renderCalendar()}
         </div>
       </div>
-      {/* Añadimos el cuadro de la leyenda aquí */}
       <div className="calendar-legend">
         <div className="legend-item">
           <span className="legend-color-box disponible"></span>
