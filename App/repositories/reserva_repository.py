@@ -26,16 +26,20 @@ class ReservaRepository(Repository_add, Repository_get, Repository_delete):
         ).all()
 
     def get_by_id(self, id: int) -> Reserva:
-        return Reserva.query.get(id)
-
+        # TAMBIÉN LO APLICAMOS AQUÍ PARA ASEGURARNOS
+        return Reserva.query.options(
+            joinedload(Reserva.usuario), 
+            joinedload(Reserva.fecha)
+        ).filter_by(id=id).first()
+        
     def delete(self, id: int) -> bool:
         try:
-            Reserva = self.get_by_id(id)
-            if Reserva:
-                db.session.delete(Reserva)  
+            reserva = self.get_by_id(id)
+            if reserva:
+                db.session.delete(reserva)  
                 db.session.commit()  
                 return True
             return False
         except Exception as e:
-            db.session.rollback()  # Deshace la transacción si hay un error
-            raise e  # Propaga la excepción para manejo externo
+            db.session.rollback()
+            raise e
