@@ -1,10 +1,12 @@
 from flask import Blueprint, request
+from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
 
 from app.config import ResponseBuilder
 from app.extensions import limiter  # Usar el limiter global
 from app.mapping import AdministradorSchema, ResponseSchema
 from app.services import AdministradorService
+from app.utils.decorators import admin_required
 
 Administrador = Blueprint('Administrador', __name__)
 service = AdministradorService()
@@ -43,6 +45,8 @@ def one(id):
 
 @Administrador.route('/administrador', methods=['POST'])
 @limiter.limit("5 per minute")
+@admin_required()
+@jwt_required()
 def add():
     response_builder = ResponseBuilder()
     try:
@@ -63,6 +67,7 @@ def add():
 
 @Administrador.route('/administrador/<int:id>', methods=['PUT'])
 @limiter.limit("5 per minute")
+@admin_required()
 def update(id):
     response_builder = ResponseBuilder()
     try:
@@ -88,6 +93,7 @@ def update(id):
 
 @Administrador.route('/administrador/<int:id>', methods=['DELETE'])
 @limiter.limit("3 per minute")
+@admin_required()
 def delete(id):
     response_builder = ResponseBuilder()
     try:

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Blueprint, request
 from marshmallow import ValidationError
 
@@ -103,4 +105,26 @@ def delete(id):
             return response_schema.dump(response_builder.build()), 404
     except Exception as e:
         response_builder.add_message("Error deleting Fecha").add_status_code(500).add_data(str(e))
+        return response_schema.dump(response_builder.build()), 500
+@Fecha.route('/fecha/by-date/<string:date_string>', methods=['GET'])
+@limiter.limit("10 per minute")
+def get_or_create_by_date(date_string):
+    """
+    Busca una fecha por su string YYYY-MM-DD.
+    Si no existe en la BD, la crea y la devuelve.
+    Esto permite al frontend obtener un ID válido para cualquier fecha futura.
+    """
+    response_builder = ResponseBuilder()
+    try:
+        dia = datetime.strptime(date_string, '%Y-%m-%d').date()
+        fecha_obj = service.get_or_create(dia)
+        serialized_data = fecha_schema.dump(fecha_obj)
+        response_builder.add_message("Fecha encontrada o creada").add_status_code(200).add_data(serialized_data)
+        return response_schema.dump(response_builder.build()), 200
+
+    except ValueError:
+        response_builder.add_message("Formato de fecha inválido. Usar YYYY-MM-DD.").add_status_code(400)
+        return response_schema.dump(response_builder.build()), 400
+    except Exception as e:
+        response_builder.add_message("Error procesando la fecha").add_status_code(500).add_data(str(e))
         return response_schema.dump(response_builder.build()), 500

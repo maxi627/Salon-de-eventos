@@ -1,3 +1,4 @@
+from datetime import date
 from typing import List
 
 from app.extensions import db
@@ -34,3 +35,6 @@ class FechaRepository(Repository_add, Repository_get, Repository_delete):
         except Exception as e:
             db.session.rollback()  # Deshace la transacción si hay un error
             raise e  # Propaga la excepción para manejo externo
+    def get_by_dia(self, dia: date) -> Fecha:
+        """Busca una entidad de Fecha por su campo de día."""
+        return Fecha.query.filter_by(dia=dia).first()

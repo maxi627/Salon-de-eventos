@@ -1,5 +1,6 @@
 import time
 from contextlib import contextmanager
+from datetime import date
 
 from app.extensions import cache, db, redis_client
 from app.models import Fecha
@@ -102,3 +103,18 @@ class FechaService:
                 cache.set(f'fecha_{fecha_id}', fecha, timeout=self.CACHE_TIMEOUT)
             return fecha
         return cached_fecha
+    def find_by_dia(self, dia: date) -> Fecha:
+        """Busca una fecha por su día usando el repositorio."""
+        return self.repository.get_by_dia(dia)
+
+    def get_or_create(self, dia: date) -> Fecha:
+        """
+        Busca una fecha por día. Si no existe, la crea con estado 'disponible'.
+        Este método asegura que siempre tengamos un registro en la BD para trabajar.
+        """
+        fecha = self.find_by_dia(dia)
+        if not fecha:
+            # La fecha no existe en la BD, así que la creamos.
+            nueva_fecha = Fecha(dia=dia, estado='disponible')
+            fecha = self.add(nueva_fecha) # Reutilizamos el método add que ya maneja la BD y el caché.
+        return fecha

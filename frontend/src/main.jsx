@@ -6,24 +6,32 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import App from './App.jsx'
 // Importamos los componentes de las páginas
 import Home from './pages/home.jsx'
-
-
+// ¡Importa las nuevas páginas que crearemos!
+import Confirmacion from './pages/confirmacion.jsx'
+import Login from './pages/login.jsx'
+import Register from './pages/register.jsx'
+import Reservas from './pages/reservas.jsx'
 // Definimos las rutas
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />, // App.jsx es ahora el elemento principal que contiene el layout
-    // Las "rutas hijas" se renderizarán dentro del <Outlet> de App.jsx
+    element: <App />,
     children: [
       {
-        index: true, // Esto hace que 'Home' sea la página por defecto en la ruta "/"
+        index: true,
         element: <Home />,
       },
-      // Aquí podrías agregar más páginas, por ejemplo:
-      // {
-      //   path: "/servicios",
-      //   element: <ServiciosPage />,
-      // }
+      // Agregamos las nuevas rutas aquí
+      {
+        path: "/login",
+        element: <Login />,
+      },
+      {
+        path: "/register",
+        element: <Register />,
+      },
+      { path: "/reservar", element: <Reservas /> },
+      { path: "/reservar/:dateString", element: <Confirmacion /> },
     ]
   },
 ]);
