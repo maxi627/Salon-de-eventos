@@ -54,33 +54,33 @@ class FechaService:
         cache.delete('fechas')
         return new_fecha
 
-    def update(self, fecha_id: int, updated_fecha: Fecha) -> Fecha:
+    def update(self, fecha_id: int, updated_data: dict) -> Fecha:
         """
-        Actualiza una fecha existente.
-        :param fecha_id: ID de la fecha a actualizar.
-        :param updated_fecha: Datos de la fecha actualizados.
-        :return: Objeto Fecha actualizado.
+        Actualiza una fecha existente a partir de un diccionario de datos.
         """
         with self.redis_lock(fecha_id):
             existing_fecha = self.find(fecha_id)
             if not existing_fecha:
                 raise Exception(f"Fecha con ID {fecha_id} no encontrada.")
 
-            # --- CORREGIDO ---
-            # Actualizar los atributos correctos del modelo Fecha
-            existing_fecha.dia = updated_fecha.dia
-            existing_fecha.estado = updated_fecha.estado
+            # Actualizamos solo los campos que vienen en el diccionario.
+            # Esto hace la función mucho más flexible y segura para actualizaciones.
+            if 'valor_estimado' in updated_data:
+                try:
+                    # Nos aseguramos de que el valor sea un número flotante.
+                    existing_fecha.valor_estimado = float(updated_data['valor_estimado'])
+                except (ValueError, TypeError):
+                    # Si el valor no es un número válido, lanzamos un error.
+                    raise ValueError("El valor_estimado debe ser un número válido.")
 
             # Guardar los cambios en la base de datos
             db.session.commit()
-            # --- FIN DE LA CORRECCIÓN ---
 
-            # Actualizar la caché
+            # Actualizar la caché con el objeto modificado
             cache.set(f'fecha_{fecha_id}', existing_fecha, timeout=self.CACHE_TIMEOUT)
-            cache.delete('fechas')  # Invalida la lista de fechas en caché
+            cache.delete('fechas') # Invalidamos la lista general de fechas
 
             return existing_fecha
-
     def delete(self, fecha_id: int) -> bool:
         """
         Elimina una fecha por su ID y actualiza la caché.

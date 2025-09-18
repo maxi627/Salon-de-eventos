@@ -29,20 +29,15 @@ function Reservas() {
     fetchFechas();
   }, []);
 
-  // --- LÓGICA DE NAVEGACIÓN ACTUALIZADA ---
   const handleDateClick = (dayDate) => {
-    // 1. Verificamos si el usuario ha iniciado sesión.
     const token = localStorage.getItem('authToken');
 
     if (!token) {
-      // 2. Si no hay token, mostramos un mensaje y detenemos la ejecución.
       setMessage('Debes iniciar sesión para poder seleccionar una fecha.');
-      // Opcional: hacemos que el mensaje desaparezca después de unos segundos.
       setTimeout(() => setMessage(''), 3000);
       return; 
     }
 
-    // 3. Si hay un token, procedemos a la navegación como antes.
     const dateString = dayDate.toISOString().split('T')[0];
     navigate(`/reservar/${dateString}`);
   };
@@ -96,7 +91,11 @@ function Reservas() {
           onClick={() => handleDateClick(dayDate)}
           disabled={isDisabled}
         >
-          {i}
+          <span className="day-number">{i}</span>
+          {/* Muestra el precio si el día está disponible y tiene un valor asignado */}
+          {fechaInfo && fechaInfo.estado === 'disponible' && fechaInfo.valor_estimado > 0 && (
+            <span className="calendar-price">${fechaInfo.valor_estimado.toLocaleString('es-AR')}</span>
+          )}
         </button>
       );
     }
@@ -121,6 +120,7 @@ function Reservas() {
           {isLoading ? <p>Cargando calendario...</p> : renderCalendar()}
         </div>
       </div>
+
       <div className="calendar-legend">
         <div className="legend-item">
           <span className="legend-color-box disponible"></span>
@@ -138,6 +138,11 @@ function Reservas() {
           <span className="legend-color-box past"></span>
           <span>No Disponible / Pasado</span>
         </div>
+      </div>
+      <div className="price-disclaimer">
+        <p>
+          <strong>Atención:</strong> El precio que figura en el calendario es un valor de referencia y está sujeto a modificaciones dependiendo de las características del evento (cantidad de invitados, horario, etc.).
+        </p>
       </div>
       {message && <p className="message-area">{message}</p>}
     </div>

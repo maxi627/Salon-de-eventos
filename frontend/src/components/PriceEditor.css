@@ -1,0 +1,48 @@
+.price-editor-container {
+  margin-top: 3rem;
+  padding: 2rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.price-editor-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.price-editor-form .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.price-editor-form label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.price-editor-form input {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.price-editor-form button {
+  padding: 0.6rem 1.2rem;
+  background-color: var(--color-primario);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  height: fit-content;
+}
+
+.price-editor-form button:disabled {
+  background-color: #a9a9a9;
+  cursor: not-allowed;
+}

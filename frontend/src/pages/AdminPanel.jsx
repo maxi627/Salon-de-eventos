@@ -1,21 +1,40 @@
 import { useEffect, useState } from 'react';
-import EditReservationModal from '../components/EditReservationModal'; // Asegúrate de que esta ruta es correcta
+import AnalyticsDashboard from '../components/AnalyticsDashboard';
+import EditReservationModal from '../components/EditReservationModal';
+import PriceEditor from '../components/PriceEditor';
 import './AdminPanel.css';
 
 function AdminPanel() {
   const [reservas, setReservas] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-
-  // Estados para manejar el modal de edición
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState(null);
 
-  // Función para obtener las reservas del backend
+  // Función para formatear la fecha a un formato legible
+  // Convierte "2025-09-17" a "miércoles, 17 de septiembre de 2025"
+  const formatDisplayDate = (isoDate) => {
+    if (!isoDate) return 'N/A';
+    
+    // Dividimos el string para evitar problemas de zona horaria
+    const dateParts = isoDate.split('-');
+    // Creamos la fecha en UTC para asegurar que sea el día correcto
+    const date = new Date(Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2]));
+
+    return new Intl.DateTimeFormat('es-ES', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      timeZone: 'UTC' // Especificamos la zona horaria para consistencia
+    }).format(date);
+  };
+
   const fetchReservas = async () => {
     const token = localStorage.getItem('authToken');
     try {
-      setIsLoading(true);
+      // No reiniciamos el loading en cada fetch para una mejor UX con el dashboard
+      // setIsLoading(true); 
       const response = await fetch('/api/v1/reserva', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -57,12 +76,18 @@ function AdminPanel() {
     handleCloseModal();
   };
 
-  if (isLoading) return <p style={{textAlign: 'center', marginTop: '2rem'}}>Cargando reservas...</p>;
+  if (isLoading) return <p style={{textAlign: 'center', marginTop: '2rem'}}>Cargando panel de administración...</p>;
   if (error) return <p className="error-message" style={{textAlign: 'center'}}>{error}</p>;
 
   return (
     <div className="admin-panel">
-      <h1>Panel de Administración de Reservas</h1>
+      <h1>Panel de Administración</h1>
+      
+      <AnalyticsDashboard />
+
+      <PriceEditor />
+
+      <h2 className="reservas-title">Gestión de Reservas</h2>
       <div className="table-container">
         <table className="reservas-table">
           <thead>
@@ -81,11 +106,11 @@ function AdminPanel() {
             {reservas.length > 0 ? (
               reservas.map(reserva => (
                 <tr key={reserva.id}>
-                  {/* --- CORRECCIÓN DE VISUALIZACIÓN APLICADA --- */}
-                  <td>{reserva.fecha?.dia || 'N/A'}</td>
+                  {/* Aplicamos la función de formateo en la celda de la fecha */}
+                  <td>{formatDisplayDate(reserva.fecha?.dia)}</td>
+                  
                   <td>{`${reserva.usuario?.nombre || ''} ${reserva.usuario?.apellido || ''}`}</td>
                   <td>{reserva.usuario?.correo || 'N/A'}</td>
-
                   <td><span className={`status ${reserva.estado}`}>{reserva.estado}</span></td>
                   <td>
                     {reserva.comprobante_url ? (
@@ -94,8 +119,8 @@ function AdminPanel() {
                       </a>
                     ) : 'N/A'}
                   </td>
-                  <td>${(reserva.valor_alquiler || 0).toFixed(2)}</td>
-                  <td>${(reserva.saldo_restante || 0).toFixed(2)}</td>
+                  <td>${(reserva.valor_alquiler || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}</td>
+                  <td>${(reserva.saldo_restante || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}</td>
                   <td>
                     <button className="btn-edit" onClick={() => handleOpenModal(reserva)}>
                       Gestionar

@@ -3,8 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import './confirmacion.css';
 
-// 1. Creamos un componente separado para el texto del contrato.
-//    Esto hace que el componente principal `Confirmacion` sea mucho más limpio.
+// Componente separado para el texto del contrato para mantener el código limpio.
 const ContractTerms = () => (
   <>
     <h3>Términos y Condiciones</h3>
@@ -17,7 +16,6 @@ const ContractTerms = () => (
       registran en el formulario de reserva), sujeto a las siguientes cláusulas:
     </p>
     
-    {/* Usamos una lista ordenada (<ol>) para las cláusulas */}
     <ol>
       <li>
         <strong>Objeto:</strong> EL LOCADOR alquila a EL LOCATARIO el salón de eventos 
@@ -79,6 +77,10 @@ function Confirmacion() {
   const [contractAccepted, setContractAccepted] = useState(false);
   const [receiptFile, setReceiptFile] = useState(null);
 
+  // Estado para guardar el alias obtenido del backend
+  const [paymentAlias, setPaymentAlias] = useState(null);
+
+  // Función para formatear la fecha a un estilo más legible
   const formatDisplayDate = (isoDate) => {
     if (!isoDate) return '';
     const dateParts = isoDate.split('-');
@@ -94,17 +96,36 @@ function Confirmacion() {
   const displayDate = formatDisplayDate(dateString);
 
   useEffect(() => {
-    const getFechaDetails = async () => {
+    const getPageData = async () => {
       setIsLoading(true);
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
       try {
-        const response = await fetch(`/api/v1/fecha/by-date/${dateString}`);
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.message);
-        
-        if (result.data.estado !== 'disponible') {
+        // Hacemos las dos peticiones al backend de forma concurrente
+        const [fechaResponse, paymentResponse] = await Promise.all([
+          fetch(`/api/v1/fecha/by-date/${dateString}`),
+          fetch('/api/v1/payment-info', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+        ]);
+
+        // Procesamos la respuesta de la fecha
+        const fechaResult = await fechaResponse.json();
+        if (!fechaResponse.ok) throw new Error(fechaResult.message);
+        if (fechaResult.data.estado !== 'disponible') {
           throw new Error('Esta fecha ya no está disponible.');
         }
-        setFechaInfo(result.data);
+        setFechaInfo(fechaResult.data);
+
+        // Procesamos la respuesta de la información de pago
+        const paymentResult = await paymentResponse.json();
+        if (!paymentResponse.ok) throw new Error(paymentResult.message);
+        setPaymentAlias(paymentResult.data.alias);
+
       } catch (err) {
         setError(err.message);
         setFechaInfo(null);
@@ -112,8 +133,9 @@ function Confirmacion() {
         setIsLoading(false);
       }
     };
-    getFechaDetails();
-  }, [dateString]);
+    
+    getPageData();
+  }, [dateString, navigate]);
 
   const handleRequestReservation = async () => {
     if (!contractAccepted) {
@@ -166,7 +188,7 @@ function Confirmacion() {
   };
 
   if (isLoading) {
-    return <div className="confirm-container"><p>Cargando...</p></div>;
+    return <div className="confirm-container"><p>Cargando información de la reserva...</p></div>;
   }
   
   return (
@@ -178,8 +200,16 @@ function Confirmacion() {
             <p className="confirm-text">Fecha a solicitar:</p>
             <p className="confirm-date">{displayDate}</p>
 
+            <div className="payment-info">
+              <p>Para confirmar, por favor realiza una transferencia al siguiente alias y adjunta el comprobante.</p>
+              {paymentAlias ? (
+                <p className="payment-alias">{paymentAlias}</p>
+              ) : (
+                <p>Cargando datos de pago...</p>
+              )}
+            </div>
+
             <div className="contract-box">
-              {/* 2. Usamos el nuevo componente aquí. ¡Mucho más limpio! */}
               <ContractTerms />
             </div>
             

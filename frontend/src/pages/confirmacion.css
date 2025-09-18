@@ -118,3 +118,23 @@
   padding: 0.5rem;
   margin-top: 1rem;
 }
+
+.payment-info {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.payment-alias {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--color-secundario);
+  background-color: #e9ecef;
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+  user-select: all; /* Permite copiar el texto fácilmente */
+}

@@ -47,19 +47,44 @@
   grid-template-columns: repeat(7, 1fr);
   gap: 10px;
 }
-
 .calendar-day {
   display: flex;
+  /* --- 1. CAMBIAMOS LA DIRECCIÓN PARA APILAR NÚMERO Y PRECIO --- */
+  flex-direction: column; 
   justify-content: center;
   align-items: center;
-  height: 50px;
+  height: 60px; /* Un poco más de alto para que entre el precio */
   border: 1px solid transparent;
-  border-radius: 50%;
+  border-radius: 8px; /* Un poco menos redondeado */
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 1rem;
+  position: relative;
+}
+.day-number {
+  font-size: 1.1rem;
 }
 
+.calendar-price {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #007bff;
+  margin-top: 2px;
+}
+
+.calendar-day.disponible:hover .calendar-price {
+  color: #fff;
+}
+
+.calendar-day.reservada, .calendar-day.pendiente, .calendar-day.past {
+  text-decoration: none; /* Quitamos el tachado para que se lea mejor */
+}
+
+.calendar-day.reservada .day-number,
+.calendar-day.pendiente .day-number,
+.calendar-day.past .day-number {
+ text-decoration: line-through;
+}
 .calendar-day.empty, .calendar-day.no-disponible {
   color: #ccc;
   cursor: default;
@@ -184,4 +209,22 @@
 .legend-color-box.past {
   background-color: #f0f0f0;
   border-color: #b0b0b0;
+}
+.price-disclaimer {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: #eaf7ff; /* Un fondo azul claro para que coincida con los días disponibles */
+  border-left: 4px solid var(--color-primario); /* Un borde de acento azul */
+  border-radius: 4px;
+  text-align: left; /* Alinear el texto a la izquierda para mejor legibilidad */
+}
+
+.price-disclaimer p {
+  font-size: 0.9rem;
+  color: #555; /* Un color de texto no tan fuerte como el negro puro */
+  line-height: 1.5;
+}
+
+.price-disclaimer strong {
+  color: var(--color-secundario);
 }

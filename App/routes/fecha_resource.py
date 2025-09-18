@@ -73,22 +73,23 @@ def update(id):
     try:
         json_data = request.json
         if not json_data:
-            raise ValidationError("No data provided")
+            # Validamos que se haya enviado algún dato.
+            raise ValidationError("No se proporcionaron datos para actualizar.")
 
-        fecha = fecha_schema.load(json_data)
-        updated_fecha = service.update(id, fecha)
-        if not updated_fecha:
-            response_builder.add_message("Fecha not found").add_status_code(404).add_data({'id': id})
-            return response_schema.dump(response_builder.build()), 404
-
+        # Pasamos el diccionario de datos directamente al servicio.
+        # Ya no usamos fecha_schema.load() para las actualizaciones.
+        updated_fecha = service.update(id, json_data)
+        
         data = fecha_schema.dump(updated_fecha)
-        response_builder.add_message("Fecha updated").add_status_code(200).add_data(data)
+        response_builder.add_message("Fecha actualizada").add_status_code(200).add_data(data)
         return response_schema.dump(response_builder.build()), 200
-    except ValidationError as err:
-        response_builder.add_message("Validation error").add_status_code(422).add_data(err.messages)
+        
+    except (ValidationError, ValueError) as err:
+        # Capturamos tanto errores de validación como de tipo de dato (ej. precio no numérico).
+        response_builder.add_message("Error de validación").add_status_code(422).add_data(str(err))
         return response_schema.dump(response_builder.build()), 422
     except Exception as e:
-        response_builder.add_message("Error updating Fecha").add_status_code(500).add_data(str(e))
+        response_builder.add_message("Error al actualizar la Fecha").add_status_code(500).add_data(str(e))
         return response_schema.dump(response_builder.build()), 500
 
 @Fecha.route('/fecha/<int:id>', methods=['DELETE'])

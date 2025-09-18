@@ -24,7 +24,9 @@ def create_app(config_name=None):
 
     # Importa y registra los Blueprints (rutas)
     from app.routes.administrador_resource import Administrador
+    from app.routes.analytics_resource import Analytics
     from app.routes.auth_resource import Auth
+    from app.routes.config_resource import Config
     from app.routes.fecha_resource import Fecha
     from app.routes.persona_resource import Persona
     from app.routes.reserva_resource import Reserva
@@ -35,4 +37,6 @@ def create_app(config_name=None):
     app.register_blueprint(Reserva, url_prefix='/api/v1')
     app.register_blueprint(Persona, url_prefix='/api/v1')
     app.register_blueprint(Auth, url_prefix='/api/v1')
+    app.register_blueprint(Config, url_prefix='/api/v1')
+    app.register_blueprint(Analytics, url_prefix='/api/v1')
     return app

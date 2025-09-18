@@ -9,6 +9,7 @@ function EditReservationModal({ reservation, onClose, onUpdate }) {
   });
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false); // Estado para el botón de borrar
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -61,10 +62,41 @@ function EditReservationModal({ reservation, onClose, onUpdate }) {
     }
   };
 
+  const handleDelete = async () => {
+    // Pedimos confirmación para evitar borrados accidentales
+    if (!window.confirm(`¿Estás seguro de que quieres eliminar la reserva del ${reservation.fecha.dia}? Esta acción no se puede deshacer.`)) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setError('');
+    setMessage('');
+    const token = localStorage.getItem('authToken');
+
+    try {
+      const response = await fetch(`/api/v1/reserva/${reservation.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || 'Error al eliminar la reserva.');
+      
+      setMessage('¡Reserva eliminada con éxito!');
+      setTimeout(() => onUpdate(), 2000); // Llama a onUpdate para refrescar y cerrar
+      
+    } catch (err) {
+      setError(err.message);
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="modal-backdrop">
       <div className="modal-content">
-        <h2>Editar Reserva: {reservation.fecha.dia}</h2>
+        <h2>Gestionar Reserva: {reservation.fecha.dia}</h2>
         <p><strong>Usuario:</strong> {reservation.usuario.nombre} {reservation.usuario.apellido}</p>
         
         <form onSubmit={handleSubmit}>
@@ -94,6 +126,12 @@ function EditReservationModal({ reservation, onClose, onUpdate }) {
         {reservation.estado === 'pendiente' && (
           <button onClick={handleApprove} className="btn-approve">Aprobar Reserva (Pago Recibido)</button>
         )}
+
+        <div className="delete-section">
+          <button onClick={handleDelete} className="btn-delete" disabled={isDeleting}>
+            {isDeleting ? 'Eliminando...' : 'Eliminar Reserva'}
+          </button>
+        </div>
 
         {error && <p className="error-message">{error}</p>}
         {message && <p className="message-area">{message}</p>}
