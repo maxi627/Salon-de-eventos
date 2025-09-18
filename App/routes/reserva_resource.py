@@ -4,6 +4,7 @@ from marshmallow import ValidationError
 
 from app.config import ResponseBuilder
 from app.extensions import limiter  # Usar el limiter global
+from app.extensions import db
 from app.mapping import ReservaSchema, ResponseSchema
 from app.services import ReservaService
 from app.utils.decorators import admin_required
