@@ -1,6 +1,6 @@
 import sentry_sdk
 from flask import Blueprint, request
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from marshmallow import ValidationError
 
 from app.config import ResponseBuilder
@@ -117,10 +117,7 @@ def delete(id):
 def approve(id):
     response_builder = ResponseBuilder()
     try:
-        # Aquí iría la lógica en el servicio para cambiar el estado
-        # de la reserva a 'confirmada' y el de la fecha a 'reservada'.
-        # Por simplicidad, lo hacemos aquí directamente por ahora.
-        
+    
         reserva = service.find(id)
         if not reserva:
             response_builder.add_message("Reserva no encontrada").add_status_code(404)

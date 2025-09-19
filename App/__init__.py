@@ -12,7 +12,8 @@ def create_app(config_name=None):
     app = Flask(__name__)
     app.config.from_object(factory(config_name))
 
-    
+    # --- Implementación Segura de Sentry ---
+    # Lee la clave DSN desde la variable de entorno
     sentry_dsn = os.getenv("SENTRY_DSN_BACKEND")
     if sentry_dsn:
         sentry_sdk.init(
@@ -20,15 +21,14 @@ def create_app(config_name=None):
             integrations=[FlaskIntegration()],
             traces_sample_rate=1.0
         )
-    # --- FIN DEL CÓDIGO DE SENTRY ---
 
-    # Inicialización de extensiones (sin cambios)
+    # Inicialización de extensiones
     db.init_app(app)
     cache.init_app(app)
     limiter.init_app(app)
     jwt.init_app(app)
 
-    # Registro de Blueprints (sin cambios)
+    # Registro de Blueprints
     from app.routes.administrador_resource import Administrador
     from app.routes.analytics_resource import Analytics
     from app.routes.auth_resource import Auth

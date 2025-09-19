@@ -1,6 +1,7 @@
 from datetime import datetime
-
+import sentry_sdk
 from flask import Blueprint, request
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from marshmallow import ValidationError
 
 from app.config import ResponseBuilder
@@ -78,8 +79,15 @@ def update(id):
 
         # Pasamos el diccionario de datos directamente al servicio.
         # Ya no usamos fecha_schema.load() para las actualizaciones.
-        updated_fecha = service.update(id, json_data)
+        precio_anterior = service.find(id).valor_estimado
         
+        updated_fecha = service.update(id, json_data)
+        admin_id = get_jwt_identity()
+        nuevo_precio = updated_fecha.valor_estimado
+        sentry_sdk.capture_message(
+            f"Admin ID {admin_id} cambió el precio del día {updated_fecha.dia} de ${precio_anterior} a ${nuevo_precio}.",
+            level="info"
+        )
         data = fecha_schema.dump(updated_fecha)
         response_builder.add_message("Fecha actualizada").add_status_code(200).add_data(data)
         return response_schema.dump(response_builder.build()), 200

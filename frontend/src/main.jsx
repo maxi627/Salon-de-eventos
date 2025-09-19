@@ -34,6 +34,7 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0,
 });
 
+
 // Definimos las rutas
 const router = createBrowserRouter([
   {
