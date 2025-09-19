@@ -16,7 +16,7 @@ response_schema = ResponseSchema()
 
 # Aplicar limitadores específicos en las rutas
 @Reserva.route('/reserva', methods=['GET'])
-@limiter.limit("5 per minute")
+@limiter.limit("10 per minute")
 
 def all():
     response_builder = ResponseBuilder()
@@ -29,7 +29,7 @@ def all():
         return response_schema.dump(response_builder.build()), 500
 
 @Reserva.route('/reserva/<int:id>', methods=['GET'])
-@limiter.limit("5 per minute")
+@limiter.limit("10 per minute")
 def one(id):
     response_builder = ResponseBuilder()
     try:
@@ -46,7 +46,7 @@ def one(id):
         return response_schema.dump(response_builder.build()), 500
 
 @Reserva.route('/reserva', methods=['POST'])
-@limiter.limit("5 per minute")
+@limiter.limit("10 per minute")
 @jwt_required()
 
 def add():
@@ -69,7 +69,7 @@ def add():
 
 
 @Reserva.route('/reserva/<int:id>', methods=['PUT'])
-@limiter.limit("5 per minute")
+@limiter.limit("10 per minute")
 @jwt_required()
 @admin_required() # <-- ¡AÑADIMOS LA PROTECCIÓN DE ADMIN!
 def update(id):
@@ -95,7 +95,7 @@ def update(id):
     
 
 @Reserva.route('/reserva/<int:id>', methods=['DELETE'])
-@limiter.limit("3 per minute")
+@limiter.limit("10 per minute")
 @jwt_required()
 @admin_required() # <-- ¡AÑADIMOS LA PROTECCIÓN DE ADMIN!
 def delete(id):

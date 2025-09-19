@@ -1,28 +1,34 @@
 import os
 
+import sentry_sdk
 from flask import Flask
+from sentry_sdk.integrations.flask import FlaskIntegration
 
 from app.config import factory
-# Importa las instancias desde el nuevo archivo extensions.py
 from app.extensions import cache, db, jwt, limiter
 
 
 def create_app(config_name=None):
     app = Flask(__name__)
-
-    if config_name is None:
-        config_name = os.getenv('FLASK_ENV', 'development')
-    
-    # Carga la configuración correcta (development, testing, etc.)
     app.config.from_object(factory(config_name))
 
-    # Inicializa las extensiones con la app
+    
+    sentry_sdk.init(
+ 
+        dsn=os.getenv("SENTRY_DSN_BACKEND"),
+        integrations=[FlaskIntegration()],
+        # Monitoreo de rendimiento
+        traces_sample_rate=1.0
+    )
+    # --- FIN DEL CÓDIGO DE SENTRY ---
+
+    # Inicialización de extensiones (sin cambios)
     db.init_app(app)
     cache.init_app(app)
     limiter.init_app(app)
     jwt.init_app(app)
 
-    # Importa y registra los Blueprints (rutas)
+    # Registro de Blueprints (sin cambios)
     from app.routes.administrador_resource import Administrador
     from app.routes.analytics_resource import Analytics
     from app.routes.auth_resource import Auth
@@ -31,6 +37,7 @@ def create_app(config_name=None):
     from app.routes.persona_resource import Persona
     from app.routes.reserva_resource import Reserva
     from app.routes.usuario_resource import Usuario
+    
     app.register_blueprint(Administrador, url_prefix='/api/v1')
     app.register_blueprint(Usuario, url_prefix='/api/v1')
     app.register_blueprint(Fecha, url_prefix='/api/v1')
@@ -39,4 +46,5 @@ def create_app(config_name=None):
     app.register_blueprint(Auth, url_prefix='/api/v1')
     app.register_blueprint(Config, url_prefix='/api/v1')
     app.register_blueprint(Analytics, url_prefix='/api/v1')
+    
     return app

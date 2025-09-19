@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import './AnalyticsDashboard.css';
 
-// Un pequeño componente para mostrar cada métrica individual
-const StatCard = ({ title, value, trend }) => {
+// El componente StatCard no necesita cambios
+const StatCard = ({ title, value, trend, note }) => {
   const isPositive = trend >= 0;
   const trendClass = isPositive ? 'trend-positive' : 'trend-negative';
   const trendIcon = isPositive ? '▲' : '▼';
@@ -11,11 +11,12 @@ const StatCard = ({ title, value, trend }) => {
     <div className="stat-card">
       <h4 className="stat-title">{title}</h4>
       <p className="stat-value">{value}</p>
-      {trend !== null && (
+      {trend !== null && trend !== undefined && (
         <p className={`stat-trend ${trendClass}`}>
           {trendIcon} {Math.abs(trend)}% vs mes anterior
         </p>
       )}
+      {note && <small className="stat-note">{note}</small>}
     </div>
   );
 };
@@ -58,17 +59,20 @@ function AnalyticsDashboard() {
             trend={stats.tendencia_ingresos_porcentaje}
           />
           <StatCard
-            title="Reservas Confirmadas (Mes Actual)"
+            title="Reservas Confirmadas (Mes)"
             value={stats.reservas_mes_actual}
-            trend={null} // No tenemos datos para esta tendencia aún
+            trend={null}
           />
-          {/* Aquí podrías añadir más tarjetas con otras métricas */}
+          {/* --- TARJETA NUEVA AÑADIDA --- */}
+          <StatCard
+            title="Dinero por Liquidar (Total)"
+            value={`$${stats.dinero_por_liquidar.toLocaleString('es-AR')}`}
+            trend={null}
+            note="Suma de saldos restantes de todas las reservas confirmadas."
+          />
         </div>
       )}
-      <div className="chart-placeholder">
-        <p>Próximamente: Gráficos de ingresos y tendencias.</p>
-        <small>Se requiere una librería de gráficos como Chart.js o Recharts para visualizar los datos de `ingresos_por_mes`.</small>
-      </div>
+
     </div>
   );
 }

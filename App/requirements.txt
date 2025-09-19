@@ -16,3 +16,5 @@ Flask-Caching>=2.0.2
 redis>=5.0.0
 gunicorn==21.0.0
 Flask-Limiter[redis]==3.5.0
+sentry-sdk[flask]==1.40.6 
+

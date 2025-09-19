@@ -1,5 +1,4 @@
 import os
-# --- 1. LÍNEA MODIFICADA: Añadimos timedelta a la importación ---
 from datetime import datetime, timedelta
 
 from flask import Blueprint
@@ -12,7 +11,6 @@ from app.mapping import ResponseSchema
 from app.models import Fecha, Reserva
 from app.utils.decorators import admin_required
 
-# Blueprint para el endpoint de analíticas
 Analytics = Blueprint('Analytics', __name__)
 response_schema = ResponseSchema()
 
@@ -26,31 +24,38 @@ def get_analytics():
     """
     response_builder = ResponseBuilder()
     try:
-        # --- Cálculos de Ingresos ---
-        reservas_confirmadas = db.session.query(
-            func.strftime('%Y-%m', Fecha.dia).label('mes'),
-            func.sum(Reserva.valor_alquiler).label('ingresos_totales'),
+        # --- 1. Cálculos de Ingresos y Saldos Pendientes ---
+        # Usamos una subconsulta para obtener los totales generales
+        # de todas las reservas confirmadas.
+        saldos_totales = db.session.query(
+            func.sum(Reserva.saldo_restante).label('total_a_liquidar')
+        ).filter(Reserva.estado == 'confirmada').one()
+
+        reservas_por_mes = db.session.query(
+            func.to_char(Fecha.dia, 'YYYY-MM').label('mes'),
+            func.sum(Reserva.valor_alquiler - Reserva.saldo_restante).label('ingresos_reales'),
             func.count(Reserva.id).label('cantidad_reservas')
         ).join(Fecha).filter(Reserva.estado == 'confirmada').group_by('mes').order_by('mes').all()
 
-        # --- Procesamiento de Datos ---
+        # --- 2. Procesamiento de Datos ---
         stats_por_mes = {
             res.mes: {
-                "ingresos": res.ingresos_totales,
+                "ingresos": res.ingresos_reales,
                 "reservas": res.cantidad_reservas
-            } for res in reservas_confirmadas
+            } for res in reservas_por_mes
         }
 
         hoy = datetime.utcnow()
         mes_actual_str = hoy.strftime('%Y-%m')
-        # Esta línea ahora funcionará porque timedelta ya fue importado
         mes_anterior_str = (hoy.replace(day=1) - timedelta(days=1)).strftime('%Y-%m')
 
-        # --- Métricas Clave para el Dashboard ---
+        # --- 3. Métricas Clave para el Dashboard ---
         ingresos_mes_actual = stats_por_mes.get(mes_actual_str, {}).get('ingresos', 0)
         reservas_mes_actual = stats_por_mes.get(mes_actual_str, {}).get('reservas', 0)
-        
         ingresos_mes_anterior = stats_por_mes.get(mes_anterior_str, {}).get('ingresos', 0)
+        
+        # El total a liquidar es un valor único, no depende del mes.
+        dinero_por_liquidar = saldos_totales.total_a_liquidar if saldos_totales.total_a_liquidar is not None else 0
 
         tendencia_ingresos = 0
         if ingresos_mes_anterior > 0:
@@ -58,11 +63,12 @@ def get_analytics():
         elif ingresos_mes_actual > 0:
             tendencia_ingresos = 100
 
-        # --- Ensamblamos la Respuesta ---
+        # --- 4. Ensamblamos la Respuesta ---
         data = {
             "ingresos_mes_actual": ingresos_mes_actual,
             "reservas_mes_actual": reservas_mes_actual,
             "tendencia_ingresos_porcentaje": round(tendencia_ingresos, 2),
+            "dinero_por_liquidar": dinero_por_liquidar, # <-- Nuevo dato añadido
             "ingresos_por_mes": stats_por_mes
         }
         
@@ -70,6 +76,5 @@ def get_analytics():
         return response_schema.dump(response_builder.build()), 200
 
     except Exception as e:
-        # --- 2. LÍNEA ELIMINADA: Quitamos el import de aquí que no tenía efecto ---
         response_builder.add_message("Error al generar analíticas").add_status_code(500).add_data(str(e))
         return response_schema.dump(response_builder.build()), 500
