@@ -1,3 +1,4 @@
+import sentry_sdk
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
@@ -128,7 +129,11 @@ def approve(id):
         reserva.estado = 'confirmada'
         reserva.fecha.estado = 'reservada'
         db.session.commit()
-
+        admin_id = get_jwt_identity()
+        sentry_sdk.capture_message(
+            f"Admin ID {admin_id} aprobó la reserva para la fecha {reserva.fecha.dia}.",
+            level="info"
+        )
         response_builder.add_message("Reserva aprobada con éxito").add_status_code(200)
         return response_schema.dump(response_builder.build()), 200
 

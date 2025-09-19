@@ -13,13 +13,13 @@ def create_app(config_name=None):
     app.config.from_object(factory(config_name))
 
     
-    sentry_sdk.init(
- 
-        dsn=os.getenv("SENTRY_DSN_BACKEND"),
-        integrations=[FlaskIntegration()],
-        # Monitoreo de rendimiento
-        traces_sample_rate=1.0
-    )
+    sentry_dsn = os.getenv("SENTRY_DSN_BACKEND")
+    if sentry_dsn:
+        sentry_sdk.init(
+            dsn=sentry_dsn,
+            integrations=[FlaskIntegration()],
+            traces_sample_rate=1.0
+        )
     # --- FIN DEL CÓDIGO DE SENTRY ---
 
     # Inicialización de extensiones (sin cambios)
