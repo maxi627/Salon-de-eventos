@@ -23,8 +23,7 @@ def login():
         user = repo.get_by_email(correo)
 
         if user and user.check_password(password):
-            # --- 2. AÑADE ESTE BLOQUE PARA IDENTIFICAR AL USUARIO ---
-            # Asociamos el ID, correo y rol del usuario a todos los eventos futuros de Sentry
+
             sentry_sdk.set_user({"id": user.id, "email": user.correo, "role": user.tipo})
             
             additional_claims = {"role": user.tipo}
