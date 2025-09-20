@@ -11,8 +11,11 @@ class ReservaSchema(Schema):
     valor_alquiler = fields.Float()
     valor_estimado = fields.Float()
     saldo_restante = fields.Float()
+    ip_aceptacion = fields.Str(dump_only=True)
+    fecha_aceptacion = fields.DateTime(dump_only=True)
+    version_contrato = fields.Str(dump_only=True)
+    
 
-    # --- CORRECCIÓN CLAVE ---
     # Le decimos al schema cómo debe mostrar los datos anidados de usuario y fecha.
     usuario = fields.Nested('UsuarioSchema', only=("id", "nombre", "apellido", "correo"), dump_only=True)
     fecha = fields.Nested('FechaSchema', only=("id", "dia"), dump_only=True)

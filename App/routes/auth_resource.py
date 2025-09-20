@@ -26,7 +26,11 @@ def login():
 
             sentry_sdk.set_user({"id": user.id, "email": user.correo, "role": user.tipo})
             
-            additional_claims = {"role": user.tipo}
+            additional_claims = {
+                "role": user.tipo,
+                "email": user.correo,
+                "username": f"{user.nombre} {user.apellido}"
+            }
             access_token = create_access_token(
                 identity=str(user.id),
                 additional_claims=additional_claims

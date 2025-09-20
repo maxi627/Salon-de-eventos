@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import sentry_sdk
 from flask import Blueprint, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
@@ -56,6 +58,9 @@ def add():
         json_data = request.json
         if not json_data:
             raise ValidationError("No data provided")
+        # Capturamos la IP del cliente y la fecha/hora actual en UTC
+        json_data['ip_aceptacion'] = request.remote_addr
+        json_data['fecha_aceptacion'] = datetime.utcnow()
 
         reserva = reserva_schema.load(json_data)
         data = reserva_schema.dump(service.add(reserva))
