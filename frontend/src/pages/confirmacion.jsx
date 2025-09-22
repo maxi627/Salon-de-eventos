@@ -1,4 +1,3 @@
-import { jwtDecode } from 'jwt-decode';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import './confirmacion.css';
@@ -77,10 +76,8 @@ function Confirmacion() {
   const [contractAccepted, setContractAccepted] = useState(false);
   const [receiptFile, setReceiptFile] = useState(null);
 
-  // Estado para guardar el alias obtenido del backend
   const [paymentAlias, setPaymentAlias] = useState(null);
 
-  // Función para formatear la fecha a un estilo más legible
   const formatDisplayDate = (isoDate) => {
     if (!isoDate) return '';
     const dateParts = isoDate.split('-');
@@ -105,7 +102,6 @@ function Confirmacion() {
       }
 
       try {
-        // Hacemos las dos peticiones al backend de forma concurrente
         const [fechaResponse, paymentResponse] = await Promise.all([
           fetch(`/api/v1/fecha/by-date/${dateString}`),
           fetch('/api/v1/payment-info', {
@@ -113,7 +109,6 @@ function Confirmacion() {
           })
         ]);
 
-        // Procesamos la respuesta de la fecha
         const fechaResult = await fechaResponse.json();
         if (!fechaResponse.ok) throw new Error(fechaResult.message);
         if (fechaResult.data.estado !== 'disponible') {
@@ -121,7 +116,6 @@ function Confirmacion() {
         }
         setFechaInfo(fechaResult.data);
 
-        // Procesamos la respuesta de la información de pago
         const paymentResult = await paymentResponse.json();
         if (!paymentResponse.ok) throw new Error(paymentResult.message);
         setPaymentAlias(paymentResult.data.alias);
@@ -158,17 +152,14 @@ function Confirmacion() {
 
     try {
       const simulatedUrl = `comprobantes/${fechaInfo.id}_${receiptFile.name}`;
-      const decodedToken = jwtDecode(token);
-      const userId = decodedToken.sub;
-
-      const response = await fetch('/api/v1/reserva', {
+      
+      const response = await fetch('/api/v1/reserva/solicitar', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          usuario_id: parseInt(userId, 10),
           fecha_id: fechaInfo.id,
           comprobante_url: simulatedUrl,
         })

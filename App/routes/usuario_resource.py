@@ -17,7 +17,7 @@ response_schema = ResponseSchema()
 @Usuario.route('/usuario', methods=['GET'])
 @jwt_required()
 @admin_required()
-@limiter.limit("10 per minute")
+@limiter.limit("60 per minute")
 def all():
     response_builder = ResponseBuilder()
     try:
@@ -29,7 +29,7 @@ def all():
         return response_schema.dump(response_builder.build()), 500
 
 @Usuario.route('/usuario/<int:id>', methods=['GET'])
-@limiter.limit("10 per minute")
+@limiter.limit("60 per minute")
 @jwt_required()
 @admin_required()
 def one(id):
@@ -95,7 +95,7 @@ def update(id):
         return response_schema.dump(response_builder.build()), 500
 
 @Usuario.route('/usuario/<int:id>', methods=['DELETE'])
-@limiter.limit("5 per minute")
+@limiter.limit("10 per minute")
 @jwt_required()
 @admin_required()
 def delete(id):

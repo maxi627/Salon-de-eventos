@@ -2,7 +2,7 @@ from datetime import datetime
 
 import sentry_sdk
 from flask import Blueprint, render_template, request
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from marshmallow import ValidationError
 
 from app.config import ResponseBuilder
@@ -19,6 +19,7 @@ notification_service = NotificationService()
 
 # Aplicar limitadores específicos en las rutas
 @Reserva.route('/reserva', methods=['GET'])
+
 @limiter.limit("10 per minute")
 
 def all():
@@ -48,37 +49,76 @@ def one(id):
         response_builder.add_message("Error fetching Reserva").add_status_code(500).add_data(str(e))
         return response_schema.dump(response_builder.build()), 500
 
-
-@Reserva.route('/reserva', methods=['POST'])
-@limiter.limit("10 per minute")
-@jwt_required()
-def add():
+@Reserva.route('/reserva/solicitar', methods=['POST'])
+@limiter.limit("5 per minute")
+@jwt_required() # Solo requiere que el usuario esté logueado
+def request_by_user():
     response_builder = ResponseBuilder()
     try:
         json_data = request.json
         if not json_data:
             raise ValidationError("No data provided")
 
-        # 1. Cargamos y validamos PRIMERO los datos que envía el usuario.
+        # Obtenemos el ID del usuario de forma segura desde el token
+        user_id = int(get_jwt_identity())
+        json_data['usuario_id'] = user_id
+        
         reserva = reserva_schema.load(json_data)
         
-        # 2. AÑADIMOS los datos generados por el servidor al objeto ya creado.
         reserva.ip_aceptacion = request.remote_addr
         reserva.fecha_aceptacion = datetime.utcnow()
 
-        # 3. Pasamos el objeto completo al servicio para guardarlo.
         data = reserva_schema.dump(service.add(reserva))
 
-        response_builder.add_message("Reserva created").add_status_code(201).add_data(data)
+        response_builder.add_message("Reserva solicitada con éxito").add_status_code(201).add_data(data)
         return response_schema.dump(response_builder.build()), 201
         
     except ValidationError as err:
         response_builder.add_message("Validation error").add_status_code(422).add_data(err.messages)
         return response_schema.dump(response_builder.build()), 422
     except Exception as e:
-        response_builder.add_message("Error creating Reserva").add_status_code(500).add_data(str(e))
+        response_builder.add_message("Error al crear la reserva").add_status_code(500).add_data(str(e))
         return response_schema.dump(response_builder.build()), 500
 
+
+# --- 3. RUTA MODIFICADA PARA LA CREACIÓN DEL ADMINISTRADOR ---
+@Reserva.route('/reserva/crear', methods=['POST'])
+@limiter.limit("10 per minute")
+@jwt_required()
+@admin_required() # Requiere permisos de admin
+def create_for_admin():
+    response_builder = ResponseBuilder()
+    try:
+        json_data = request.json
+        if not json_data:
+            raise ValidationError("No data provided")
+
+        if 'fecha_dia' in json_data and json_data['fecha_dia']:
+            try:
+                fecha_str = json_data.pop('fecha_dia')
+                dia_obj = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+                fecha_entidad = service.fecha_service.get_or_create(dia_obj)
+                json_data['fecha_id'] = fecha_entidad.id
+            except (ValueError, TypeError):
+                raise ValidationError("El formato de fecha_dia es inválido. Usar YYYY-MM-DD.")
+
+        reserva = reserva_schema.load(json_data)
+        
+        reserva.ip_aceptacion = request.remote_addr
+        reserva.fecha_aceptacion = datetime.utcnow()
+
+        data = reserva_schema.dump(service.add(reserva))
+
+        response_builder.add_message("Reserva creada por admin").add_status_code(201).add_data(data)
+        return response_schema.dump(response_builder.build()), 201
+        
+    except ValidationError as err:
+        response_builder.add_message("Validation error").add_status_code(422).add_data(err.messages)
+        return response_schema.dump(response_builder.build()), 422
+    except Exception as e:
+        response_builder.add_message("Error al crear la reserva").add_status_code(500).add_data(str(e))
+        return response_schema.dump(response_builder.build()), 500
+    
 @Reserva.route('/reserva/<int:id>', methods=['PUT'])
 @limiter.limit("10 per minute")
 @jwt_required()

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import AnalyticsDashboard from '../components/AnalyticsDashboard';
 import EditReservationModal from '../components/EditReservationModal';
 import PriceEditor from '../components/PriceEditor';
-import UserList from '../components/UserList'; // <-- 1. IMPORTAR EL NUEVO COMPONENTE
+import UserList from '../components/UserList';
 import './AdminPanel.css';
 
 function AdminPanel() {
@@ -11,6 +11,7 @@ function AdminPanel() {
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState(null);
+  const [isCreating, setIsCreating] = useState(false);
 
   const formatDisplayDate = (isoDate) => {
     if (!isoDate) return 'N/A';
@@ -62,23 +63,31 @@ function AdminPanel() {
     fetchReservas();
   }, []);
 
-  const handleOpenModal = (reserva) => {
+  const handleOpenEditModal = (reserva) => {
     setSelectedReservation(reserva);
+    setIsCreating(false);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenCreateModal = () => {
+    setSelectedReservation(null);
+    setIsCreating(true);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedReservation(null);
+    setIsCreating(false);
   };
 
   const handleUpdate = () => {
-    fetchReservas(); 
+    fetchReservas();
     handleCloseModal();
   };
 
-  if (isLoading) return <p style={{textAlign: 'center', marginTop: '2rem'}}>Cargando panel de administración...</p>;
-  if (error) return <p className="error-message" style={{textAlign: 'center'}}>{error}</p>;
+  if (isLoading) return <p style={{ textAlign: 'center', marginTop: '2rem' }}>Cargando panel de administración...</p>;
+  if (error) return <p className="error-message" style={{ textAlign: 'center' }}>{error}</p>;
 
   return (
     <div className="admin-panel">
@@ -87,7 +96,13 @@ function AdminPanel() {
       <AnalyticsDashboard />
       <PriceEditor />
 
-      <h2 className="reservas-title">Gestión de Reservas</h2>
+      <div className="reservas-header">
+        <h2 className="reservas-title">Gestión de Reservas</h2>
+        <button className="btn-create" onClick={handleOpenCreateModal}>
+          + Crear Nueva Reserva
+        </button>
+      </div>
+
       <div className="table-container">
         <table className="reservas-table">
           <thead>
@@ -122,7 +137,7 @@ function AdminPanel() {
                   <td>{formatDisplayDateTime(reserva.fecha_aceptacion)}</td>
                   <td>{reserva.ip_aceptacion || 'N/A'}</td>
                   <td>
-                    <button className="btn-edit" onClick={() => handleOpenModal(reserva)}>
+                    <button className="btn-edit" onClick={() => handleOpenEditModal(reserva)}>
                       Gestionar
                     </button>
                   </td>
@@ -139,13 +154,13 @@ function AdminPanel() {
 
       {isModalOpen && (
         <EditReservationModal 
+          isCreating={isCreating}
           reservation={selectedReservation}
           onClose={handleCloseModal}
           onUpdate={handleUpdate}
         />
       )}
-
-      {/* -- 2. AÑADIR EL COMPONENTE DE LISTA DE USUARIOS AQUÍ -- */}
+      
       <UserList />
     </div>
   );

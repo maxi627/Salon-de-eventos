@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import './AnalyticsDashboard.css';
+import IncomeChart from './IncomeChart';
 
-// El componente StatCard no necesita cambios
 const StatCard = ({ title, value, trend, note }) => {
   const isPositive = trend >= 0;
   const trendClass = isPositive ? 'trend-positive' : 'trend-negative';
@@ -30,6 +30,7 @@ function AnalyticsDashboard() {
     const fetchAnalytics = async () => {
       const token = localStorage.getItem('authToken');
       try {
+        // Se vuelve a la URL original sin parámetros
         const response = await fetch('/api/v1/analytics', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -43,36 +44,38 @@ function AnalyticsDashboard() {
       }
     };
     fetchAnalytics();
-  }, []);
+  }, []); // El efecto ya no depende de ninguna fecha simulada
 
   if (isLoading) return <p>Cargando analíticas...</p>;
   if (error) return <p className="error-message">{error}</p>;
 
   return (
     <div className="analytics-dashboard">
+      {/* Se elimina el header con el selector de fecha */}
       <h3>Resumen de Contabilidad</h3>
       {stats && (
-        <div className="stats-grid">
-          <StatCard
-            title="Ingresos del Mes Actual"
-            value={`$${stats.ingresos_mes_actual.toLocaleString('es-AR')}`}
-            trend={stats.tendencia_ingresos_porcentaje}
-          />
-          <StatCard
-            title="Reservas Confirmadas (Mes)"
-            value={stats.reservas_mes_actual}
-            trend={null}
-          />
-          {/* --- TARJETA NUEVA AÑADIDA --- */}
-          <StatCard
-            title="Dinero por Liquidar (Total)"
-            value={`$${stats.dinero_por_liquidar.toLocaleString('es-AR')}`}
-            trend={null}
-            note="Suma de saldos restantes de todas las reservas confirmadas."
-          />
-        </div>
+        <>
+          <div className="stats-grid">
+            <StatCard
+              title="Ingresos del Mes Actual"
+              value={`$${stats.ingresos_mes_actual.toLocaleString('es-AR')}`}
+              trend={stats.tendencia_ingresos_porcentaje}
+            />
+            <StatCard
+              title="Reservas Confirmadas (Mes)"
+              value={stats.reservas_mes_actual}
+              trend={null}
+            />
+            <StatCard
+              title="Dinero por Liquidar (Total)"
+              value={`$${stats.dinero_por_liquidar.toLocaleString('es-AR')}`}
+              trend={null}
+              note="Suma de saldos restantes de todas las reservas confirmadas."
+            />
+          </div>
+          <IncomeChart monthlyData={stats.ingresos_por_mes} />
+        </>
       )}
-
     </div>
   );
 }
