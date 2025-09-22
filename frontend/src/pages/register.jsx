@@ -10,6 +10,7 @@ function Register() {
   const [dni, setDni] = useState('');
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
+  const [telefono, setTelefono] = useState('');
   
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false); // Estado para el mensaje de éxito
@@ -28,6 +29,7 @@ function Register() {
       apellido,
       dni: parseInt(dni, 10), // Aseguramos que el DNI sea un número
       correo,
+      telefono,
       password,
     };
 
@@ -79,6 +81,7 @@ function Register() {
             type="text" id="nombre" value={nombre}
             onChange={(e) => setNombre(e.target.value)}
             required
+            placeholder='Ingresa tu nombre'
           />
         </div>
         
@@ -88,6 +91,7 @@ function Register() {
             type="text" id="apellido" value={apellido}
             onChange={(e) => setApellido(e.target.value)}
             required
+            placeholder='Ingresa tu apellido'
           />
         </div>
 
@@ -97,6 +101,7 @@ function Register() {
             type="number" id="dni" value={dni}
             onChange={(e) => setDni(e.target.value)}
             required
+            placeholder='Ingresa tu DNI'
           />
         </div>
         
@@ -106,15 +111,16 @@ function Register() {
             type="email" id="correo" value={correo}
             onChange={(e) => setCorreo(e.target.value)}
             required
+            placeholder="Ingresa tu email"
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="telefono">Teléfono (con código de país, ej: 549261...)</label>
+          <label htmlFor="telefono">Teléfono</label>
           <input
             type="tel" id="telefono" value={telefono}
             onChange={(e) => setTelefono(e.target.value)}
-            placeholder="549..."
+            placeholder="Ingresa tu número de teléfono"
           />
         </div>
         
@@ -125,6 +131,7 @@ function Register() {
             onChange={(e) => setPassword(e.target.value)}
             minLength="8"
             required
+            placeholder='Ingresa tu contraseña'
           />
         </div>
         
