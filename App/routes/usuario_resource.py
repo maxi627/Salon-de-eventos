@@ -1,10 +1,12 @@
 from flask import Blueprint, request
+from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
 
 from app.config import ResponseBuilder
 from app.extensions import limiter  # Usar el limiter global
 from app.mapping import ResponseSchema, UsuarioSchema
 from app.services import UsuarioService
+from app.utils.decorators import admin_required
 
 Usuario = Blueprint('Usuario', __name__)
 service = UsuarioService()
@@ -13,6 +15,8 @@ response_schema = ResponseSchema()
 
 # Aplicar limitadores específicos en las rutas
 @Usuario.route('/usuario', methods=['GET'])
+@jwt_required()
+@admin_required()
 @limiter.limit("10 per minute")
 def all():
     response_builder = ResponseBuilder()
@@ -26,6 +30,8 @@ def all():
 
 @Usuario.route('/usuario/<int:id>', methods=['GET'])
 @limiter.limit("10 per minute")
+@jwt_required()
+@admin_required()
 def one(id):
     response_builder = ResponseBuilder()
     try:
@@ -63,6 +69,8 @@ def add():
 
 @Usuario.route('/usuario/<int:id>', methods=['PUT'])
 @limiter.limit("10 per minute")
+@jwt_required()
+@admin_required()
 def update(id):
     response_builder = ResponseBuilder()
     try:
@@ -88,6 +96,8 @@ def update(id):
 
 @Usuario.route('/usuario/<int:id>', methods=['DELETE'])
 @limiter.limit("5 per minute")
+@jwt_required()
+@admin_required()
 def delete(id):
     response_builder = ResponseBuilder()
     try:

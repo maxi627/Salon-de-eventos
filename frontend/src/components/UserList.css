@@ -1,0 +1,96 @@
+.user-list-container {
+  margin-top: 3rem;
+}
+
+.user-list-title {
+  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--color-primario);
+  padding-bottom: 0.5rem;
+}
+
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.user-table th, .user-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.user-table thead th {
+  background-color: #f4f7f6;
+  font-weight: 600;
+  color: var(--color-secundario);
+}
+
+.user-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+.user-list-container {
+  margin-top: 3rem;
+}
+
+.user-list-title {
+  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--color-primario);
+  padding-bottom: 0.5rem;
+}
+
+/* --- ESTILOS NUEVOS PARA EL BUSCADOR --- */
+.search-bar-container {
+  margin-bottom: 1.5rem;
+  width: 100%;
+  max-width: 400px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+/* --- FIN DE ESTILOS NUEVOS --- */
+
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem; /* Ajustado */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.user-table th, .user-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.user-table thead th {
+  background-color: #f4f7f6;
+  font-weight: 600;
+  color: var(--color-secundario);
+}
+
+.user-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+/* --- ESTILOS NUEVOS PARA EL BOTÓN DE ELIMINAR --- */
+.btn-delete {
+  padding: 6px 12px;
+  background-color: #e74c3c; /* Rojo */
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-delete:hover {
+  background-color: #c0392b; /* Rojo más oscuro */
+}
+/* --- FIN DE ESTILOS NUEVOS --- */
