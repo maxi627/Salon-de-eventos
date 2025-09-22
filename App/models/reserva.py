@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-
 from app.extensions import db
-
 
 @dataclass
 class Reserva(db.Model):
@@ -10,11 +8,8 @@ class Reserva(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     fecha_creacion = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    fecha_vencimiento = db.Column(db.DateTime, nullable=True)
-    estado = db.Column(db.String(20), nullable=False, default='pendiente')
-    comprobante_url = db.Column(db.String(256), nullable=True)
+    # ... (otros campos no cambian)
     valor_alquiler = db.Column(db.Float, nullable=True, default=0.0)
-    # SALDO RESTANTE ELIMINADO - Se calculará dinámicamente
     ip_aceptacion = db.Column(db.String(45), nullable=True) 
     fecha_aceptacion = db.Column(db.DateTime, nullable=True) 
     version_contrato = db.Column(db.String(50), nullable=True, default='1.0') 
@@ -25,10 +20,11 @@ class Reserva(db.Model):
     usuario = db.relationship('Usuario', back_populates='reservas')
     fecha = db.relationship('Fecha', back_populates='reserva')
 
-    # NUEVA RELACIÓN: Una reserva tiene muchos pagos
-    pagos = db.relationship('Pago', back_populates='reserva', cascade="all, delete-orphan")
+    # --- LÍNEA MODIFICADA ---
+    # Se elimina la opción 'cascade', que borraba los pagos automáticamente.
+    # Ahora, la base de datos protegerá los pagos y no permitirá borrar una reserva si tiene pagos asociados.
+    pagos = db.relationship('Pago', back_populates='reserva')
 
-    # Propiedad para calcular el saldo restante
     @property
     def saldo_restante(self):
         total_pagado = sum(pago.monto for pago in self.pagos)

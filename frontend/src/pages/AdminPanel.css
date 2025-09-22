@@ -183,3 +183,71 @@
 .btn-create:hover {
   background-color: #229954;
 }
+
+/* --- NUEVOS ESTILOS PARA LA SECCIÓN DE PAGOS --- */
+.payments-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eee;
+}
+
+.payments-section h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--color-secundario);
+}
+
+.payment-list {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 1rem;
+  max-height: 150px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.payment-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem;
+  border-bottom: 1px solid #eee;
+}
+
+.payment-list li:last-child {
+  border-bottom: none;
+}
+
+.payment-list li.no-payments {
+  color: #777;
+  font-style: italic;
+}
+
+.saldo-restante {
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-align: right;
+  margin: 1rem 0;
+}
+
+.add-payment-form {
+  display: flex;
+  gap: 10px;
+}
+
+.add-payment-form input {
+  flex-grow: 1;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.btn-add-payment {
+  background-color: #27ae60;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}

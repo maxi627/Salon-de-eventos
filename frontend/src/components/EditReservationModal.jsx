@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import '../pages/AdminPanel.css';
+import '../pages/AdminPanel.css'; // Apunta al CSS que contiene los estilos del modal
 
 function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
   const [formData, setFormData] = useState({
@@ -42,26 +42,33 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
   const handlePaymentChange = (e) => {
     setNewPayment({ monto: e.target.value });
   };
-  
+
   const handleAddPayment = async () => {
-    if (!newPayment.monto || parseFloat(newPayment.monto) <= 0) {
+    const montoAAgregar = parseFloat(newPayment.monto);
+
+    if (!montoAAgregar || montoAAgregar <= 0) {
       setError('El monto del pago debe ser un número positivo.');
       return;
     }
+    
+    if (montoAAgregar > reservation.saldo_restante) {
+      setError('El pago no puede ser mayor que el saldo restante.');
+      return;
+    }
+    
     setError('');
     const token = localStorage.getItem('authToken');
     try {
       const response = await fetch(`/api/v1/reserva/${reservation.id}/pagos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ monto: parseFloat(newPayment.monto) }),
+        body: JSON.stringify({ monto: montoAAgregar }),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.message);
       
       setMessage('Pago añadido con éxito.');
       setNewPayment({ monto: '' });
-      // Refresca los datos para mostrar el nuevo pago y el saldo actualizado
       onUpdate(); 
     } catch (err) {
       setError(err.message);
@@ -183,7 +190,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
                   </li>
                 ))
               ) : (
-                <li>No hay pagos registrados.</li>
+                <li className="no-payments">No hay pagos registrados.</li>
               )}
             </ul>
             <p className="saldo-restante">
@@ -197,7 +204,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
                 value={newPayment.monto}
                 onChange={handlePaymentChange}
               />
-              <button onClick={handleAddPayment}>Añadir Pago</button>
+              <button type="button" className="btn-add-payment" onClick={handleAddPayment}>Añadir Pago</button>
             </div>
           </div>
         )}

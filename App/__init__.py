@@ -64,7 +64,7 @@ def create_app(config_name=None):
     from app.routes.auth_resource import Auth
     from app.routes.config_resource import Config
     from app.routes.fecha_resource import Fecha
-    from app.routes.pago_resource import Pago
+    from app.routes.pago_resource import PagoBP
     from app.routes.persona_resource import Persona
     from app.routes.reserva_resource import Reserva
     from app.routes.usuario_resource import Usuario
@@ -77,5 +77,5 @@ def create_app(config_name=None):
     app.register_blueprint(Auth, url_prefix='/api/v1')
     app.register_blueprint(Config, url_prefix='/api/v1')
     app.register_blueprint(Analytics, url_prefix='/api/v1')
-    app.register_blueprint(Pago, url_prefix='/api/v1')
+    app.register_blueprint(PagoBP, url_prefix='/api/v1')
     return app

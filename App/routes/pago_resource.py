@@ -23,9 +23,12 @@ def add_pago(reserva_id):
         if not reserva:
             return response_builder.add_message("Reserva no encontrada").add_status_code(404).build(), 404
 
-        # Validamos los datos del pago
+        monto_pago = json_data.get('monto', 0)
+        if monto_pago > reserva.saldo_restante:
+            raise ValidationError("El monto del pago no puede ser mayor que el saldo restante.")
+
         pago = pago_schema.load(json_data)
-        pago.reserva_id = reserva_id # Asignamos el ID de la reserva
+        pago.reserva_id = reserva_id
 
         db.session.add(pago)
         db.session.commit()
@@ -34,7 +37,7 @@ def add_pago(reserva_id):
         return response_builder.add_message("Pago registrado").add_status_code(201).add_data(data).build(), 201
 
     except ValidationError as err:
-        return response_builder.add_message("Validation error").add_status_code(422).add_data(err.messages).build(), 422
+        return response_builder.add_message("Error de validación").add_status_code(422).add_data(str(err)).build(), 422
     except Exception as e:
         db.session.rollback()
         return response_builder.add_message("Error al registrar el pago").add_status_code(500).add_data(str(e)).build(), 500
