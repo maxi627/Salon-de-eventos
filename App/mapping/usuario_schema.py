@@ -9,6 +9,7 @@ class UsuarioSchema(Schema): # (o AdministradorSchema)
     correo = fields.Email(required=True)
     dni = fields.Int(required=True, validate=validate.Range(min=1))
     nombre = fields.Str(required=True, validate=validate.Length(min=1))
+    telefono = fields.Str(required=False, allow_none=True) # Lo hacemos opcional por ahora
     tipo = fields.Str(dump_only=True)
     password = fields.Str(required=True, load_only=True, validate=validate.Length(min=8))
 

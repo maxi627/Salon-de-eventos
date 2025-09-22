@@ -14,7 +14,7 @@ class Persona(db.Model):
     correo: str = db.Column('correo', db.String, unique=True, nullable=False) 
     dni: int = db.Column('dni', db.Integer, unique=True, nullable=False)
     nombre: str = db.Column('nombre', db.String, nullable=False)
-    # --- AÑADIR ESTE CAMPO ---
+    telefono: str = db.Column('telefono', db.String(50), nullable=True)
     password_hash: str = db.Column(db.String(128), nullable=False)
     tipo = db.Column(db.String(50), nullable=False)
 

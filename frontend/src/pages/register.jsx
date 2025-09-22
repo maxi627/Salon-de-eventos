@@ -108,6 +108,15 @@ function Register() {
             required
           />
         </div>
+
+        <div className="form-group">
+          <label htmlFor="telefono">Teléfono (con código de país, ej: 549261...)</label>
+          <input
+            type="tel" id="telefono" value={telefono}
+            onChange={(e) => setTelefono(e.target.value)}
+            placeholder="549..."
+          />
+        </div>
         
         <div className="form-group">
           <label htmlFor="password">Contraseña</label>

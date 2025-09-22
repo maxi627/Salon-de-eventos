@@ -9,7 +9,7 @@ function EditReservationModal({ reservation, onClose, onUpdate }) {
   });
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  const [isDeleting, setIsDeleting] = useState(false); // Estado para el botón de borrar
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,29 +41,7 @@ function EditReservationModal({ reservation, onClose, onUpdate }) {
     }
   };
   
-  const handleApprove = async () => {
-    setError('');
-    setMessage('');
-    const token = localStorage.getItem('authToken');
-     try {
-      const response = await fetch(`/api/v1/reserva/${reservation.id}/approve`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.message);
-
-      setMessage('¡Reserva APROBADA con éxito!');
-      setTimeout(() => onUpdate(), 1500);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
   const handleDelete = async () => {
-    // Pedimos confirmación para evitar borrados accidentales
     if (!window.confirm(`¿Estás seguro de que quieres eliminar la reserva del ${reservation.fecha.dia}? Esta acción no se puede deshacer.`)) {
       return;
     }
@@ -85,9 +63,10 @@ function EditReservationModal({ reservation, onClose, onUpdate }) {
       if (!response.ok) throw new Error(result.message || 'Error al eliminar la reserva.');
       
       setMessage('¡Reserva eliminada con éxito!');
-      setTimeout(() => onUpdate(), 2000); // Llama a onUpdate para refrescar y cerrar
+      setTimeout(() => onUpdate(), 2000);
       
-    } catch (err) {
+    } catch (err)
+        {
       setError(err.message);
       setIsDeleting(false);
     }
@@ -123,9 +102,7 @@ function EditReservationModal({ reservation, onClose, onUpdate }) {
           </div>
         </form>
 
-        {reservation.estado === 'pendiente' && (
-          <button onClick={handleApprove} className="btn-approve">Aprobar Reserva (Pago Recibido)</button>
-        )}
+        {/* EL BOTÓN Y LA LÓGICA DE APROBAR HAN SIDO ELIMINADOS DE AQUÍ */}
 
         <div className="delete-section">
           <button onClick={handleDelete} className="btn-delete" disabled={isDeleting}>

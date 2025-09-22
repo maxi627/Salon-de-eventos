@@ -43,7 +43,7 @@ const ContractTerms = () => (
       </li>
       <li>
         <strong>Pagos y Cancelaciones:</strong> El LOCATARIO deberá abonar la seña establecida 
-        al momento de la reserva. En caso de cancelación con menos de 7 días de anticipación, no 
+        al momento de la reserva. En caso de cancelación, no 
         habrá devolución de la seña. En caso de cancelación por parte del LOCADOR por causas de 
         fuerza mayor, se reintegrará el monto abonado sin derecho a reclamos adicionales.
       </li>
