@@ -116,13 +116,9 @@ def get_analytics():
 @admin_required()
 def download_report():
     try:
-        # --- INICIO DE LA MODIFICACIÓN DE FORMATO ---
-        # 1. Establecer el idioma a Español (Argentina) para formatos
+        # Establecer el idioma a Español (Argentina) para formatos
         locale.setlocale(locale.LC_ALL, 'es_AR.UTF-8')
-
-        # 2. Definir la zona horaria de Argentina
         art_tz = pytz.timezone('America/Argentina/Buenos_Aires')
-        # --- FIN DE LA MODIFICACIÓN DE FORMATO ---
 
         today_utc = datetime.utcnow()
         mes = int(request.args.get('mes', today_utc.month))
@@ -142,12 +138,10 @@ def download_report():
         total_gastos = sum(g.monto for g in gastos_del_mes)
         beneficio_neto = total_ingresos - total_gastos
 
-        # --- FECHAS Y HORAS CON FORMATO LOCAL ---
         nombre_mes = date(anio, mes, 1).strftime('%B').capitalize()
         fecha_generacion_local = today_utc.replace(tzinfo=pytz.utc).astimezone(art_tz)
         fecha_generacion_formateada = fecha_generacion_local.strftime('%d/%m/%Y %H:%M:%S')
 
-        # --- FUNCIÓN AUXILIAR PARA FORMATEAR MONEDA ---
         def format_currency(value):
             return locale.currency(value, symbol=True, grouping=True)
 
@@ -161,7 +155,7 @@ def download_report():
             beneficio_neto=beneficio_neto,
             pagos=pagos_del_mes,
             gastos=gastos_del_mes,
-            format_currency=format_currency # Pasamos la función a la plantilla
+            format_currency=format_currency
         )
 
         pdf = HTML(string=html_renderizado).write_pdf()
@@ -171,48 +165,5 @@ def download_report():
             headers={'Content-Disposition': f'attachment;filename=reporte_{nombre_mes.lower()}_{anio}.pdf'}
         )
     except Exception as e:
-        # En caso de error, volvemos al locale por defecto para no afectar otras partes del sistema
         locale.setlocale(locale.LC_ALL, '')
-        return {"message": f"Error al generar el reporte: {str(e)}"}, 500
-    # ... (esta función no necesita cambios)
-    try:
-        today = datetime.utcnow()
-        mes = int(request.args.get('mes', today.month))
-        anio = int(request.args.get('anio', today.year))
-
-        pagos_del_mes = db.session.query(Pago).filter(
-            extract('year', Pago.fecha_pago) == anio,
-            extract('month', Pago.fecha_pago) == mes
-        ).order_by(Pago.fecha_pago).all()
-
-        gastos_del_mes = db.session.query(Gasto).filter(
-            extract('year', Gasto.fecha) == anio,
-            extract('month', Gasto.fecha) == mes
-        ).order_by(Gasto.fecha).all()
-
-        total_ingresos = sum(p.monto for p in pagos_del_mes)
-        total_gastos = sum(g.monto for g in gastos_del_mes)
-        beneficio_neto = total_ingresos - total_gastos
-
-        nombre_mes = datetime(anio, mes, 1).strftime('%B').capitalize()
-
-        html_renderizado = render_template(
-            'reporte_contable.html',
-            mes=nombre_mes,
-            anio=anio,
-            fecha_generacion=today.strftime('%d/%m/%Y %H:%M:%S UTC'),
-            total_ingresos=total_ingresos,
-            total_gastos=total_gastos,
-            beneficio_neto=beneficio_neto,
-            pagos=pagos_del_mes,
-            gastos=gastos_del_mes
-        )
-
-        pdf = HTML(string=html_renderizado).write_pdf()
-        return Response(
-            pdf,
-            mimetype='application/pdf',
-            headers={'Content-Disposition': f'attachment;filename=reporte_{mes}_{anio}.pdf'}
-        )
-    except Exception as e:
         return {"message": f"Error al generar el reporte: {str(e)}"}, 500

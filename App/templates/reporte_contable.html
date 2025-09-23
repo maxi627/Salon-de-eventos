@@ -32,15 +32,15 @@
     <div class="summary-grid">
         <div class="summary-item">
             <h3>Ingresos Totales</h3>
-            <p class="ingresos">${{ "%.2f"|format(total_ingresos) }}</p>
+            <p class="ingresos">{{ format_currency(total_ingresos) }}</p>
         </div>
         <div class="summary-item">
             <h3>Gastos Totales</h3>
-            <p class="gastos">${{ "%.2f"|format(total_gastos) }}</p>
+            <p class="gastos">{{ format_currency(total_gastos) }}</p>
         </div>
         <div class="summary-item">
             <h3>Beneficio Neto</h3>
-            <p class="beneficio">${{ "%.2f"|format(beneficio_neto) }}</p>
+            <p class="beneficio">{{ format_currency(beneficio_neto) }}</p>
         </div>
     </div>
 
@@ -60,7 +60,7 @@
                 <td>{{ pago.fecha_pago.strftime('%d/%m/%Y') }}</td>
                 <td>{{ pago.reserva.usuario.nombre }} {{ pago.reserva.usuario.apellido }}</td>
                 <td>{{ pago.reserva.fecha.dia.strftime('%d/%m/%Y') }}</td>
-                <td>${{ "%.2f"|format(pago.monto) }}</td>
+                <td>{{ format_currency(pago.monto) }}</td>
             </tr>
             {% else %}
             <tr><td colspan="4">No se registraron ingresos en este período.</td></tr>
@@ -84,7 +84,7 @@
                 <td>{{ gasto.fecha.strftime('%d/%m/%Y') }}</td>
                 <td>{{ gasto.descripcion }}</td>
                 <td>{{ gasto.categoria }}</td>
-                <td>${{ "%.2f"|format(gasto.monto) }}</td>
+                <td>{{ format_currency(gasto.monto) }}</td>
             </tr>
             {% else %}
             <tr><td colspan="4">No se registraron gastos en este período.</td></tr>
