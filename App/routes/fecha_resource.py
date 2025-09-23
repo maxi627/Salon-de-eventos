@@ -1,4 +1,5 @@
 from datetime import datetime
+
 import sentry_sdk
 from flask import Blueprint, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
@@ -17,7 +18,7 @@ response_schema = ResponseSchema()
 
 # Aplicar limitadores específicos en las rutas
 @Fecha.route('/fecha', methods=['GET'])
-@limiter.limit("10 per minute")
+@limiter.limit("50 per minute")
 def all():
     response_builder = ResponseBuilder()
     try:
@@ -29,7 +30,7 @@ def all():
         return response_schema.dump(response_builder.build()), 500
 
 @Fecha.route('/fecha/<int:id>', methods=['GET'])
-@limiter.limit("10 per minute")
+@limiter.limit("50 per minute")
 def one(id):
     response_builder = ResponseBuilder()
     try:
@@ -46,7 +47,7 @@ def one(id):
         return response_schema.dump(response_builder.build()), 500
 
 @Fecha.route('/fecha', methods=['POST'])
-@limiter.limit("10 per minute")
+@limiter.limit("50 per minute")
 @admin_required()
 def add():
     response_builder = ResponseBuilder()
@@ -67,7 +68,7 @@ def add():
         return response_schema.dump(response_builder.build()), 500
 
 @Fecha.route('/fecha/<int:id>', methods=['PUT'])
-@limiter.limit("10 per minute")
+@limiter.limit("50 per minute")
 @admin_required()
 def update(id):
     response_builder = ResponseBuilder()
@@ -101,7 +102,7 @@ def update(id):
         return response_schema.dump(response_builder.build()), 500
 
 @Fecha.route('/fecha/<int:id>', methods=['DELETE'])
-@limiter.limit("5 per minute")
+@limiter.limit("10 per minute")
 @admin_required()
 def delete(id):
     response_builder = ResponseBuilder()
@@ -116,7 +117,7 @@ def delete(id):
         response_builder.add_message("Error deleting Fecha").add_status_code(500).add_data(str(e))
         return response_schema.dump(response_builder.build()), 500
 @Fecha.route('/fecha/by-date/<string:date_string>', methods=['GET'])
-@limiter.limit("10 per minute")
+@limiter.limit("50 per minute")
 def get_or_create_by_date(date_string):
     """
     Busca una fecha por su string YYYY-MM-DD.

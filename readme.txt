@@ -16,7 +16,7 @@ Bienvenidos aaaaaaaaaaaaaaaaaaaaj
 #Hacer correr el servidor de react
 cd frontend
 npm run dev
-
+s
 # borrar volumenes de docker
 docker-compose -f App/docker-compose.yml down -v
 

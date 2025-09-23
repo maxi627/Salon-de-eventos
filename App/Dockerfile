@@ -21,14 +21,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpangoft2-1.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# --- SECCIÓN DE COPIA SIMPLIFICADA ---
-# Copiar solo requirements.txt (desde la raíz del contexto, que ahora es 'App')
+# Copiar solo requirements.txt
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar TODO el código (desde la raíz del contexto 'App') a la nueva carpeta 'app' del contenedor
-COPY . ./app/
-# --- FIN DE LA CORRECCIÓN ---
+# --- INICIO DE LA CORRECCIÓN CLAVE ---
+# 1. Instalar primero la versión antigua de setuptools que necesitamos
+RUN pip install --no-cache-dir "setuptools<58.0.0"
+
+# 2. Instalar el resto de los paquetes FORZANDO a que no se use un entorno aislado
+RUN pip install --no-cache-dir --no-build-isolation -r requirements.txt
+# --- FIN DE LA CORRECCIÓN CLAVE ---
+
+
+# Copiar el código de tu aplicación a una carpeta 'app' dentro del workdir
+COPY . ./app
 
 # Cambiar de usuario
 USER flaskapp
@@ -36,4 +42,5 @@ USER flaskapp
 # Exponer puerto
 EXPOSE 5000
 
+# Punto de entrada para ejecutar la aplicación
 ENTRYPOINT [ "python", "app/main.py" ]

@@ -20,7 +20,7 @@ notification_service = NotificationService()
 # Aplicar limitadores específicos en las rutas
 @Reserva.route('/reserva', methods=['GET'])
 
-@limiter.limit("10 per minute")
+@limiter.limit("50 per minute")
 
 def all():
     response_builder = ResponseBuilder()
@@ -33,7 +33,7 @@ def all():
         return response_schema.dump(response_builder.build()), 500
 
 @Reserva.route('/reserva/<int:id>', methods=['GET'])
-@limiter.limit("10 per minute")
+@limiter.limit("50 per minute")
 def one(id):
     response_builder = ResponseBuilder()
     try:
@@ -50,7 +50,7 @@ def one(id):
         return response_schema.dump(response_builder.build()), 500
 
 @Reserva.route('/reserva/solicitar', methods=['POST'])
-@limiter.limit("5 per minute")
+@limiter.limit("20 per minute")
 @jwt_required() # Solo requiere que el usuario esté logueado
 def request_by_user():
     response_builder = ResponseBuilder()
@@ -83,7 +83,7 @@ def request_by_user():
 
 # --- 3. RUTA MODIFICADA PARA LA CREACIÓN DEL ADMINISTRADOR ---
 @Reserva.route('/reserva/crear', methods=['POST'])
-@limiter.limit("10 per minute")
+@limiter.limit("50 per minute")
 @jwt_required()
 @admin_required() # Requiere permisos de admin
 def create_for_admin():
@@ -120,7 +120,7 @@ def create_for_admin():
         return response_schema.dump(response_builder.build()), 500
     
 @Reserva.route('/reserva/<int:id>', methods=['PUT'])
-@limiter.limit("10 per minute")
+@limiter.limit("50 per minute")
 @jwt_required()
 @admin_required()
 def update(id):
@@ -179,7 +179,7 @@ def update(id):
         response_builder.add_message("Error updating Reserva").add_status_code(500).add_data(str(e))
         return response_schema.dump(response_builder.build()), 500
 @Reserva.route('/reserva/<int:id>', methods=['DELETE'])
-@limiter.limit("10 per minute")
+@limiter.limit("20 per minute")
 @jwt_required()
 @admin_required() # <-- ¡AÑADIMOS LA PROTECCIÓN DE ADMIN!
 def delete(id):

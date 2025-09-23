@@ -13,7 +13,7 @@ response_schema = ResponseSchema()
 
 # Aplicar limitadores específicos en las rutas
 @Persona.route('/persona', methods=['GET'])
-@limiter.limit("10 per minute")
+@limiter.limit("50 per minute")
 def all():
     response_builder = ResponseBuilder()
     try:
@@ -25,7 +25,7 @@ def all():
         return response_schema.dump(response_builder.build()), 500
 
 @Persona.route('/persona/<int:id>', methods=['GET'])
-@limiter.limit("10 per minute")
+@limiter.limit("50 per minute")
 def one(id):
     response_builder = ResponseBuilder()
     try:
@@ -42,7 +42,7 @@ def one(id):
         return response_schema.dump(response_builder.build()), 500
 
 @Persona.route('/persona', methods=['POST'])
-@limiter.limit("10 per minute")
+@limiter.limit("50 per minute")
 def add():
     response_builder = ResponseBuilder()
     try:
@@ -62,7 +62,7 @@ def add():
         return response_schema.dump(response_builder.build()), 500
 
 @Persona.route('/persona/<int:id>', methods=['PUT'])
-@limiter.limit("10 per minute")
+@limiter.limit("50 per minute")
 def update(id):
     response_builder = ResponseBuilder()
     try:

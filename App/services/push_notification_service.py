@@ -1,5 +1,6 @@
 import os
 
+# La importación de 'Client' se elimina de aquí
 from pushover import Client
 
 
@@ -12,6 +13,7 @@ class PushNotificationService:
             print("ADVERTENCIA: Las claves de Pushover no están configuradas. Las notificaciones push están deshabilitadas.")
             self.client = None
         else:
+            # Así se inicializa correctamente el cliente en esta versión
             self.client = Client(self.user_key, api_token=self.api_token)
 
     def send_notification(self, message, title="Alerta de Salón de Eventos"):
@@ -20,6 +22,7 @@ class PushNotificationService:
         """
         if self.client:
             try:
+                # El método para enviar el mensaje se mantiene igual
                 self.client.send_message(message, title=title)
                 print(f"Notificación push enviada: '{title}'")
                 return True
