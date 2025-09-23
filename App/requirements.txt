@@ -18,6 +18,6 @@ gunicorn==21.0.0
 Flask-Limiter[redis]==3.5.0
 sentry-sdk[flask]==1.40.6 
 weasyprint
-pushover-api 
+python-pushover
 Flask-APScheduler
 pytz
