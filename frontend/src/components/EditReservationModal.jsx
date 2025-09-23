@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import '../pages/AdminPanel.css'; // Apunta al CSS que contiene los estilos del modal
+import '../pages/AdminPanel.css';
 
 function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
   const [formData, setFormData] = useState({
@@ -8,11 +8,17 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
     valor_alquiler: reservation?.valor_alquiler || 0,
     estado: reservation?.estado || 'confirmada',
   });
+
+  const [users, setUsers] = useState([]);
+  // --- ESTADOS PARA EL BUSCADOR DE USUARIOS ---
+  const [userSearchTerm, setUserSearchTerm] = useState('');
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [showUserList, setShowUserList] = useState(false);
+
   const [newPayment, setNewPayment] = useState({ monto: '' });
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
-  const [users, setUsers] = useState([]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -24,19 +30,46 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
         const data = await response.json();
         if (response.ok) {
           setUsers(data.data);
+          // Si estamos editando, poblamos el campo de búsqueda con el nombre del usuario actual
+          if (!isCreating && reservation?.usuario) {
+            setUserSearchTerm(`${reservation.usuario.nombre} ${reservation.usuario.apellido}`);
+          }
         }
       } catch (err) {
         console.error("Failed to fetch users:", err);
       }
     };
-    if (isCreating) {
+    if (isCreating || !isCreating) { // Cargar usuarios en ambos modos
       fetchUsers();
     }
-  }, [isCreating]);
+  }, [isCreating, reservation]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // --- FUNCIÓN PARA MANEJAR LA BÚSQUEDA DE USUARIOS ---
+  const handleUserSearch = (e) => {
+    const term = e.target.value;
+    setUserSearchTerm(term);
+    if (term) {
+      const filtered = users.filter(user =>
+        `${user.nombre} ${user.apellido}`.toLowerCase().includes(term.toLowerCase())
+      );
+      setFilteredUsers(filtered);
+      setShowUserList(true);
+    } else {
+      setFilteredUsers([]);
+      setShowUserList(false);
+    }
+  };
+
+  // --- FUNCIÓN PARA CUANDO SE SELECCIONA UN USUARIO DE LA LISTA ---
+  const handleUserSelect = (user) => {
+    setFormData(prev => ({ ...prev, usuario_id: user.id }));
+    setUserSearchTerm(`${user.nombre} ${user.apellido} (ID: ${user.id})`);
+    setShowUserList(false);
   };
 
   const handlePaymentChange = (e) => {
@@ -141,15 +174,29 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
         <form onSubmit={handleSubmit}>
           {isCreating && (
             <div className="form-group">
-              <label htmlFor="usuario_id">Usuario</label>
-              <select name="usuario_id" value={formData.usuario_id} onChange={handleChange} required>
-                <option value="">Seleccione un usuario</option>
-                {users.map(user => (
-                  <option key={user.id} value={user.id}>
-                    {user.nombre} {user.apellido} (ID: {user.id})
-                  </option>
-                ))}
-              </select>
+              <label htmlFor="usuario_search">Usuario</label>
+              {/* --- COMPONENTE DE BÚSQUEDA --- */}
+              <div className="user-search-container">
+                <input
+                  type="text"
+                  id="usuario_search"
+                  value={userSearchTerm}
+                  onChange={handleUserSearch}
+                  placeholder="Buscar por nombre..."
+                  autoComplete="off"
+                  className="user-search-input"
+                  onBlur={() => setTimeout(() => setShowUserList(false), 200)} // Oculta la lista al perder el foco
+                />
+                {showUserList && filteredUsers.length > 0 && (
+                  <ul className="user-search-results">
+                    {filteredUsers.map(user => (
+                      <li key={user.id} onClick={() => handleUserSelect(user)}>
+                        {user.nombre} {user.apellido} (DNI: {user.dni})
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
           )}
           
@@ -160,7 +207,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
 
           <div className="form-group">
             <label htmlFor="valor_alquiler">Valor del Alquiler</label>
-            <input type="number" name="valor_alquiler" value={formData.valor_alquiler} onChange={handleChange} />
+            <input type="number" name="valor_alquiler" value={formData.valor_alquiler} onChange={handleChange} min="0" />
           </div>
           
           <div className="form-group">
@@ -203,6 +250,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
                 placeholder="Monto del nuevo pago"
                 value={newPayment.monto}
                 onChange={handlePaymentChange}
+                min="0"
               />
               <button type="button" className="btn-add-payment" onClick={handleAddPayment}>Añadir Pago</button>
             </div>

@@ -1,14 +1,17 @@
+import locale
 import os
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
-from flask import Blueprint
+import pytz
+from flask import Blueprint, Response, render_template, request
 from flask_jwt_extended import jwt_required
-from sqlalchemy import func
+from sqlalchemy import extract, func
+from weasyprint import HTML
 
 from app.config import ResponseBuilder
 from app.extensions import db
 from app.mapping import ResponseSchema
-from app.models import Fecha, Pago, Reserva
+from app.models import Fecha, Gasto, Pago, Reserva
 from app.utils.decorators import admin_required
 
 Analytics = Blueprint('Analytics', __name__)
@@ -20,29 +23,52 @@ response_schema = ResponseSchema()
 def get_analytics():
     """
     Endpoint que calcula y devuelve métricas de contabilidad y tendencias
-    basadas en los pagos confirmados.
+    para un mes y año específicos.
     """
     response_builder = ResponseBuilder()
     try:
-        hoy = datetime.utcnow()
+        today = datetime.utcnow()
+        mes_seleccionado = int(request.args.get('mes', today.month))
+        anio_seleccionado = int(request.args.get('anio', today.year))
 
-        # Suma el saldo restante de todas las reservas confirmadas
+        # --- CÁLCULO DE GASTOS PARA EL MES SELECCIONADO ---
+        gastos_mes_seleccionado = db.session.query(func.sum(Gasto.monto)).filter(
+            extract('year', Gasto.fecha) == anio_seleccionado,
+            extract('month', Gasto.fecha) == mes_seleccionado
+        ).scalar() or 0.0
+
+        # --- CÁLCULO DE INGRESOS PARA EL MES SELECCIONADO ---
+        ingresos_mes_seleccionado = db.session.query(func.sum(Pago.monto)).filter(
+            extract('year', Pago.fecha_pago) == anio_seleccionado,
+            extract('month', Pago.fecha_pago) == mes_seleccionado
+        ).scalar() or 0.0
+        
+        # --- CÁLCULO DE INGRESOS PARA EL MES ANTERIOR (PARA LA TENDENCIA) ---
+        fecha_mes_seleccionado = date(anio_seleccionado, mes_seleccionado, 1)
+        fecha_mes_anterior = (fecha_mes_seleccionado - timedelta(days=1)).replace(day=1)
+        
+        ingresos_mes_anterior = db.session.query(func.sum(Pago.monto)).filter(
+            extract('year', Pago.fecha_pago) == fecha_mes_anterior.year,
+            extract('month', Pago.fecha_pago) == fecha_mes_anterior.month
+        ).scalar() or 0.0
+
+        # --- LÓGICA DE RESERVAS Y GRÁFICO (PARA EL AÑO COMPLETO) ---
         reservas_confirmadas = Reserva.query.filter_by(estado='confirmada').all()
         total_a_liquidar = sum(reserva.saldo_restante for reserva in reservas_confirmadas)
 
-        # Obtiene los ingresos reales sumando los pagos por mes
         ingresos_por_mes_query = db.session.query(
             func.to_char(Pago.fecha_pago, 'YYYY-MM').label('mes'),
             func.sum(Pago.monto).label('ingresos_reales')
-        ).group_by('mes').order_by('mes').all()
+        ).filter(extract('year', Pago.fecha_pago) == anio_seleccionado).group_by('mes').order_by('mes').all()
 
-        # Obtiene la cantidad de reservas confirmadas por mes
         reservas_por_mes_query = db.session.query(
             func.to_char(Fecha.dia, 'YYYY-MM').label('mes'),
             func.count(Reserva.id).label('cantidad_reservas')
-        ).join(Fecha).filter(Reserva.estado == 'confirmada').group_by('mes').all()
-
-        # Combina los datos de ingresos y reservas
+        ).join(Fecha).filter(
+            Reserva.estado == 'confirmada',
+            extract('year', Fecha.dia) == anio_seleccionado
+        ).group_by('mes').all()
+        
         stats_por_mes = {}
         for res in ingresos_por_mes_query:
             stats_por_mes[res.mes] = {"ingresos": float(res.ingresos_reales) if res.ingresos_reales else 0, "reservas": 0}
@@ -51,35 +77,27 @@ def get_analytics():
             if res.mes in stats_por_mes:
                 stats_por_mes[res.mes]["reservas"] = res.cantidad_reservas
             else:
-                # Si un mes tiene reservas pero no ingresos (pagos), se añade
                 stats_por_mes[res.mes] = {"ingresos": 0, "reservas": res.cantidad_reservas}
-
-        # Asegura que todos los meses del año actual estén presentes
-        ingresos_año_completo = {}
-        current_year = hoy.year
-        for month in range(1, 13):
-            month_key = f"{current_year}-{month:02d}"
-            if month_key in stats_por_mes:
-                ingresos_año_completo[month_key] = stats_por_mes[month_key]
-            else:
-                ingresos_año_completo[month_key] = {"ingresos": 0, "reservas": 0}
-
-        mes_actual_str = hoy.strftime('%Y-%m')
-        mes_anterior_str = (hoy.replace(day=1) - timedelta(days=1)).strftime('%Y-%m')
-
-        ingresos_mes_actual = ingresos_año_completo.get(mes_actual_str, {}).get('ingresos', 0)
-        reservas_mes_actual = ingresos_año_completo.get(mes_actual_str, {}).get('reservas', 0)
-        ingresos_mes_anterior = ingresos_año_completo.get(mes_anterior_str, {}).get('ingresos', 0)
         
+        ingresos_año_completo = {}
+        for month in range(1, 13):
+            month_key = f"{anio_seleccionado}-{month:02d}"
+            ingresos_año_completo[month_key] = stats_por_mes.get(month_key, {"ingresos": 0, "reservas": 0})
+        
+        reservas_mes_seleccionado = ingresos_año_completo.get(f"{anio_seleccionado}-{mes_seleccionado:02d}", {}).get('reservas', 0)
+
+        # --- CÁLCULO DE TENDENCIA (ACTUALIZADO) ---
         tendencia_ingresos = 0
         if ingresos_mes_anterior > 0:
-            tendencia_ingresos = ((ingresos_mes_actual - ingresos_mes_anterior) / ingresos_mes_anterior) * 100
-        elif ingresos_mes_actual > 0:
+            tendencia_ingresos = ((ingresos_mes_seleccionado - ingresos_mes_anterior) / ingresos_mes_anterior) * 100
+        elif ingresos_mes_seleccionado > 0:
             tendencia_ingresos = 100
 
         data = {
-            "ingresos_mes_actual": ingresos_mes_actual,
-            "reservas_mes_actual": reservas_mes_actual,
+            "ingresos_mes_seleccionado": ingresos_mes_seleccionado,
+            "gastos_mes_seleccionado": gastos_mes_seleccionado,
+            "beneficio_neto_mes": ingresos_mes_seleccionado - gastos_mes_seleccionado,
+            "reservas_mes_seleccionado": reservas_mes_seleccionado,
             "tendencia_ingresos_porcentaje": round(tendencia_ingresos, 2),
             "dinero_por_liquidar": total_a_liquidar,
             "ingresos_por_mes": ingresos_año_completo
@@ -91,3 +109,110 @@ def get_analytics():
     except Exception as e:
         response_builder.add_message("Error al generar analíticas").add_status_code(500).add_data(str(e))
         return response_schema.dump(response_builder.build()), 500
+
+
+@Analytics.route('/analytics/reporte-pdf', methods=['GET'])
+@jwt_required()
+@admin_required()
+def download_report():
+    try:
+        # --- INICIO DE LA MODIFICACIÓN DE FORMATO ---
+        # 1. Establecer el idioma a Español (Argentina) para formatos
+        locale.setlocale(locale.LC_ALL, 'es_AR.UTF-8')
+
+        # 2. Definir la zona horaria de Argentina
+        art_tz = pytz.timezone('America/Argentina/Buenos_Aires')
+        # --- FIN DE LA MODIFICACIÓN DE FORMATO ---
+
+        today_utc = datetime.utcnow()
+        mes = int(request.args.get('mes', today_utc.month))
+        anio = int(request.args.get('anio', today_utc.year))
+
+        pagos_del_mes = db.session.query(Pago).filter(
+            extract('year', Pago.fecha_pago) == anio,
+            extract('month', Pago.fecha_pago) == mes
+        ).order_by(Pago.fecha_pago).all()
+
+        gastos_del_mes = db.session.query(Gasto).filter(
+            extract('year', Gasto.fecha) == anio,
+            extract('month', Gasto.fecha) == mes
+        ).order_by(Gasto.fecha).all()
+
+        total_ingresos = sum(p.monto for p in pagos_del_mes)
+        total_gastos = sum(g.monto for g in gastos_del_mes)
+        beneficio_neto = total_ingresos - total_gastos
+
+        # --- FECHAS Y HORAS CON FORMATO LOCAL ---
+        nombre_mes = date(anio, mes, 1).strftime('%B').capitalize()
+        fecha_generacion_local = today_utc.replace(tzinfo=pytz.utc).astimezone(art_tz)
+        fecha_generacion_formateada = fecha_generacion_local.strftime('%d/%m/%Y %H:%M:%S')
+
+        # --- FUNCIÓN AUXILIAR PARA FORMATEAR MONEDA ---
+        def format_currency(value):
+            return locale.currency(value, symbol=True, grouping=True)
+
+        html_renderizado = render_template(
+            'reporte_contable.html',
+            mes=nombre_mes,
+            anio=anio,
+            fecha_generacion=fecha_generacion_formateada,
+            total_ingresos=total_ingresos,
+            total_gastos=total_gastos,
+            beneficio_neto=beneficio_neto,
+            pagos=pagos_del_mes,
+            gastos=gastos_del_mes,
+            format_currency=format_currency # Pasamos la función a la plantilla
+        )
+
+        pdf = HTML(string=html_renderizado).write_pdf()
+        return Response(
+            pdf,
+            mimetype='application/pdf',
+            headers={'Content-Disposition': f'attachment;filename=reporte_{nombre_mes.lower()}_{anio}.pdf'}
+        )
+    except Exception as e:
+        # En caso de error, volvemos al locale por defecto para no afectar otras partes del sistema
+        locale.setlocale(locale.LC_ALL, '')
+        return {"message": f"Error al generar el reporte: {str(e)}"}, 500
+    # ... (esta función no necesita cambios)
+    try:
+        today = datetime.utcnow()
+        mes = int(request.args.get('mes', today.month))
+        anio = int(request.args.get('anio', today.year))
+
+        pagos_del_mes = db.session.query(Pago).filter(
+            extract('year', Pago.fecha_pago) == anio,
+            extract('month', Pago.fecha_pago) == mes
+        ).order_by(Pago.fecha_pago).all()
+
+        gastos_del_mes = db.session.query(Gasto).filter(
+            extract('year', Gasto.fecha) == anio,
+            extract('month', Gasto.fecha) == mes
+        ).order_by(Gasto.fecha).all()
+
+        total_ingresos = sum(p.monto for p in pagos_del_mes)
+        total_gastos = sum(g.monto for g in gastos_del_mes)
+        beneficio_neto = total_ingresos - total_gastos
+
+        nombre_mes = datetime(anio, mes, 1).strftime('%B').capitalize()
+
+        html_renderizado = render_template(
+            'reporte_contable.html',
+            mes=nombre_mes,
+            anio=anio,
+            fecha_generacion=today.strftime('%d/%m/%Y %H:%M:%S UTC'),
+            total_ingresos=total_ingresos,
+            total_gastos=total_gastos,
+            beneficio_neto=beneficio_neto,
+            pagos=pagos_del_mes,
+            gastos=gastos_del_mes
+        )
+
+        pdf = HTML(string=html_renderizado).write_pdf()
+        return Response(
+            pdf,
+            mimetype='application/pdf',
+            headers={'Content-Disposition': f'attachment;filename=reporte_{mes}_{anio}.pdf'}
+        )
+    except Exception as e:
+        return {"message": f"Error al generar el reporte: {str(e)}"}, 500

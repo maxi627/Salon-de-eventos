@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import AnalyticsDashboard from '../components/AnalyticsDashboard';
 import EditReservationModal from '../components/EditReservationModal';
+import GastosManager from '../components/GastosManager';
 import PriceEditor from '../components/PriceEditor';
 import UserList from '../components/UserList';
 import './AdminPanel.css';
@@ -120,7 +121,7 @@ function AdminPanel() {
       
       <AnalyticsDashboard />
       <PriceEditor />
-
+      <GastosManager />
       <div className="reservas-header">
         <h2 className="reservas-title">Gestión de Reservas</h2>
         <button className="btn-create" onClick={handleOpenCreateModal}>
