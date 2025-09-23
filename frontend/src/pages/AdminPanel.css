@@ -155,7 +155,7 @@
   background-color: #f5b7b1;
   cursor: not-allowed;
 }
-/* ... (estilos existentes) */
+
 
 .reservas-title {
   margin-top: 3rem;
@@ -178,7 +178,6 @@
   border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
-  transition: background-color 0.3s ease;
 }
 
 .btn-create:hover {
@@ -251,4 +250,44 @@
   border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
+}
+
+/* --- NUEVOS ESTILOS PARA SECCIONES DE MES --- */
+.month-section {
+  margin-top: 2rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden; /* Para que los bordes redondeados se apliquen bien a la tabla */
+}
+
+.month-header {
+  background-color: #f8f9fa;
+  padding: 12px 20px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 1.2rem;
+  color: var(--color-secundario);
+}
+
+.month-header:hover {
+  background-color: #e9ecef;
+}
+
+.collapse-icon {
+  font-size: 1.1rem;
+  transition: transform 0.3s ease;
+}
+
+.collapse-icon.collapsed {
+  transform: rotate(-90deg);
+}
+
+/* Anulamos el margen superior de la tabla cuando está dentro de una sección de mes */
+.month-section .reservas-table {
+  margin-top: 0;
+  box-shadow: none;
+  border-top: none;
 }

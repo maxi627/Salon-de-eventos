@@ -1,12 +1,37 @@
 import { useEffect, useState } from 'react';
 import './UserList.css';
 
+// Componente para la paginación
+const Pagination = ({ usersPerPage, totalUsers, paginate, currentPage }) => {
+  const pageNumbers = [];
+  for (let i = 1; i <= Math.ceil(totalUsers / usersPerPage); i++) {
+    pageNumbers.push(i);
+  }
+
+  return (
+    <nav className="pagination-container">
+      <ul className="pagination">
+        {pageNumbers.map(number => (
+          <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
+            <a onClick={() => paginate(number)} href="#!" className="page-link">
+              {number}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+};
+
 function UserList() {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  // 1. Estado para el término de búsqueda
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // --- ESTADOS PARA LA PAGINACIÓN ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const [usersPerPage] = useState(10); // Puedes ajustar este número
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -32,39 +57,46 @@ function UserList() {
     fetchUsers();
   }, []);
 
-  // 2. Lógica de eliminación de usuario
   const handleDelete = async (userId) => {
     if (!window.confirm('¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer.')) {
       return;
     }
-
     const token = localStorage.getItem('authToken');
     try {
       const response = await fetch(`/api/v1/usuario/${userId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` },
       });
-
       if (!response.ok) {
         const result = await response.json();
         throw new Error(result.message || 'Error al eliminar el usuario.');
       }
-
-      // Actualiza el estado para reflejar la eliminación sin recargar
       setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
-
     } catch (err) {
       setError(err.message);
-      // Ocultar el error después de unos segundos
       setTimeout(() => setError(''), 3000);
     }
   };
 
-  // 3. Filtra los usuarios basándose en el término de búsqueda
+  // Filtrar usuarios
   const filteredUsers = users.filter(user =>
     user.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.apellido.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  
+  // --- LÓGICA PARA OBTENER LOS USUARIOS DE LA PÁGINA ACTUAL ---
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+
+  // Cambiar de página
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  
+  // Resetea a la página 1 cuando se realiza una búsqueda
+  const handleSearchChange = (e) => {
+      setSearchTerm(e.target.value);
+      setCurrentPage(1);
+  };
 
   if (isLoading) return <p style={{ textAlign: 'center', marginTop: '2rem' }}>Cargando usuarios...</p>;
 
@@ -72,14 +104,13 @@ function UserList() {
     <div className="user-list-container">
       <h2 className="user-list-title">Gestión de Usuarios</h2>
       
-      {/* 4. Campo de búsqueda */}
       <div className="search-bar-container">
         <input
           type="text"
           placeholder="Buscar por nombre o apellido..."
           className="search-input"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={handleSearchChange}
         />
       </div>
 
@@ -95,12 +126,12 @@ function UserList() {
               <th>Correo Electrónico</th>
               <th>DNI</th>
               <th>Teléfono</th>
-              <th>Acciones</th> {/* <-- Nueva columna */}
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {filteredUsers.length > 0 ? (
-              filteredUsers.map(user => (
+            {currentUsers.length > 0 ? (
+              currentUsers.map(user => (
                 <tr key={user.id}>
                   <td>{user.id}</td>
                   <td>{user.nombre}</td>
@@ -109,7 +140,6 @@ function UserList() {
                   <td>{user.dni}</td>
                   <td>{user.telefono || 'N/A'}</td>
                   <td>
-                    {/* 5. Botón de eliminar */}
                     <button
                       className="btn-delete"
                       onClick={() => handleDelete(user.id)}
@@ -121,12 +151,22 @@ function UserList() {
               ))
             ) : (
               <tr>
-                <td colSpan="7">No se encontraron usuarios.</td>
+                <td colSpan="7">No se encontraron usuarios que coincidan con la búsqueda.</td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
+
+      {/* --- RENDERIZAR LA PAGINACIÓN --- */}
+      {filteredUsers.length > usersPerPage && (
+        <Pagination
+            usersPerPage={usersPerPage}
+            totalUsers={filteredUsers.length}
+            paginate={paginate}
+            currentPage={currentPage}
+        />
+      )}
     </div>
   );
 }
