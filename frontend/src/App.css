@@ -45,6 +45,7 @@ nav {
     align-items: center;
   }
 
+
 footer {
   position: fixed;
   bottom: 0;
@@ -54,4 +55,5 @@ footer {
   padding: 1.5rem;
   opacity: 0.6;
   text-align: center;
+  z-index: 10; /* <-- AÑADIR ESTA LÍNEA */
 }

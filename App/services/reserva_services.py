@@ -50,7 +50,7 @@ class ReservaService:
     def add(self, reserva: Reserva) -> Reserva:
         """
         Agrega una nueva reserva, verificando la disponibilidad de la fecha
-        y actualizando su estado a 'pendiente'.
+        y actualizando su estado para que coincida con el de la reserva.
         """
         with self.fecha_service.redis_lock(reserva.fecha_id):
             
@@ -63,14 +63,20 @@ class ReservaService:
                 raise Exception(f"La fecha seleccionada ya no está disponible.")
 
             try:
-                fecha_a_reservar.estado = 'pendiente'
+                # --- INICIO DE LA MODIFICACIÓN ---
+                # Ahora el estado de la fecha depende del estado de la reserva
+                if reserva.estado == 'confirmada':
+                    fecha_a_reservar.estado = 'reservada'
+                else: # Si es 'pendiente' o cualquier otro estado inicial
+                    fecha_a_reservar.estado = 'pendiente'
+                # --- FIN DE LA MODIFICACIÓN ---
+                
                 db.session.add(reserva)
                 db.session.commit()
 
                 cache.set(f'reserva_{reserva.id}', reserva, timeout=self.CACHE_TIMEOUT)
                 cache.delete('reservas')
                 
-                # Actualizamos la caché de la fecha modificada
                 cache.set(f'fecha_{fecha_a_reservar.id}', fecha_a_reservar, timeout=self.CACHE_TIMEOUT)
                 cache.delete('fechas')
 
@@ -89,22 +95,31 @@ class ReservaService:
             if not reserva_a_actualizar:
                 raise Exception(f"Reserva con ID {reserva_id} no encontrada.")
 
+            estado_anterior = reserva_a_actualizar.estado
+            nuevo_estado = updated_data.get('estado')
+
             for key, value in updated_data.items():
                 if hasattr(reserva_a_actualizar, key):
                     setattr(reserva_a_actualizar, key, value)
             
-            if updated_data.get('estado') == 'confirmada':
+            # --- INICIO DE LA MODIFICACIÓN ---
+            # Comprobamos el nuevo estado para actualizar la fecha asociada.
+            if nuevo_estado == 'confirmada' and estado_anterior != 'confirmada':
                 reserva_a_actualizar.fecha.estado = 'reservada'
+            elif nuevo_estado == 'cancelada' and estado_anterior != 'cancelada':
+                # Si la reserva se cancela, la fecha vuelve a estar disponible.
+                reserva_a_actualizar.fecha.estado = 'disponible'
+            # --- FIN DE LA MODIFICACIÓN ---
 
             db.session.commit()
 
             cache.set(f'reserva_{reserva_id}', reserva_a_actualizar, timeout=self.CACHE_TIMEOUT)
             cache.delete('reservas')
+            # Invalidamos la caché de la fecha para que se muestre el nuevo estado en el calendario.
             cache.delete(f'fecha_{reserva_a_actualizar.fecha_id}')
             cache.delete('fechas')
 
             return reserva_a_actualizar
-
     def delete(self, reserva_id: int) -> bool:
         """
         Elimina una reserva y restablece el estado de su fecha a 'disponible'.
