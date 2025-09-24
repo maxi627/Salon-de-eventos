@@ -60,3 +60,43 @@
     grid-template-columns: 1fr;
   }
 }
+
+.gastos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap; /* Para que se ajuste en pantallas pequeñas */
+}
+
+.gastos-header h3 {
+  margin: 0;
+}
+
+.month-navigator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.month-navigator button {
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.month-navigator button:hover {
+  background-color: #e0e0e0;
+}
+
+.month-display {
+  font-weight: 600;
+  text-transform: capitalize;
+  min-width: 150px; /* Evita que el layout salte al cambiar de mes */
+  text-align: center;
+}

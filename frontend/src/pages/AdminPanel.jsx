@@ -7,13 +7,13 @@ import UserList from '../components/UserList';
 import './AdminPanel.css';
 
 function AdminPanel() {
-  const [reservas, setReservas] = useState({}); // Cambiado a objeto para agrupar
+  const [reservas, setReservas] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [collapsedMonths, setCollapsedMonths] = useState({}); // Estado para secciones desplegables
+  const [collapsedMonths, setCollapsedMonths] = useState({});
 
   const formatDisplayDate = (isoDate) => {
     if (!isoDate) return 'N/A';
@@ -40,12 +40,13 @@ function AdminPanel() {
       timeZone: 'America/Argentina/Buenos_Aires'
     }).format(date);
   };
-
-  const fetchReservas = async () => {
+  
+  const fetchReservas = async (signal) => {
     const token = localStorage.getItem('authToken');
     try {
       const response = await fetch('/api/v1/reserva', {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 'Authorization': `Bearer ${token}` },
+        signal,
       });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -53,12 +54,10 @@ function AdminPanel() {
       }
       const data = await response.json();
       
-      // Agrupar reservas por mes y año
       const groupedReservas = data.data.sort((a, b) => new Date(a.fecha?.dia) - new Date(b.fecha?.dia))
         .reduce((acc, reserva) => {
           if (!reserva.fecha?.dia) return acc;
           const fecha = new Date(reserva.fecha.dia);
-          // Corregir problema de zona horaria sumando un día para asegurar el mes correcto
           const adjustedDate = new Date(fecha.getUTCFullYear(), fecha.getUTCMonth(), fecha.getUTCDate() + 1);
           const monthYear = new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric' }).format(adjustedDate);
           
@@ -72,14 +71,23 @@ function AdminPanel() {
       setReservas(groupedReservas);
 
     } catch (err) {
-      setError(err.message);
+      if (err.name !== 'AbortError') {
+        setError(err.message);
+      }
     } finally {
-      setIsLoading(false);
+      if (!signal.aborted) {
+        setIsLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    fetchReservas();
+    const controller = new AbortController();
+    fetchReservas(controller.signal);
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   const toggleMonth = (month) => {
@@ -108,7 +116,9 @@ function AdminPanel() {
   };
 
   const handleUpdate = () => {
-    fetchReservas();
+    const controller = new AbortController();
+    setIsLoading(true);
+    fetchReservas(controller.signal)
     handleCloseModal();
   };
 

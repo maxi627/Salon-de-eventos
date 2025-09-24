@@ -32,23 +32,38 @@ function AnalyticsDashboard() {
   const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
     const fetchAnalytics = async () => {
       setIsLoading(true);
+      setError(''); // Limpiar errores previos
       const token = localStorage.getItem('authToken');
       try {
         const response = await fetch(`/api/v1/analytics?mes=${reportDate.mes}&anio=${reportDate.anio}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { 'Authorization': `Bearer ${token}` },
+          signal,
         });
         const result = await response.json();
         if (!response.ok) throw new Error(result.message);
         setStats(result.data);
       } catch (err) {
-        setError(err.message);
+        if (err.name !== 'AbortError') {
+            setError(err.message);
+        }
       } finally {
-        setIsLoading(false);
+        // Solo cambiar isLoading si la petición no fue abortada
+        if (!signal.aborted) {
+            setIsLoading(false);
+        }
       }
     };
+
     fetchAnalytics();
+
+    return () => {
+      controller.abort();
+    };
   }, [reportDate]);
 
   const handleDateChange = (e) => {
@@ -84,7 +99,6 @@ function AnalyticsDashboard() {
   };
 
   if (isLoading) return <p>Cargando analíticas...</p>;
-  if (error) return <p className="error-message">{error}</p>;
 
   const months = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, name: new Date(0, i).toLocaleString('es-ES', { month: 'long' }) }));
   const currentYear = new Date().getFullYear();
@@ -106,6 +120,7 @@ function AnalyticsDashboard() {
                 </button>
             </div>
         </div>
+      {error && <p className="error-message">{error}</p>}
       {stats && (
         <>
           <div className="stats-grid">

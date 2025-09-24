@@ -9,13 +9,21 @@ function GastosManager() {
     categoria: 'Servicios',
     fecha: new Date().toISOString().slice(0, 10),
   });
+  
+  // --- INICIO DE NUEVOS ESTADOS Y LÓGICA ---
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchGastos = async () => {
+    setIsLoading(true);
     const token = localStorage.getItem('authToken');
+    // Obtenemos mes y año de la fecha actual en el estado
+    const mes = currentDate.getMonth() + 1;
+    const anio = currentDate.getFullYear();
     try {
-      const response = await fetch('/api/v1/gasto', {
+      // Pasamos los parámetros a la API
+      const response = await fetch(`/api/v1/gasto?mes=${mes}&anio=${anio}`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       const result = await response.json();
@@ -23,14 +31,23 @@ function GastosManager() {
       setGastos(result.data);
     } catch (err) {
       setError(err.message);
+      setGastos([]); // Limpiar gastos si hay error
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Este efecto se ejecutará cada vez que 'currentDate' cambie
   useEffect(() => {
     fetchGastos();
-  }, []);
+  }, [currentDate]);
+
+  const changeMonth = (offset) => {
+    setCurrentDate(prevDate => {
+      return new Date(prevDate.getFullYear(), prevDate.getMonth() + offset, 1);
+    });
+  };
+  // --- FIN DE NUEVOS ESTADOS Y LÓGICA ---
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -56,8 +73,8 @@ function GastosManager() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || 'Error al registrar el gasto');
       
-      // Actualizar la lista de gastos y resetear el formulario
-      setGastos([result.data, ...gastos]);
+      // Volvemos a buscar los gastos para actualizar la lista
+      fetchGastos(); 
       setFormData({
         descripcion: '',
         monto: '',
@@ -115,7 +132,19 @@ function GastosManager() {
           {error && <p className="error-message">{error}</p>}
         </form>
         <div className="gastos-list">
-          <h3>Gastos Registrados</h3>
+          {/* --- INICIO DE NUEVO NAVEGADOR --- */}
+          <div className="gastos-header">
+            <h3>Gastos Registrados</h3>
+            <div className="month-navigator">
+              <button onClick={() => changeMonth(-1)}>&lt;</button>
+              <span className="month-display">
+                {currentDate.toLocaleString('es-ES', { month: 'long', year: 'numeric' })}
+              </span>
+              <button onClick={() => changeMonth(1)}>&gt;</button>
+            </div>
+          </div>
+          {/* --- FIN DE NUEVO NAVEGADOR --- */}
+
           {isLoading ? <p>Cargando...</p> : (
             <table>
               <thead>
@@ -128,15 +157,21 @@ function GastosManager() {
                 </tr>
               </thead>
               <tbody>
-                {gastos.map(gasto => (
-                  <tr key={gasto.id}>
-                    <td>{new Date(gasto.fecha).toLocaleDateString('es-ES', {timeZone: 'UTC'})}</td>
-                    <td>{gasto.descripcion}</td>
-                    <td>{gasto.categoria}</td>
-                    <td>${gasto.monto.toLocaleString('es-AR')}</td>
-                    <td><button className="btn-delete-gasto" onClick={() => handleDelete(gasto.id)}>Eliminar</button></td>
+                {gastos.length > 0 ? (
+                  gastos.map(gasto => (
+                    <tr key={gasto.id}>
+                      <td>{new Date(gasto.fecha).toLocaleDateString('es-ES', {timeZone: 'UTC'})}</td>
+                      <td>{gasto.descripcion}</td>
+                      <td>{gasto.categoria}</td>
+                      <td>${gasto.monto.toLocaleString('es-AR')}</td>
+                      <td><button className="btn-delete-gasto" onClick={() => handleDelete(gasto.id)}>Eliminar</button></td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5">No se encontraron gastos para este mes.</td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           )}

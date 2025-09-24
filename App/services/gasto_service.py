@@ -8,8 +8,9 @@ class GastoService:
     def __init__(self):
         self.repository = GastoRepository()
 
-    def get_all(self) -> List[Gasto]:
-        return self.repository.get_all()
+    def get_all(self, month=None, year=None) -> List[Gasto]:
+
+        return self.repository.get_all(month=month, year=year)
 
     def add(self, gasto: Gasto) -> Gasto:
         return self.repository.add(gasto)

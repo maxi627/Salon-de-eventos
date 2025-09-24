@@ -29,32 +29,42 @@ function UserList() {
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   
-  // --- ESTADOS PARA LA PAGINACIÓN ---
   const [currentPage, setCurrentPage] = useState(1);
-  const [usersPerPage] = useState(10); // Puedes ajustar este número
-
-  const fetchUsers = async () => {
-    setIsLoading(true);
-    const token = localStorage.getItem('authToken');
-    try {
-      const response = await fetch('/api/v1/usuario', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'No tienes permiso para ver los usuarios.');
-      }
-      const data = await response.json();
-      setUsers(data.data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [usersPerPage] = useState(10); 
 
   useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    const fetchUsers = async () => {
+      setIsLoading(true);
+      setError('');
+      const token = localStorage.getItem('authToken');
+      try {
+        const response = await fetch('/api/v1/usuario', {
+          headers: { 'Authorization': `Bearer ${token}` },
+          signal,
+        });
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'No tienes permiso para ver los usuarios.');
+        }
+        const data = await response.json();
+        setUsers(data.data);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          setError(err.message);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchUsers();
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   const handleDelete = async (userId) => {
@@ -78,21 +88,17 @@ function UserList() {
     }
   };
 
-  // Filtrar usuarios
   const filteredUsers = users.filter(user =>
     user.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.apellido.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
-  // --- LÓGICA PARA OBTENER LOS USUARIOS DE LA PÁGINA ACTUAL ---
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
 
-  // Cambiar de página
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
   
-  // Resetea a la página 1 cuando se realiza una búsqueda
   const handleSearchChange = (e) => {
       setSearchTerm(e.target.value);
       setCurrentPage(1);
@@ -158,7 +164,6 @@ function UserList() {
         </table>
       </div>
 
-      {/* --- RENDERIZAR LA PAGINACIÓN --- */}
       {filteredUsers.length > usersPerPage && (
         <Pagination
             usersPerPage={usersPerPage}

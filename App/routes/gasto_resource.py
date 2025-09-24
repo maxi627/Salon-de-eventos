@@ -1,3 +1,5 @@
+from datetime import datetime  # <- Añadir esta línea
+
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
@@ -18,11 +20,20 @@ response_schema = ResponseSchema()
 def all():
     response_builder = ResponseBuilder()
     try:
-        gastos = service.get_all()
+        # --- INICIO DE LA MODIFICACIÓN ---
+        # Leer mes y año de los parámetros de la URL, si no vienen, usa el mes actual
+        today = datetime.utcnow()
+        month = request.args.get('mes', default=today.month, type=int)
+        year = request.args.get('anio', default=today.year, type=int)
+
+        gastos = service.get_all(month=month, year=year)
+        # --- FIN DE LA MODIFICACIÓN ---
+
         data = gasto_schema.dump(gastos, many=True)
         return response_builder.add_data(data).add_status_code(200).build(), 200
     except Exception as e:
         return response_builder.add_message(str(e)).add_status_code(500).build(), 500
+
 
 @GastoBP.route('/gasto', methods=['POST'])
 @jwt_required()

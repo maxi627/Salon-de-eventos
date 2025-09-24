@@ -10,9 +10,12 @@ function Reservas() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
     const fetchFechas = async () => {
       try {
-        const response = await fetch('/api/v1/fecha');
+        const response = await fetch('/api/v1/fecha', { signal });
         if (!response.ok) throw new Error('Error al cargar el estado de las fechas.');
         const data = await response.json();
         const fechasMapeadas = data.data.reduce((acc, fecha) => {
@@ -21,12 +24,20 @@ function Reservas() {
         }, {});
         setFechas(fechasMapeadas);
       } catch (error) {
-        setMessage(error.message);
+        if (error.name !== 'AbortError') {
+          setMessage(error.message);
+        }
       } finally {
-        setIsLoading(false);
+        if (!signal.aborted) {
+            setIsLoading(false);
+        }
       }
     };
     fetchFechas();
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   const handleDateClick = (dayDate) => {
@@ -92,7 +103,6 @@ function Reservas() {
           disabled={isDisabled}
         >
           <span className="day-number">{i}</span>
-          {/* Muestra el precio si el día está disponible y tiene un valor asignado */}
           {fechaInfo && fechaInfo.estado === 'disponible' && fechaInfo.valor_estimado > 0 && (
             <span className="calendar-price">${fechaInfo.valor_estimado.toLocaleString('es-AR')}</span>
           )}
