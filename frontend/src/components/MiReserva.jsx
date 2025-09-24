@@ -1,8 +1,9 @@
-import './MiReserva.css'; // Usaremos el mismo nombre de archivo CSS
+import { FaTimes } from 'react-icons/fa'; // Ícono para el botón de cerrar
+import './MiReserva.css';
 
-const MiReserva = ({ reservas }) => {
+const MiReserva = ({ reservas, onClose }) => {
 
-    // Función para formatear la fecha
+    // Función para formatear la fecha de manera legible
     const formatDisplayDate = (isoDate) => {
         if (!isoDate) return 'Fecha no disponible';
         // Aseguramos que la fecha se interprete como UTC para evitar problemas de zona horaria
@@ -16,7 +17,7 @@ const MiReserva = ({ reservas }) => {
         }).format(date);
     };
 
-    // Objeto para mapear estados a clases de CSS
+    // Objeto para mapear los estados de la reserva a clases de CSS para los colores
     const statusClasses = {
         'pendiente': 'status-pendiente',
         'confirmada': 'status-confirmada',
@@ -25,7 +26,12 @@ const MiReserva = ({ reservas }) => {
 
     return (
         <div className="mi-reserva-wrapper">
-            <h2 className="mi-reserva-title">Tu Próximo Evento</h2>
+            <div className="mi-reserva-header">
+                <h2 className="mi-reserva-title">Tus Reservas</h2>
+                <button onClick={onClose} className="close-button">
+                    <FaTimes />
+                </button>
+            </div>
             <div className="mi-reserva-grid">
                 {reservas.map(reserva => (
                     <div key={reserva.id} className="reserva-card-modern">

@@ -44,10 +44,24 @@ nav {
     display: flex;
     justify-content: space-between; /* Logo a la izquierda, links a la derecha */
     align-items: center;
-    height: 70px; /* Un poco más alta */
-    background-color: var(--color-fondo);
+    height: 80px; /* Aumentamos la altura para el logo */
+    background: linear-gradient(to right, #f5dabad6, var(--color-fondo));
     border-bottom: 1px solid var(--color-borde);
   }
+
+/* --- ESTILOS PARA EL LOGO --- */
+.nav-logo-link {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    border-bottom: none !important; /* Evita que se aplique el efecto hover de los otros links */
+}
+
+.nav-logo {
+    height: 180px; /* Ajusta este valor según el tamaño que prefieras */
+    width: auto;
+}
+/* --- FIN DE ESTILOS PARA EL LOGO --- */
 
   nav .nav-links {
     display: flex;
@@ -62,21 +76,21 @@ nav {
     border-bottom: 2px solid transparent;
   }
 
-  nav a:hover {
+  /* Aplicamos el hover a todos los 'a' dentro de nav-links */
+  nav .nav-links a:hover {
     color: var(--color-primario);
     border-bottom: 2px solid var(--color-primario);
   }
 
 /* Estilo del Footer */
 footer {
-  position: relative; /* Cambiado de fixed a relative */
-  bottom: 0;
+  position: relative;
   width: 100%;
   background-color: var(--color-secundario);
   color: #bdc3c7;
   padding: 2.5rem;
   text-align: center;
-  margin-top: 3rem; /* Añadimos margen superior */
+  margin-top: 3rem;
 }
 
 .footer-content {
@@ -84,31 +98,15 @@ footer {
     margin: 0 auto;
 }
 
+/* Contenedor para los íconos de redes sociales */
 .social-icons {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
 }
 
-.social-icons a {
-    color: #fff;
-    font-size: 1.5rem;
-    margin: 0 0.75rem;
-}
-
-.social-icons a:hover {
-    color: var(--color-primario);
-}
-
-footer div {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  max-width: var(--ancho-maximo);
-  margin: 0 auto;
-}
-
-/* From Uiverse.io by wilsondesouza */ 
+/* Estilos de los iconos del footer (Uiverse.io by wilsondesouza) */
 ul {
   list-style: none;
+  padding: 0; /* Reseteamos el padding por defecto de la lista */
 }
 
 .example-2 {
@@ -150,19 +148,22 @@ ul {
   color: #4d4d4d;
   background-color: #fff;
   transition: all 0.3s ease-in-out;
+  border-bottom: none; /* Quitamos el borde inferior para los iconos */
 }
+
 .example-2 .icon-content a:hover {
   box-shadow: 3px 2px 45px 0px rgb(0 0 0 / 12%);
+  border-bottom: none; /* Aseguramos que no aparezca el borde al hacer hover */
+  color: white; /* Cambiamos el color del SVG a blanco */
 }
+
 .example-2 .icon-content a svg {
   position: relative;
   z-index: 1;
   width: 30px;
   height: 30px;
 }
-.example-2 .icon-content a:hover {
-  color: white;
-}
+
 .example-2 .icon-content a .filled {
   position: absolute;
   top: auto;
@@ -197,8 +198,4 @@ ul {
     #e1306c,
     #fd1f1f
   );
-}
-.example-2 .icon-content a[data-social="youtube"] .filled,
-.example-2 .icon-content a[data-social="youtube"] ~ .tooltip {
-  background-color: #ff0000;
 }

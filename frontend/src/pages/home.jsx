@@ -1,15 +1,16 @@
 import { jwtDecode } from 'jwt-decode';
 import { useEffect, useState } from 'react';
-import { FaGamepad, FaSwimmingPool, FaUtensils } from 'react-icons/fa';
+// --- LÍNEA CORREGIDA ---
+import { FaClock, FaGamepad, FaMapMarkerAlt, FaSwimmingPool, FaUtensils } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import MiReserva from '../components/MiReserva';
 import PhotoGallery from '../components/PhotoGallery';
 import './home.css';
-
 function Home() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [reservas, setReservas] = useState([]);
+  const [showReservas, setShowReservas] = useState(false); // 1. ESTADO PARA CONTROLAR VISIBILIDAD
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -43,6 +44,11 @@ function Home() {
     navigate('/reservar');
   };
 
+  // 2. FUNCIÓN PARA MOSTRAR/OCULTAR EL PANEL
+  const toggleReservas = () => {
+    setShowReservas(prev => !prev);
+  };
+
   return (
     <div className="home-container">
       {/* --- SECCIÓN HERO (IMAGEN PRINCIPAL) --- */}
@@ -54,7 +60,6 @@ function Home() {
         </div>
       </section>
 
-      {/* --- SECCIÓN "SOBRE NOSOTROS" (TEXTO ACTUALIZADO) --- */}
       <section className="about-section">
         <div className="about-content">
           <div className="about-text">
@@ -64,8 +69,41 @@ function Home() {
             </p>
           </div>
           <div className="about-image">
-            {/* REEMPLAZA ESTA IMAGEN CON UNA FOTO DEL EXTERIOR DEL SALÓN */}
-            <img src="../foto_salon.jpg" alt="Exterior del salón de eventos" />
+            {/* ASEGÚRATE DE QUE LA RUTA A TU IMAGEN SEA CORRECTA DESDE LA CARPETA `public` */}
+            <img src="../public/foto_salon.jpg" alt="Exterior del salón de eventos" />
+          </div>
+        </div>
+      </section>
+      <section className="location-section">
+        <div className="location-content">
+          <div className="location-info">
+            <h2 className="section-title">Ubicación y Horarios</h2>
+            <div className="info-item">
+              <FaMapMarkerAlt className="info-icon" />
+              <div>
+                <h3>Dirección</h3>
+                <p>Bolivar 1425, San Rafael, Mendoza, Argentina </p>
+              </div>
+            </div>
+            <div className="info-item">
+              <FaClock className="info-icon" />
+              <div>
+                <h3>Horarios de Alquiler</h3>
+                <p>Lunes a Domingos: 11:00 a 20:00 hs</p>
+                <p>Turnos de noche: Consultar</p>
+              </div>
+            </div>
+          </div>
+          <div className="location-map">
+            <iframe
+              src='https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d820.6631743855417!2d-68.31195903039101!3d-34.63821589490476!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9679a9bd44f1ea6d%3A0xf07b4cc0a177c032!2sSal%C3%B3n%20de%20eventos!5e0!3m2!1ses-419!2sar!4v1758735908958!5m2!1ses-419!2sar'
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen=""
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            ></iframe>
           </div>
         </div>
       </section>
@@ -95,8 +133,16 @@ function Home() {
         <h2 className="section-title">Fotos del Salón</h2>
         <PhotoGallery />
       </section>
-      {/* La sección de "Mis Reservas" solo aparece si el usuario está logueado y tiene reservas */}
-      {user && reservas.length > 0 && <MiReserva reservas={reservas} />}
+
+      {/* --- 3. NUEVA LÓGICA PARA EL BOTÓN Y PANEL FLOTANTE --- */}
+      {user && reservas.length > 0 && (
+        <>
+          <button onClick={toggleReservas} className="mis-reservas-button">
+            Mis Reservas
+          </button>
+          {showReservas && <MiReserva reservas={reservas} onClose={toggleReservas} />}
+        </>
+      )}
     </div>
   );
 }
