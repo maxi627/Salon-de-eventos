@@ -327,3 +327,19 @@
 .user-search-results li:hover {
   background-color: #f0f0f0;
 }
+
+/* --- Media Query para el panel de admin --- */
+@media (max-width: 768px) {
+    .admin-panel {
+        padding: 1rem;
+    }
+
+    /* Hacemos que la tabla sea desplazable horizontalmente */
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .reservas-table {
+        min-width: 800px; /* Ancho mínimo para que la tabla no se comprima */
+    }
+}

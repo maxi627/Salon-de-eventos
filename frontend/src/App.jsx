@@ -1,14 +1,15 @@
 import { jwtDecode } from 'jwt-decode';
 import { useEffect, useState } from 'react';
+// Importamos los íconos para el menú y las redes sociales
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import './App.css';
 
 function App() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // Estado para controlar el menú móvil
 
   useEffect(() => {
-    // Esto se mantiene igual, es para cuando recargas la página
     const token = localStorage.getItem('authToken');
     if (token) {
       try {
@@ -20,7 +21,6 @@ function App() {
     }
   }, []);
 
-  // 1. CREAMOS LA FUNCIÓN QUE MANEJA EL LOGIN
   const handleLogin = (token) => {
     localStorage.setItem('authToken', token);
     try {
@@ -47,7 +47,7 @@ function App() {
             <img src="/logo.png" alt="Salón de Eventos Logo" className="nav-logo" />
           </Link>
           
-          {/* --- LINKS DE NAVEGACIÓN AGRUPADOS --- */}
+          {/* --- LINKS DE NAVEGACIÓN PARA ESCRITORIO --- */}
           <div className="nav-links">
             <Link to="/">Inicio</Link>
             {user ? (
@@ -64,11 +64,32 @@ function App() {
               </>
             )}
           </div>
+          
+
         </nav>
       </header>
+      
+      {/* --- MENÚ DESPLEGABLE PARA MÓVIL --- */}
+      {isMenuOpen && (
+         <div className="mobile-menu">
+            <Link to="/" onClick={() => setIsMenuOpen(false)}>Inicio</Link>
+            {user ? (
+              <>
+                {user.role === 'administrador' && (
+                  <Link to="/admin-panel" onClick={() => setIsMenuOpen(false)}>Panel Admin</Link>
+                )}
+                <a href="#" onClick={() => { handleLogout(); setIsMenuOpen(false); }}>Cerrar Sesión</a>
+              </>
+            ) : (
+              <>
+                <Link to="/login" onClick={() => setIsMenuOpen(false)}>Iniciar Sesión</Link>
+                <Link to="/register" onClick={() => setIsMenuOpen(false)}>Registrarse</Link>
+              </>
+            )}
+         </div>
+      )}
 
       <main>
-        {/* 2. PASAMOS LAS FUNCIONES A LOS HIJOS MEDIANTE EL CONTEXTO DEL OUTLET */}
         <Outlet context={{ handleLogin }} />
       </main>
 
@@ -156,3 +177,4 @@ function App() {
 }
 
 export default App;
+

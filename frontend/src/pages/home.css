@@ -204,3 +204,41 @@
     overflow: hidden;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
+
+/* --- Media Query para la página de inicio --- */
+@media (max-width: 768px) {
+    /* Ajustamos el padding de las secciones */
+    .hero-section, .about-section, .services-section, .gallery-section, .location-section {
+        padding: 2.5rem 1rem;
+    }
+
+    /* Hacemos que el texto del hero sea más pequeño */
+    .hero-content h1 {
+        font-size: 2.5rem;
+    }
+    .hero-content p {
+        font-size: 1.1rem;
+    }
+
+    /* Apilamos las columnas de las secciones "Sobre nosotros" y "Ubicación" */
+    .about-content, .location-content {
+        grid-template-columns: 1fr;
+    }
+
+    /* Ponemos la imagen primero en la sección "Sobre nosotros" en móvil */
+    .about-content {
+        grid-template-rows: auto auto;
+    }
+    .about-image {
+        grid-row: 1; /* La imagen se va para arriba */
+    }
+
+    /* Apilamos los servicios */
+    .services-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section-title {
+        font-size: 2rem;
+    }
+}

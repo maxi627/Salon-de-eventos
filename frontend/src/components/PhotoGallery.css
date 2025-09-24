@@ -1,6 +1,6 @@
 .photo-gallery-grid {
     display: grid;
-    /* 3 columnas en escritorio, 2 en tablet, 1 en móvil */
+    /* 3 columnas en escritorio por defecto */
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1rem;
     max-width: var(--ancho-maximo);
@@ -13,7 +13,7 @@
     overflow: hidden;
     border-radius: 8px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    aspect-ratio: 4 / 3; /* <-- AÑADE ESTA LÍNEA PARA FORZAR LA PROPORCIÓN */
+    aspect-ratio: 4 / 3;
 }
 
 .gallery-image {
@@ -25,10 +25,9 @@
 }
 
 .gallery-image-container:hover .gallery-image {
-    transform: scale(1.05); /* Efecto de zoom suave al pasar el mouse */
+    transform: scale(1.05);
 }
 
-/* Capa sutil para mejorar el efecto hover */
 .gallery-image-overlay {
     position: absolute;
     top: 0;
@@ -42,6 +41,24 @@
 
 .gallery-image-container:hover .gallery-image-overlay {
     opacity: 1;
+}
+
+/* --- ESTILOS PARA LA GALERÍA EN MÓVILES --- */
+@media (max-width: 768px) {
+    .photo-gallery-grid {
+        display: flex; /* 1. Cambiamos a Flexbox */
+        overflow-x: auto; /* 2. Habilitamos el scroll horizontal */
+        scroll-snap-type: x mandatory; /* 3. Hacemos que el scroll se "enganche" a cada foto */
+        
+        /* Pequeños extras para que se vea mejor */
+        padding-bottom: 1rem; /* Espacio para la barra de scroll */
+        grid-template-columns: none; /* Anulamos el grid de escritorio */
+    }
+
+    .gallery-image-container {
+        flex: 0 0 85%; /* 4. Cada foto ocupa el 85% del ancho de la pantalla */
+        scroll-snap-align: start; /* 5. Alinea cada foto al inicio al hacer scroll */
+    }
 }
 
 /* Personalización de la librería Lightbox */

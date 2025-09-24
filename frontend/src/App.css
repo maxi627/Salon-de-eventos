@@ -23,7 +23,6 @@ body {
   color: var(--color-texto);
   background-color: var(--color-fondo);
   width: 100%;
-
 }
 
 a {
@@ -40,13 +39,14 @@ a:hover {
 nav {
     width: 100%;
     padding: 0 2rem;
-    overflow: hidden;
     display: flex;
-    justify-content: space-between; /* Logo a la izquierda, links a la derecha */
+    justify-content: space-between;
     align-items: center;
-    height: 80px; /* Aumentamos la altura para el logo */
-    background: linear-gradient(to right, #f5dabad6, var(--color-fondo));
+    height: 100px; /* Altura para escritorio */
+    background: linear-gradient(to right, var(--color-superficie), var(--color-fondo));
     border-bottom: 1px solid var(--color-borde);
+    position: relative;
+    z-index: 1001;
   }
 
 /* --- ESTILOS PARA EL LOGO --- */
@@ -54,14 +54,17 @@ nav {
     display: flex;
     align-items: center;
     height: 100%;
-    border-bottom: none !important; /* Evita que se aplique el efecto hover de los otros links */
+    border-bottom: none !important;
 }
 
 .nav-logo {
-    height: 180px; /* Ajusta este valor según el tamaño que prefieras */
-    width: auto;
+    height: 85px; /* Tamaño para escritorio */
+    width: 85px;  /* Tamaño para escritorio */
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--color-borde);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
-/* --- FIN DE ESTILOS PARA EL LOGO --- */
 
   nav .nav-links {
     display: flex;
@@ -76,7 +79,6 @@ nav {
     border-bottom: 2px solid transparent;
   }
 
-  /* Aplicamos el hover a todos los 'a' dentro de nav-links */
   nav .nav-links a:hover {
     color: var(--color-primario);
     border-bottom: 2px solid var(--color-primario);
@@ -98,17 +100,11 @@ footer {
     margin: 0 auto;
 }
 
-/* Contenedor para los íconos de redes sociales */
-.social-icons {
-    margin-bottom: 1.5rem;
-}
-
-/* Estilos de los iconos del footer (Uiverse.io by wilsondesouza) */
+/* Estilos de los iconos del footer */
 ul {
   list-style: none;
-  padding: 0; /* Reseteamos el padding por defecto de la lista */
+  padding: 0;
 }
-
 .example-2 {
   display: flex;
   justify-content: center;
@@ -148,22 +144,19 @@ ul {
   color: #4d4d4d;
   background-color: #fff;
   transition: all 0.3s ease-in-out;
-  border-bottom: none; /* Quitamos el borde inferior para los iconos */
+  border-bottom: none;
 }
-
 .example-2 .icon-content a:hover {
   box-shadow: 3px 2px 45px 0px rgb(0 0 0 / 12%);
-  border-bottom: none; /* Aseguramos que no aparezca el borde al hacer hover */
-  color: white; /* Cambiamos el color del SVG a blanco */
+  border-bottom: none;
+  color: white;
 }
-
 .example-2 .icon-content a svg {
   position: relative;
   z-index: 1;
   width: 30px;
   height: 30px;
 }
-
 .example-2 .icon-content a .filled {
   position: absolute;
   top: auto;
@@ -177,12 +170,10 @@ ul {
 .example-2 .icon-content a:hover .filled {
   height: 100%;
 }
-
 .example-2 .icon-content a[data-social="whatsapp"] .filled,
 .example-2 .icon-content a[data-social="whatsapp"] ~ .tooltip {
   background-color: #128c7e;
 }
-
 .example-2 .icon-content a[data-social="facebook"] .filled,
 .example-2 .icon-content a[data-social="facebook"] ~ .tooltip {
   background-color: #3b5998;
@@ -198,4 +189,66 @@ ul {
     #e1306c,
     #fd1f1f
   );
+}
+
+/* --- INICIO DE ESTILOS RESPONSIVE --- */
+
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    color: var(--color-secundario);
+    cursor: pointer;
+    z-index: 1100;
+}
+
+.mobile-menu {
+    display: none;
+}
+
+/* Media Query para pantallas de 768px o menos (tablets y móviles) */
+@media (max-width: 768px) {
+    /* Ajustamos la barra de navegación en móvil */
+    nav {
+        height: 70px; /* Hacemos la barra más delgada */
+        padding: 0 1rem; /* Reducimos el espaciado lateral */
+    }
+
+    /* Reducimos el tamaño del logo en móvil */
+    .nav-logo {
+        height: 50px;
+        width: 50px;
+    }
+
+    /* Ocultamos los links de la navegación de escritorio */
+    .nav-links {
+        display: none;
+    }
+
+    /* Mostramos el botón de hamburguesa */
+    .menu-toggle {
+        display: block;
+    }
+
+    /* Estilos del menú desplegable cuando está activo */
+    .mobile-menu {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+        position: absolute;
+        top: 70px; /* Se posiciona justo debajo de la nueva altura de la nav */
+        left: 0;
+        width: 100%;
+        background-color: var(--color-superficie);
+        padding: 2rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+        border-bottom: 1px solid var(--color-borde);
+    }
+    .mobile-menu a {
+        font-size: 1.2rem;
+        color: var(--color-secundario);
+    }
 }
