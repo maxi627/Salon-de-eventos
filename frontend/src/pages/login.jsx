@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { useNavigate, useOutletContext } from 'react-router-dom'; // 1. Importar useOutletContext
+import { Link, useNavigate, useOutletContext } from 'react-router-dom';
 import './login.css';
 
 function Login() {
   const navigate = useNavigate();
-  const { handleLogin } = useOutletContext(); // 2. Obtenemos la función del contexto del Outlet
+  const { handleLogin } = useOutletContext();
 
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
@@ -28,11 +28,8 @@ function Login() {
       }
 
       if (result.data.token) {
-        // 3. EN LUGAR DE MANEJAR EL LOCALSTORAGE AQUÍ, LLAMAMOS A LA FUNCIÓN DEL PADRE
         handleLogin(result.data.token);
-        
-        // La navegación se mantiene igual
-        navigate('/'); 
+        navigate('/');
       }
 
     } catch (err) {
@@ -40,7 +37,6 @@ function Login() {
     }
   };
 
-  // ... el resto del JSX no cambia ...
   return (
     <div className="login-container">
       <form className="login-form" onSubmit={handleSubmit}>
@@ -67,6 +63,11 @@ function Login() {
         </div>
         {error && <p className="error-message">{error}</p>}
         <button type="submit" className="login-button">Ingresar</button>
+
+        {/* --- ENLACE AÑADIDO --- */}
+        <div className="forgot-password-link">
+          <Link to="/forgot-password">¿Olvidaste tu contraseña?</Link>
+        </div>
       </form>
     </div>
   );
