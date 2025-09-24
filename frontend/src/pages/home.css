@@ -1,44 +1,134 @@
-.home{
+/* --- ESTILOS PARA LA SECCIÓN HERO --- */
+.hero-section {
+    height: 75vh; /* Altura de la sección principal */
     display: flex;
     align-items: center;
-    padding: 1.5rem;
-    margin: 1.5rem;
-
-}
-.home img{
-    width: 50%;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin-right: 2rem;
-}
-.home div{
-    max-width: 100%;
-    display: block;
+    justify-content: center;
     text-align: center;
-    padding: auto;
-    margin-bottom: 1rem;
+    color: white;
+    position: relative;
+    /* REEMPLAZA 'foto_home.webp' CON TU IMAGEN PRINCIPAL */
+    background: url('/foto_home.webp') no-repeat center center/cover;
+}
 
+/* Capa oscura semitransparente sobre la imagen para que el texto resalte */
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
 }
-.home div h1{
-    font-size: 2.5rem;
+
+.hero-content {
+    position: relative; /* Para que esté por encima de la capa oscura */
+    max-width: 800px;
+    padding: 2rem;
+}
+
+.hero-content h1 {
+    font-size: 3.5rem;
     margin-bottom: 1rem;
-    color: var(--color-secundario);
 }
-.home div p{
+
+.hero-content p {
     font-size: 1.25rem;
-    margin-bottom: 1.5rem;
-    color: var(--color-texto);}
-    
-.home div button{
+    margin-bottom: 2rem;
+}
+
+.hero-button {
     background-color: var(--color-primario);
     color: white;
     border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 4px;
-    font-size: 1rem;
-    transition: background-color 0.3s ease;
-    
+    padding: 1rem 2.5rem;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    text-transform: uppercase;
 }
-.home div button:hover{
-    background-color: #08588e; /* Un tono más oscuro al pasar el mouse */
+
+.hero-button:hover {
+    background-color: #a98860;
+    transform: translateY(-3px);
+}
+
+/* --- ESTILOS PARA LA SECCIÓN "SOBRE NOSOTROS" --- */
+.about-section {
+    padding: 4rem 2rem;
+    background-color: var(--color-superficie);
+}
+
+.about-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    max-width: var(--ancho-maximo);
+    margin: 0 auto;
+    align-items: center;
+}
+
+.about-text h2 {
+    font-size: 2.5rem;
+    color: var(--color-secundario);
+    margin-bottom: 1.5rem;
+}
+
+.about-text p {
+    line-height: 1.8;
+    font-size: 1.1rem;
+}
+
+.about-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* --- ESTILOS PARA LA SECCIÓN DE SERVICIOS --- */
+.services-section {
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+.section-title {
+    font-size: 2.5rem;
+    color: var(--color-secundario);
+    margin-bottom: 3rem;
+}
+
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    max-width: var(--ancho-maximo);
+    margin: 0 auto;
+}
+
+.service-item {
+    padding: 2rem;
+}
+
+.service-icon {
+    font-size: 3rem;
+    color: var(--color-primario);
+    margin-bottom: 1.5rem;
+}
+
+.service-item h3 {
+    font-size: 1.5rem;
+    color: var(--color-secundario);
+    margin-bottom: 1rem;
+}
+
+.service-item p {
+    line-height: 1.6;
+}
+.gallery-section {
+    padding: 4rem 2rem;
+    background-color: var(--color-superficie);
 }

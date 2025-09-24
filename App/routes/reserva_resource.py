@@ -194,3 +194,15 @@ def delete(id):
     except Exception as e:
         response_builder.add_message("Error deleting Reserva").add_status_code(500).add_data(str(e))
         return response_schema.dump(response_builder.build()), 500
+
+@Reserva.route('/reserva/mis-reservas', methods=['GET'])
+@jwt_required()
+def get_user_reservations():
+    user_id = get_jwt_identity()
+    response_builder = ResponseBuilder()
+    try:
+        reservas = service.get_by_user_id(user_id)
+        data = reserva_schema.dump(reservas, many=True)
+        return response_builder.add_data(data).add_status_code(200).build(), 200
+    except Exception as e:
+        return response_builder.add_message(str(e)).add_status_code(500).build(), 500

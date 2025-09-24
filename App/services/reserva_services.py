@@ -163,3 +163,9 @@ class ReservaService:
                 cache.set(f'reserva_{reserva_id}', reserva, timeout=self.CACHE_TIMEOUT)
             return reserva
         return cached_reserva
+    
+    def get_by_user_id(self, user_id: int) -> list[Reserva]:
+        """
+        Obtiene todas las reservas de un usuario.
+        """
+        return self.repository.get_by_user_id(user_id)

@@ -1,0 +1,104 @@
+.mi-reserva-wrapper {
+  max-width: var(--ancho-maximo);
+  margin: 3rem auto;
+  padding: 3rem 2rem;
+  background-color: var(--color-superficie);
+  border-radius: 8px;
+}
+
+.mi-reserva-title {
+  text-align: center;
+  color: var(--color-secundario);
+  margin-bottom: 2rem;
+  font-size: 2rem;
+}
+
+.mi-reserva-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.reserva-card-modern {
+  background-color: var(--color-fondo);
+  border-radius: 8px;
+  border: 1px solid var(--color-borde);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.reserva-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.reserva-card-modern:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Cabecera de la tarjeta (fecha y estado) */
+    
+.reserva-date {
+  font-weight: 600;
+  color: var(--color-secundario);
+  font-size: 1.1rem;
+}
+
+/* "Tag" para el estado */
+.reserva-status {
+  padding: 0.3rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #fff;
+  text-transform: capitalize;
+}
+
+.status-confirmada {
+  background-color: #27ae60; /* Verde */
+}
+
+.status-pendiente {
+  background-color: #f39c12; /* Naranja */
+}
+
+.status-cancelada {
+  background-color: #e74c3c; /* Rojo */
+}
+
+/* Cuerpo de la tarjeta (detalles financieros) */
+.reserva-body {
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.reserva-info-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.info-label {
+  font-size: 0.9rem;
+  color: #6c757d; /* Gris */
+  margin-bottom: 0.25rem;
+}
+
+.info-value {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Estilo especial para el saldo pendiente */
+.reserva-info-item.saldo .info-value {
+  color: var(--color-primario);
+  font-weight: 600;
+}

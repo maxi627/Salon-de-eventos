@@ -45,3 +45,8 @@ class ReservaRepository(Repository_add, Repository_get, Repository_delete):
         except Exception as e:
             db.session.rollback()
             raise e
+    def get_by_user_id(self, user_id: int) -> List[Reserva]:
+        return Reserva.query.options(
+            joinedload(Reserva.usuario),
+            joinedload(Reserva.fecha)
+        ).filter_by(usuario_id=user_id).all()
