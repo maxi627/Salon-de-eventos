@@ -46,7 +46,7 @@ function Reservas() {
     if (!token) {
       setMessage('Debes iniciar sesión para poder seleccionar una fecha.');
       setTimeout(() => setMessage(''), 3000);
-      return; 
+      return;
     }
 
     const dateString = dayDate.toISOString().split('T')[0];
@@ -54,13 +54,23 @@ function Reservas() {
   };
 
   const changeMonth = (offset) => {
-    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1);
     const today = new Date();
     const firstOfCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
+    // --- LÓGICA PARA LIMITAR LA NAVEGACIÓN ---
+    const maxDate = new Date(today.getFullYear(), today.getMonth() + 5, 1);
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1);
+
+    // Evita ir a meses pasados
     if (newDate < firstOfCurrentMonth && offset < 0) {
       return;
     }
+    
+    // Evita ir más de 3 meses en el futuro
+    if (newDate > maxDate && offset > 0) {
+        return;
+    }
+
     setCurrentDate(newDate);
   };
 
