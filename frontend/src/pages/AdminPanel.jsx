@@ -54,12 +54,20 @@ function AdminPanel() {
       }
       const data = await response.json();
       
+      // --- INICIO DE LA CORRECCIÓN ---
+      // Se procesan las fechas como UTC para evitar errores de zona horaria.
       const groupedReservas = data.data.sort((a, b) => new Date(a.fecha?.dia) - new Date(b.fecha?.dia))
         .reduce((acc, reserva) => {
           if (!reserva.fecha?.dia) return acc;
-          const fecha = new Date(reserva.fecha.dia);
-          const adjustedDate = new Date(fecha.getUTCFullYear(), fecha.getUTCMonth(), fecha.getUTCDate() + 1);
-          const monthYear = new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric' }).format(adjustedDate);
+          
+          const dateParts = reserva.fecha.dia.split('-');
+          const fecha = new Date(Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2]));
+
+          const monthYear = new Intl.DateTimeFormat('es-ES', { 
+              month: 'long', 
+              year: 'numeric',
+              timeZone: 'UTC' 
+          }).format(fecha);
           
           if (!acc[monthYear]) {
             acc[monthYear] = [];
@@ -67,6 +75,7 @@ function AdminPanel() {
           acc[monthYear].push(reserva);
           return acc;
       }, {});
+      // --- FIN DE LA CORRECCIÓN ---
 
       setReservas(groupedReservas);
 
