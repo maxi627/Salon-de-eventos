@@ -178,21 +178,29 @@ def update(id):
     except Exception as e:
         response_builder.add_message("Error updating Reserva").add_status_code(500).add_data(str(e))
         return response_schema.dump(response_builder.build()), 500
+
 @Reserva.route('/reserva/<int:id>', methods=['DELETE'])
 @limiter.limit("20 per minute")
 @jwt_required()
-@admin_required() # <-- ¡AÑADIMOS LA PROTECCIÓN DE ADMIN!
+@admin_required()
 def delete(id):
     response_builder = ResponseBuilder()
     try:
         if service.delete(id):
-            response_builder.add_message("Reserva deleted").add_status_code(200).add_data({'id': id})
+            response_builder.add_message("Reserva eliminada con éxito").add_status_code(200).add_data({'id': id})
             return response_schema.dump(response_builder.build()), 200
         else:
-            response_builder.add_message("Reserva not found").add_status_code(404).add_data({'id': id})
+            response_builder.add_message("Reserva no encontrada").add_status_code(404).add_data({'id': id})
             return response_schema.dump(response_builder.build()), 404
     except Exception as e:
-        response_builder.add_message("Error deleting Reserva").add_status_code(500).add_data(str(e))
+        # --- INICIO DE LA CORRECCIÓN ---
+        # Capturamos el error específico de la regla de negocio y devolvemos un código 409 (Conflicto)
+        if "No se puede eliminar una reserva que tiene pagos registrados" in str(e):
+            response_builder.add_message(str(e)).add_status_code(409)
+            return response_schema.dump(response_builder.build()), 409
+        # --- FIN DE LA CORRECCIÓN ---
+        
+        response_builder.add_message("Error al eliminar la Reserva").add_status_code(500).add_data(str(e))
         return response_schema.dump(response_builder.build()), 500
 
 @Reserva.route('/reserva/mis-reservas', methods=['GET'])

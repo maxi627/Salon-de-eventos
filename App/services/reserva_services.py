@@ -120,37 +120,39 @@ class ReservaService:
             cache.delete('fechas')
 
             return reserva_a_actualizar
+
     def delete(self, reserva_id: int) -> bool:
         """
-        Realiza un "soft delete": cambia el estado de la reserva a 'cancelada'
-        y libera la fecha asociada para que vuelva a estar disponible.
-        No elimina la reserva ni los pagos de la base de datos.
+        Elimina permanentemente una reserva (hard delete) solo si no tiene pagos asociados.
+        Si tiene pagos, lanza una excepción.
         """
         with self.redis_lock(reserva_id):
-            reserva_a_cancelar = self.repository.get_by_id(reserva_id)
+            reserva_a_eliminar = self.repository.get_by_id(reserva_id)
 
-            if not reserva_a_cancelar:
+            if not reserva_a_eliminar:
                 return False
 
-            try:
-                # 1. Cambiamos el estado de la reserva
-                reserva_a_cancelar.estado = 'cancelada'
+            # 1. Verificar si hay pagos asociados
+            if reserva_a_eliminar.pagos:
+                raise Exception("No se puede eliminar una reserva que tiene pagos registrados.")
 
-                # 2. Liberamos la fecha para que esté disponible de nuevo
-                fecha_asociada = reserva_a_cancelar.fecha
+            try:
+                # 2. Liberar la fecha asociada para que vuelva a estar disponible
+                fecha_asociada = reserva_a_eliminar.fecha
                 if fecha_asociada:
                     fecha_asociada.estado = 'disponible'
-                    # Invalidamos la caché de la fecha para que se actualice en el calendario
                     cache.delete(f'fecha_{fecha_asociada.id}')
                     cache.delete('fechas')
 
-                db.session.commit()
-
-                # 3. Invalidamos las cachés relevantes de la reserva
-                cache.delete(f'reserva_{reserva_id}')
-                cache.delete('reservas')
+                # 3. Llamar al repositorio para la eliminación física
+                deleted = self.repository.delete(reserva_id)
                 
-                return True
+                if deleted:
+                    # 4. Invalidar cachés de la reserva
+                    cache.delete(f'reserva_{reserva_id}')
+                    cache.delete('reservas')
+                
+                return deleted
 
             except Exception as e:
                 db.session.rollback()
