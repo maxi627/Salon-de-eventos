@@ -57,33 +57,40 @@ class UsuarioService:
     def update(self, usuario_id: int, updated_usuario: Usuario) -> Usuario:
         """
         Actualiza un usuario existente.
-        :param usuario_id: ID del usuario a actualizar.
-        :param updated_usuario: Datos del usuario actualizados.
-        :return: Objeto Usuario actualizado.
         """
         with self.redis_lock(usuario_id):
             existing_usuario = self.find(usuario_id)
             if not existing_usuario:
                 raise Exception(f"Usuario con ID {usuario_id} no encontrada.")
 
-            # Actualizar los atributos del objeto existente
             existing_usuario.nombre = updated_usuario.nombre
             existing_usuario.apellido = updated_usuario.apellido
             existing_usuario.dni = updated_usuario.dni
             existing_usuario.correo = updated_usuario.correo
 
             db.session.commit()
-            # Actualizar caché
             cache.set(f'usuario_{usuario_id}', existing_usuario, timeout=self.CACHE_TIMEOUT)
-            cache.delete('usuarios')  # Invalida la lista de usuarios en caché
+            cache.delete('usuarios')
 
             return existing_usuario
 
     def delete(self, usuario_id: int) -> bool:
         """
-        Elimina un usuario por su ID y actualiza la caché.
+        Elimina un usuario por su ID solo si no tiene reservas asociadas.
         """
         with self.redis_lock(usuario_id):
+            # Buscamos al usuario para poder inspeccionar sus relaciones
+            usuario_a_eliminar = self.repository.get_by_id(usuario_id)
+
+            if not usuario_a_eliminar:
+                return False # El usuario no existe
+
+            # --- LÓGICA DE VERIFICACIÓN ---
+            # Si la lista de reservas del usuario no está vacía, lanzamos un error.
+            if usuario_a_eliminar.reservas:
+                raise Exception("No se puede eliminar el usuario porque tiene una o más reservas asociadas.")
+
+            # Si no hay reservas, procedemos con la eliminación
             deleted = self.repository.delete(usuario_id)
             if deleted:
                 cache.delete(f'usuario_{usuario_id}')

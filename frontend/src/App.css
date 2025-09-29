@@ -43,7 +43,7 @@ nav {
     justify-content: space-between;
     align-items: center;
     height: 100px; /* Altura para escritorio */
-    background: linear-gradient(to right, var(--color-superficie), var(--color-fondo));
+    background: linear-gradient(to right, #f1d7b8, var(--color-fondo));
     border-bottom: 1px solid var(--color-borde);
     position: relative;
     z-index: 1001;

@@ -122,29 +122,33 @@ class ReservaService:
             return reserva_a_actualizar
     def delete(self, reserva_id: int) -> bool:
         """
-        Elimina una reserva y restablece el estado de su fecha a 'disponible'.
+        Realiza un "soft delete": cambia el estado de la reserva a 'cancelada'
+        y libera la fecha asociada para que vuelva a estar disponible.
+        No elimina la reserva ni los pagos de la base de datos.
         """
         with self.redis_lock(reserva_id):
-            reserva_a_eliminar = self.repository.get_by_id(reserva_id)
+            reserva_a_cancelar = self.repository.get_by_id(reserva_id)
 
-            if not reserva_a_eliminar:
+            if not reserva_a_cancelar:
                 return False
 
             try:
-                fecha_asociada = reserva_a_eliminar.fecha
+                # 1. Cambiamos el estado de la reserva
+                reserva_a_cancelar.estado = 'cancelada'
+
+                # 2. Liberamos la fecha para que esté disponible de nuevo
+                fecha_asociada = reserva_a_cancelar.fecha
                 if fecha_asociada:
                     fecha_asociada.estado = 'disponible'
+                    # Invalidamos la caché de la fecha para que se actualice en el calendario
+                    cache.delete(f'fecha_{fecha_asociada.id}')
+                    cache.delete('fechas')
 
-                db.session.delete(reserva_a_eliminar)
                 db.session.commit()
 
-                # --- ESTA ES LA CORRECCIÓN CLAVE ---
-                # Invalidamos todas las cachés relevantes, incluyendo la de la fecha específica.
+                # 3. Invalidamos las cachés relevantes de la reserva
                 cache.delete(f'reserva_{reserva_id}')
                 cache.delete('reservas')
-                if fecha_asociada:
-                    cache.delete(f'fecha_{fecha_asociada.id}')
-                    cache.delete('fechas') # Y la lista general de fechas
                 
                 return True
 

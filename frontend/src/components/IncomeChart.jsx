@@ -1,16 +1,17 @@
 import {
-    BarElement,
-    CategoryScale,
-    Chart as ChartJS,
-    Legend,
-    LinearScale,
-    Title,
-    Tooltip,
+  BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
+  Title,
+  Tooltip,
 } from 'chart.js';
+import { useEffect, useState } from 'react'; // <-- IMPORTAMOS useState y useEffect
 import { Bar } from 'react-chartjs-2';
 import './IncomeChart.css';
 
-// Registramos los componentes de Chart.js que vamos a usar
+// Registramos los componentes de Chart.js
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -21,18 +22,40 @@ ChartJS.register(
 );
 
 function IncomeChart({ monthlyData }) {
-  // Verificamos si hay datos para mostrar
+  // 1. ESTADO PARA DETECTAR SI LA VISTA ES MÓVIL
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    // Función para actualizar el estado cuando cambia el tamaño de la ventana
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // Limpiamos el event listener cuando el componente se desmonta
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+
   if (!monthlyData || Object.keys(monthlyData).length === 0) {
     return <div className="chart-container"><p>No hay datos de ingresos mensuales para mostrar.</p></div>;
   }
 
-  // Ordenamos los meses y preparamos los datos para el gráfico
   const sortedMonths = Object.keys(monthlyData).sort();
   const chartData = {
     labels: sortedMonths.map(month => {
-      // Formateamos la etiqueta para que sea más legible (ej: "Enero 2024")
       const [year, monthNum] = month.split('-');
-      return new Date(year, monthNum - 1).toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+      
+      // 2. ELEGIMOS EL FORMATO DE FECHA SEGÚN EL TAMAÑO DE LA PANTALLA
+      const formatOptions = isMobile
+        ? { month: 'short', year: '2-digit' } // Formato corto para móvil: "sep '25"
+        : { month: 'long', year: 'numeric' };   // Formato largo para escritorio: "septiembre de 2025"
+
+      const date = new Date(year, monthNum - 1);
+      // Capitalizamos la primera letra del mes corto
+      let formattedDate = new Intl.DateTimeFormat('es-ES', formatOptions).format(date);
+      return formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
     }),
     datasets: [
       {
@@ -47,6 +70,7 @@ function IncomeChart({ monthlyData }) {
 
   const chartOptions = {
     responsive: true,
+    maintainAspectRatio: false, // Añadido para mejor control de tamaño
     plugins: {
       legend: {
         position: 'top',
@@ -55,7 +79,7 @@ function IncomeChart({ monthlyData }) {
         display: true,
         text: 'Resumen de Ingresos Registrados por Mes',
         font: {
-          size: 18,
+          size: 16 // Tamaño de fuente ajustado
         }
       },
     },
@@ -63,7 +87,6 @@ function IncomeChart({ monthlyData }) {
       y: {
         beginAtZero: true,
         ticks: {
-          // Formatear el eje Y como moneda
           callback: function(value) {
             return '$' + value.toLocaleString('es-AR');
           }
@@ -73,7 +96,8 @@ function IncomeChart({ monthlyData }) {
   };
 
   return (
-    <div className="chart-container">
+    // Ajustamos el contenedor para darle una altura fija
+    <div className="chart-container" style={{ height: '400px', position: 'relative' }}>
       <Bar data={chartData} options={chartOptions} />
     </div>
   );

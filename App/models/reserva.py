@@ -14,7 +14,6 @@ class Reserva(db.Model):
     estado = db.Column(db.String(20), nullable=False, default='pendiente')
     comprobante_url = db.Column(db.String(256), nullable=True)
     valor_alquiler = db.Column(db.Float, nullable=True, default=0.0)
-    # SALDO RESTANTE ELIMINADO - Se calculará dinámicamente
     ip_aceptacion = db.Column(db.String(45), nullable=True) 
     fecha_aceptacion = db.Column(db.DateTime, nullable=True) 
     version_contrato = db.Column(db.String(50), nullable=True, default='1.0') 
@@ -25,11 +24,9 @@ class Reserva(db.Model):
     usuario = db.relationship('Usuario', back_populates='reservas')
     fecha = db.relationship('Fecha', back_populates='reserva')
 
-    # NUEVA RELACIÓN: Una reserva tiene muchos pagos
     pagos = db.relationship('Pago', back_populates='reserva')
 
 
-    # Propiedad para calcular el saldo restante
     @property
     def saldo_restante(self):
         total_pagado = sum(pago.monto for pago in self.pagos)
