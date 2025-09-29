@@ -87,7 +87,7 @@ def update(id):
         return response_schema.dump(response_builder.build()), 500
 
 @Persona.route('/persona/<int:id>', methods=['DELETE'])
-@limiter.limit("5 per minute")
+@limiter.limit("50 per minute")
 def delete(id):
     response_builder = ResponseBuilder()
     try:

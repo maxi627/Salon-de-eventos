@@ -1,10 +1,13 @@
-from datetime import datetime  # <- Añadir esta línea
+from datetime import datetime
 
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
 
 from app.config import ResponseBuilder
+# --- INICIO DE LA CORRECCIÓN ---
+from app.extensions import limiter  # Importamos el limiter
+# --- FIN DE LA CORRECCIÓN ---
 from app.mapping import GastoSchema, ResponseSchema
 from app.services.gasto_service import GastoService
 from app.utils.decorators import admin_required
@@ -17,6 +20,7 @@ response_schema = ResponseSchema()
 @GastoBP.route('/gasto', methods=['GET'])
 @jwt_required()
 @admin_required()
+@limiter.limit("50 per minute") # <-- LÍNEA AÑADIDA
 def all():
     response_builder = ResponseBuilder()
     try:

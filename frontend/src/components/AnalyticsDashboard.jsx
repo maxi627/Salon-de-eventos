@@ -37,22 +37,35 @@ function AnalyticsDashboard() {
 
     const fetchAnalytics = async () => {
       setIsLoading(true);
-      setError(''); // Limpiar errores previos
+      setError('');
       const token = localStorage.getItem('authToken');
       try {
         const response = await fetch(`/api/v1/analytics?mes=${reportDate.mes}&anio=${reportDate.anio}`, {
           headers: { 'Authorization': `Bearer ${token}` },
           signal,
         });
+
+        // --- INICIO DE LA CORRECCIÓN ---
+        // Verificamos si la respuesta es realmente JSON antes de procesarla
+        const contentType = response.headers.get("content-type");
+        if (!response.ok) {
+            // Si no es JSON, es probable que sea un error de servidor (HTML)
+            if (contentType && contentType.indexOf("application/json") === -1) {
+                throw new Error('El servidor no respondió correctamente. Puede que tu sesión haya expirado.');
+            }
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Ocurrió un error al cargar las analíticas.');
+        }
+        // --- FIN DE LA CORRECCIÓN ---
+
         const result = await response.json();
-        if (!response.ok) throw new Error(result.message);
         setStats(result.data);
+
       } catch (err) {
         if (err.name !== 'AbortError') {
             setError(err.message);
         }
       } finally {
-        // Solo cambiar isLoading si la petición no fue abortada
         if (!signal.aborted) {
             setIsLoading(false);
         }

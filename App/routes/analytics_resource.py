@@ -9,7 +9,9 @@ from sqlalchemy import extract, func
 from weasyprint import HTML
 
 from app.config import ResponseBuilder
-from app.extensions import db
+# --- INICIO DE LA CORRECCIÓN ---
+from app.extensions import db, limiter  # Importamos el limiter
+# --- FIN DE LA CORRECCIÓN ---
 from app.mapping import ResponseSchema
 from app.models import Fecha, Gasto, Pago, Reserva
 from app.utils.decorators import admin_required
@@ -20,6 +22,7 @@ response_schema = ResponseSchema()
 @Analytics.route('/analytics', methods=['GET'])
 @jwt_required()
 @admin_required()
+@limiter.limit("50 per minute") # <-- LÍNEA AÑADIDA
 def get_analytics():
     """
     Endpoint que calcula y devuelve métricas de contabilidad y tendencias

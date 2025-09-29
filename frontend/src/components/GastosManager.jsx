@@ -10,34 +10,42 @@ function GastosManager() {
     fecha: new Date().toISOString().slice(0, 10),
   });
   
-  // --- INICIO DE NUEVOS ESTADOS Y LÓGICA ---
   const [currentDate, setCurrentDate] = useState(new Date());
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchGastos = async () => {
     setIsLoading(true);
+    setError('');
     const token = localStorage.getItem('authToken');
-    // Obtenemos mes y año de la fecha actual en el estado
     const mes = currentDate.getMonth() + 1;
     const anio = currentDate.getFullYear();
     try {
-      // Pasamos los parámetros a la API
       const response = await fetch(`/api/v1/gasto?mes=${mes}&anio=${anio}`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
+
+      // --- INICIO DE LA CORRECCIÓN ---
+      const contentType = response.headers.get("content-type");
+      if (!response.ok) {
+          if (contentType && contentType.indexOf("application/json") === -1) {
+              throw new Error('El servidor no respondió correctamente. Inténtelo de nuevo.');
+          }
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Error al cargar los gastos.');
+      }
+      // --- FIN DE LA CORRECCIÓN ---
+
       const result = await response.json();
-      if (!response.ok) throw new Error(result.message || 'Error al cargar gastos');
       setGastos(result.data);
     } catch (err) {
       setError(err.message);
-      setGastos([]); // Limpiar gastos si hay error
+      setGastos([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Este efecto se ejecutará cada vez que 'currentDate' cambie
   useEffect(() => {
     fetchGastos();
   }, [currentDate]);
@@ -47,7 +55,6 @@ function GastosManager() {
       return new Date(prevDate.getFullYear(), prevDate.getMonth() + offset, 1);
     });
   };
-  // --- FIN DE NUEVOS ESTADOS Y LÓGICA ---
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -73,7 +80,6 @@ function GastosManager() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || 'Error al registrar el gasto');
       
-      // Volvemos a buscar los gastos para actualizar la lista
       fetchGastos(); 
       setFormData({
         descripcion: '',
@@ -132,7 +138,6 @@ function GastosManager() {
           {error && <p className="error-message">{error}</p>}
         </form>
         <div className="gastos-list">
-          {/* --- INICIO DE NUEVO NAVEGADOR --- */}
           <div className="gastos-header">
             <h3>Gastos Registrados</h3>
             <div className="month-navigator">
@@ -143,7 +148,6 @@ function GastosManager() {
               <button onClick={() => changeMonth(1)}>&gt;</button>
             </div>
           </div>
-          {/* --- FIN DE NUEVO NAVEGADOR --- */}
 
           {isLoading ? <p>Cargando...</p> : (
             <table>

@@ -15,7 +15,7 @@ response_schema = ResponseSchema()
 
 # Aplicar limitadores específicos en las rutas
 @Administrador.route('/administrador', methods=['GET'])
-@limiter.limit("5 per minute")
+@limiter.limit("50 per minute")
 @admin_required()
 def all():
     response_builder = ResponseBuilder()
@@ -28,7 +28,7 @@ def all():
         return response_schema.dump(response_builder.build()), 500
 
 @Administrador.route('/administrador/<int:id>', methods=['GET'])
-@limiter.limit("5 per minute")
+@limiter.limit("50 per minute")
 @admin_required()
 def one(id):
     response_builder = ResponseBuilder()
@@ -46,7 +46,7 @@ def one(id):
         return response_schema.dump(response_builder.build()), 500
 
 @Administrador.route('/administrador', methods=['POST'])
-@limiter.limit("5 per minute")
+@limiter.limit("50 per minute")
 # @admin_required()
 # @jwt_required()
 def add():
@@ -68,7 +68,7 @@ def add():
         return response_schema.dump(response_builder.build()), 500
 
 @Administrador.route('/administrador/<int:id>', methods=['PUT'])
-@limiter.limit("5 per minute")
+@limiter.limit("50 per minute")
 @admin_required()
 def update(id):
     response_builder = ResponseBuilder()
@@ -94,7 +94,7 @@ def update(id):
         return response_schema.dump(response_builder.build()), 500
 
 @Administrador.route('/administrador/<int:id>', methods=['DELETE'])
-@limiter.limit("3 per minute")
+@limiter.limit("30 per minute")
 @admin_required()
 def delete(id):
     response_builder = ResponseBuilder()
