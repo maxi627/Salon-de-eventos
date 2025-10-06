@@ -1,5 +1,8 @@
+// frontend/src/pages/AdminPanel.jsx
+
 import { useEffect, useState } from 'react';
 import AnalyticsDashboard from '../components/AnalyticsDashboard';
+import ArchivedReservations from '../components/ArchivedReservations'; // Importamos el nuevo componente
 import EditReservationModal from '../components/EditReservationModal';
 import GastosManager from '../components/GastosManager';
 import PriceEditor from '../components/PriceEditor';
@@ -14,6 +17,7 @@ function AdminPanel() {
   const [selectedReservation, setSelectedReservation] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
   const [collapsedMonths, setCollapsedMonths] = useState({});
+  const [showArchived, setShowArchived] = useState(false); // Estado para controlar la visibilidad de archivadas
 
   const formatDisplayDate = (isoDate) => {
     if (!isoDate) return 'N/A';
@@ -54,8 +58,6 @@ function AdminPanel() {
       }
       const data = await response.json();
       
-      // --- INICIO DE LA CORRECCIÓN ---
-      // Se procesan las fechas como UTC para evitar errores de zona horaria.
       const groupedReservas = data.data.sort((a, b) => new Date(a.fecha?.dia) - new Date(b.fecha?.dia))
         .reduce((acc, reserva) => {
           if (!reserva.fecha?.dia) return acc;
@@ -75,7 +77,6 @@ function AdminPanel() {
           acc[monthYear].push(reserva);
           return acc;
       }, {});
-      // --- FIN DE LA CORRECCIÓN ---
 
       setReservas(groupedReservas);
 
@@ -143,10 +144,17 @@ function AdminPanel() {
       <GastosManager />
       <div className="reservas-header">
         <h2 className="reservas-title">Gestión de Reservas</h2>
-        <button className="btn-create" onClick={handleOpenCreateModal}>
-          + Crear Nueva Reserva
-        </button>
+        <div>
+          <button className="btn-toggle-archived" onClick={() => setShowArchived(!showArchived)}>
+            {showArchived ? 'Ocultar Archivadas' : 'Ver Archivadas'}
+          </button>
+          <button className="btn-create" onClick={handleOpenCreateModal}>
+            + Crear Nueva Reserva
+          </button>
+        </div>
       </div>
+      
+      {showArchived && <ArchivedReservations />}
       
       {Object.keys(reservas).length > 0 ? (
         Object.keys(reservas).map(month => (
@@ -202,7 +210,7 @@ function AdminPanel() {
           </div>
         ))
       ) : (
-        <p>No hay reservas para mostrar.</p>
+        <p>No hay reservas activas para mostrar.</p>
       )}
 
       {isModalOpen && (

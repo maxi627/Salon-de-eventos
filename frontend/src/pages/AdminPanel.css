@@ -343,3 +343,35 @@
         min-width: 800px; /* Ancho mínimo para que la tabla no se comprima */
     }
 }
+
+.btn-toggle-archived {
+  padding: 0.6rem 1.2rem;
+  background-color: #6c757d; /* Un color gris neutro */
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-right: 1rem; /* Espacio entre los botones */
+  transition: background-color 0.3s;
+}
+
+.btn-toggle-archived:hover {
+  background-color: #5a6268;
+}
+
+/* Contenedor para la sección de archivadas */
+.archived-section {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.archived-section h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: var(--color-secundario);
+}

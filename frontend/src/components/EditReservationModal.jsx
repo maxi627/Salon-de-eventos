@@ -138,7 +138,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
   };
   
   const handleDelete = async () => {
-    if (!window.confirm(`¿Estás seguro de que quieres eliminar la reserva del ${reservation.fecha.dia}? Esta acción no se puede deshacer.`)) {
+    if (!window.confirm(`¿Estás seguro de que quieres archivar la reserva del ${reservation.fecha.dia}? Esta acción no se puede deshacer.`)) {
       return;
     }
 
@@ -260,7 +260,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
         {!isCreating && (
           <div className="delete-section">
             <button onClick={handleDelete} className="btn-delete" disabled={isDeleting}>
-              {isDeleting ? 'Eliminando...' : 'Eliminar Reserva'}
+              {isDeleting ? 'Archivando...' : 'Archivar Reserva'}
             </button>
           </div>
         )}

@@ -187,22 +187,30 @@ def delete(id):
     response_builder = ResponseBuilder()
     try:
         if service.delete(id):
-            response_builder.add_message("Reserva eliminada con éxito").add_status_code(200).add_data({'id': id})
+            # Mensaje actualizado para reflejar la nueva acción
+            response_builder.add_message("Reserva archivada con éxito").add_status_code(200).add_data({'id': id})
             return response_schema.dump(response_builder.build()), 200
         else:
             response_builder.add_message("Reserva no encontrada").add_status_code(404).add_data({'id': id})
             return response_schema.dump(response_builder.build()), 404
     except Exception as e:
-        # --- INICIO DE LA CORRECCIÓN ---
-        # Capturamos el error específico de la regla de negocio y devolvemos un código 409 (Conflicto)
-        if "No se puede eliminar una reserva que tiene pagos registrados" in str(e):
-            response_builder.add_message(str(e)).add_status_code(409)
-            return response_schema.dump(response_builder.build()), 409
-        # --- FIN DE LA CORRECCIÓN ---
-        
-        response_builder.add_message("Error al eliminar la Reserva").add_status_code(500).add_data(str(e))
+        response_builder.add_message("Error al archivar la Reserva").add_status_code(500).add_data(str(e))
         return response_schema.dump(response_builder.build()), 500
 
+@Reserva.route('/reserva/archivadas', methods=['GET'])
+@limiter.limit("50 per minute")
+@jwt_required()
+@admin_required()
+def all_archived():
+    response_builder = ResponseBuilder()
+    try:
+        data = reserva_schema.dump(service.get_all_archived(), many=True)
+        response_builder.add_message("Reservas archivadas encontradas").add_status_code(200).add_data(data)
+        return response_schema.dump(response_builder.build()), 200
+    except Exception as e:
+        response_builder.add_message("Error al obtener reservas archivadas").add_status_code(500).add_data(str(e))
+        return response_schema.dump(response_builder.build()), 500
+    
 @Reserva.route('/reserva/mis-reservas', methods=['GET'])
 @jwt_required()
 def get_user_reservations():

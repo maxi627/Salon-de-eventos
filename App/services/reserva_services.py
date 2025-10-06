@@ -123,41 +123,49 @@ class ReservaService:
 
     def delete(self, reserva_id: int) -> bool:
         """
-        Elimina permanentemente una reserva (hard delete) solo si no tiene pagos asociados.
-        Si tiene pagos, lanza una excepción.
+        Archiva una reserva en lugar de eliminarla permanentemente (soft delete).
+        Esto preserva el historial de pagos y la integridad de los datos.
+        La fecha asociada a la reserva se libera para que esté disponible nuevamente.
         """
         with self.redis_lock(reserva_id):
-            reserva_a_eliminar = self.repository.get_by_id(reserva_id)
+            reserva_a_archivar = self.repository.get_by_id(reserva_id)
 
-            if not reserva_a_eliminar:
+            if not reserva_a_archivar:
                 return False
 
-            # 1. Verificar si hay pagos asociados
-            if reserva_a_eliminar.pagos:
-                raise Exception("No se puede eliminar una reserva que tiene pagos registrados.")
-
             try:
-                # 2. Liberar la fecha asociada para que vuelva a estar disponible
-                fecha_asociada = reserva_a_eliminar.fecha
+                # Cambiamos el estado a 'archivada' en lugar de eliminar
+                reserva_a_archivar.estado = 'archivada'
+
+                # Liberamos la fecha para que vuelva a estar disponible
+                fecha_asociada = reserva_a_archivar.fecha
                 if fecha_asociada:
                     fecha_asociada.estado = 'disponible'
                     cache.delete(f'fecha_{fecha_asociada.id}')
                     cache.delete('fechas')
 
-                # 3. Llamar al repositorio para la eliminación física
-                deleted = self.repository.delete(reserva_id)
-                
-                if deleted:
-                    # 4. Invalidar cachés de la reserva
-                    cache.delete(f'reserva_{reserva_id}')
-                    cache.delete('reservas')
-                
-                return deleted
+                db.session.commit()
+
+                # Invalidamos las cachés de la reserva
+                cache.delete(f'reserva_{reserva_id}')
+                cache.delete('reservas')
+
+                return True
 
             except Exception as e:
                 db.session.rollback()
                 raise e
-
+    def get_all_archived(self) -> list[Reserva]:
+        """
+        Obtiene la lista de todas las reservas archivadas, con caché.
+        """
+        cached_reservas = cache.get('reservas_archivadas')
+        if cached_reservas is None:
+            reservas = self.repository.get_all_archived()
+            if reservas:
+                cache.set('reservas_archivadas', reservas, timeout=self.CACHE_TIMEOUT)
+            return reservas
+        return cached_reservas
     def find(self, reserva_id: int) -> Reserva:
         """
         Busca una reserva por su ID, con caché.
