@@ -10,7 +10,6 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
   });
 
   const [users, setUsers] = useState([]);
-  // --- ESTADOS PARA EL BUSCADOR DE USUARIOS ---
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [showUserList, setShowUserList] = useState(false);
@@ -30,7 +29,6 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
         const data = await response.json();
         if (response.ok) {
           setUsers(data.data);
-          // Si estamos editando, poblamos el campo de búsqueda con el nombre del usuario actual
           if (!isCreating && reservation?.usuario) {
             setUserSearchTerm(`${reservation.usuario.nombre} ${reservation.usuario.apellido}`);
           }
@@ -39,7 +37,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
         console.error("Failed to fetch users:", err);
       }
     };
-    if (isCreating || !isCreating) { // Cargar usuarios en ambos modos
+    if (isCreating || !isCreating) {
       fetchUsers();
     }
   }, [isCreating, reservation]);
@@ -49,7 +47,6 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // --- FUNCIÓN PARA MANEJAR LA BÚSQUEDA DE USUARIOS ---
   const handleUserSearch = (e) => {
     const term = e.target.value;
     setUserSearchTerm(term);
@@ -65,7 +62,6 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
     }
   };
 
-  // --- FUNCIÓN PARA CUANDO SE SELECCIONA UN USUARIO DE LA LISTA ---
   const handleUserSelect = (user) => {
     setFormData(prev => ({ ...prev, usuario_id: user.id }));
     setUserSearchTerm(`${user.nombre} ${user.apellido} (ID: ${user.id})`);
@@ -103,6 +99,38 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
       setMessage('Pago añadido con éxito.');
       setNewPayment({ monto: '' });
       onUpdate(); 
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+  
+  const handleDeletePayment = async (pagoId) => {
+    const masterPassword = window.prompt("Para eliminar este pago, por favor ingresa la contraseña maestra:");
+
+    if (!masterPassword) {
+      return;
+    }
+
+    setError('');
+    setMessage('');
+    const token = localStorage.getItem('authToken');
+
+    try {
+      const response = await fetch(`/api/v1/pago/${pagoId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ master_password: masterPassword })
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || 'Error al eliminar el pago.');
+
+      setMessage('Pago eliminado correctamente.');
+      onUpdate();
+
     } catch (err) {
       setError(err.message);
     }
@@ -154,9 +182,9 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
       });
 
       const result = await response.json();
-      if (!response.ok) throw new Error(result.message || 'Error al eliminar la reserva.');
+      if (!response.ok) throw new Error(result.message || 'Error al archivar la reserva.');
       
-      setMessage('¡Reserva eliminada con éxito!');
+      setMessage('¡Reserva archivada con éxito!');
       setTimeout(() => onUpdate(), 2000);
       
     } catch (err) {
@@ -175,7 +203,6 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
           {isCreating && (
             <div className="form-group">
               <label htmlFor="usuario_search">Usuario</label>
-              {/* --- COMPONENTE DE BÚSQUEDA --- */}
               <div className="user-search-container">
                 <input
                   type="text"
@@ -185,7 +212,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
                   placeholder="Buscar por nombre..."
                   autoComplete="off"
                   className="user-search-input"
-                  onBlur={() => setTimeout(() => setShowUserList(false), 200)} // Oculta la lista al perder el foco
+                  onBlur={() => setTimeout(() => setShowUserList(false), 200)}
                 />
                 {showUserList && filteredUsers.length > 0 && (
                   <ul className="user-search-results">
@@ -232,8 +259,17 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
               {reservation.pagos && reservation.pagos.length > 0 ? (
                 reservation.pagos.map(pago => (
                   <li key={pago.id}>
-                    <span>{new Date(pago.fecha_pago).toLocaleDateString('es-ES')}</span>
-                    <strong>${(pago.monto || 0).toLocaleString('es-AR')}</strong>
+                    <div>
+                      <span>{new Date(pago.fecha_pago).toLocaleDateString('es-ES')}</span>
+                      <strong> - ${(pago.monto || 0).toLocaleString('es-AR')}</strong>
+                    </div>
+                    <button 
+                      className="btn-delete-pago" 
+                      onClick={() => handleDeletePayment(pago.id)}
+                      title="Eliminar pago"
+                    >
+                      &times;
+                    </button>
                   </li>
                 ))
               ) : (

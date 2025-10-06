@@ -375,3 +375,17 @@
   margin-bottom: 1.5rem;
   color: var(--color-secundario);
 }
+.btn-delete-pago {
+  background-color: transparent;
+  border: none;
+  color: #e74c3c;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0 5px;
+  line-height: 1;
+}
+
+.btn-delete-pago:hover {
+  color: #c0392b;
+}
