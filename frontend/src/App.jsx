@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 // Importamos los íconos para el menú y las redes sociales
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import './App.css';
+import ChatbotWidget from './components/ChatbotWidget';
 
 function App() {
   const navigate = useNavigate();
@@ -92,7 +93,7 @@ function App() {
       <main>
         <Outlet context={{ handleLogin }} />
       </main>
-
+      <ChatbotWidget />
       <footer>
         <div>
           <ul class="example-2">

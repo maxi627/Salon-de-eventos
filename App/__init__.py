@@ -84,6 +84,7 @@ def create_app(config_name=None):
     from app.routes.administrador_resource import Administrador
     from app.routes.analytics_resource import Analytics
     from app.routes.auth_resource import Auth
+    from app.routes.chatbot_resource import ChatbotBP
     from app.routes.config_resource import Config
     from app.routes.fecha_resource import Fecha
     from app.routes.gasto_resource import GastoBP
@@ -103,4 +104,5 @@ def create_app(config_name=None):
     app.register_blueprint(PagoBP, url_prefix='/api/v1')
     app.register_blueprint(TestNotifications, url_prefix='/api/v1')
     app.register_blueprint(GastoBP, url_prefix='/api/v1')
+    app.register_blueprint(ChatbotBP, url_prefix='/api/v1')
     return app
