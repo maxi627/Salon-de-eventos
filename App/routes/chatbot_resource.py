@@ -4,10 +4,11 @@ from app.config import ResponseBuilder
 from app.services.chatbot_service import ChatbotService
 
 ChatbotBP = Blueprint('Chatbot', __name__)
-service = ChatbotService()
+
 
 @ChatbotBP.route('/chatbot/query', methods=['POST'])
 def handle_query():
+    service = ChatbotService()
     response_builder = ResponseBuilder()
     try:
         data = request.get_json()

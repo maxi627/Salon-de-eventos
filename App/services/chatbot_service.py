@@ -1,40 +1,61 @@
 import os
 
-from flask import current_app  # <--- Para acceder a la config de Flask
+from flask import current_app
 from google.cloud import dialogflow
-from google.oauth2 import service_account  # <--- Agrega esta importación
+from google.oauth2 import service_account
 
 
 class ChatbotService:
     def __init__(self):
-        # 1. Sacamos las credenciales y el ID del proyecto desde la configuración de Flask
-        self.credentials_info = current_app.config.get('GOOGLE_CREDENTIALS')
-        self.project_id = self.credentials_info.get('project_id') if self.credentials_info else None
+        """
+        Constructor ligero. 
+        No accedemos a current_app aquí para evitar el RuntimeError de contexto.
+        """
         self.language_code = 'es'
 
-        # 2. Creamos el objeto de credenciales de Google a partir del diccionario
-        if self.credentials_info:
-            self.credentials = service_account.Credentials.from_service_account_info(self.credentials_info)
-        else:
-            self.credentials = None
+    def _get_credentials(self):
+        """
+        Método privado para obtener credenciales solo cuando se necesitan.
+        """
+        credentials_info = current_app.config.get('GOOGLE_CREDENTIALS')
+        
+        if not credentials_info or not credentials_info.get('project_id'):
+            raise ValueError("Las credenciales de Google Cloud no están configuradas en la App.")
+            
+        project_id = credentials_info.get('project_id')
+        credentials = service_account.Credentials.from_service_account_info(credentials_info)
+        
+        return project_id, credentials
 
     def get_response(self, user_message: str, user_id: str = "usuario_anonimo") -> str:
-        if not self.project_id or not self.credentials:
-            print("ERROR: Credenciales de Google no configuradas correctamente.")
-            return "Lo siento, tengo un problema de configuración."
-
+        """
+        Envía el mensaje a Dialogflow y retorna la respuesta.
+        """
         try:
-            # 3. Pasamos las credenciales explícitamente al cliente
-            session_client = dialogflow.SessionsClient(credentials=self.credentials)
-            session = session_client.session_path(self.project_id, user_id)
+            # Obtenemos las credenciales dentro del contexto de la petición
+            project_id, credentials = self._get_credentials()
 
-            text_input = dialogflow.TextInput(text=user_message, language_code=self.language_code)
+            # Inicializamos el cliente con las credenciales cargadas
+            session_client = dialogflow.SessionsClient(credentials=credentials)
+            session = session_client.session_path(project_id, user_id)
+
+            # Preparar la entrada de texto
+            text_input = dialogflow.TextInput(
+                text=user_message, 
+                language_code=self.language_code
+            )
             query_input = dialogflow.QueryInput(text=text_input)
 
-            response = session_client.detect_intent(request={"session": session, "query_input": query_input})
+            # Petición a Dialogflow
+            response = session_client.detect_intent(
+                request={"session": session, "query_input": query_input}
+            )
 
             return response.query_result.fulfillment_text
 
+        except ValueError as ve:
+            print(f"Error de configuración: {ve}")
+            return "El servicio de chat no está disponible en este momento."
         except Exception as e:
             print(f"Error conectando con Dialogflow: {e}")
-            return "Lo siento, tuve un problema conectando con mi servidor."
+            return "Lo siento, tuve un problema conectando con mi servidor de inteligencia artificial."
