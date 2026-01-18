@@ -21,3 +21,6 @@ python-pushover
 Flask-APScheduler
 pytz
 wheel
+google-cloud-dialogflow==2.24.0
+google-auth==2.20.0
+

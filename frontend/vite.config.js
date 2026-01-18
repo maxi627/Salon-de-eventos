@@ -1,17 +1,23 @@
-import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react';
+import path from 'path';
+import { defineConfig } from 'vite';
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      'react': path.resolve(__dirname, 'node_modules/react'),
+      'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
+    }
+  },
   server: {
     proxy: {
       '/api': {
-        // Cambiamos el puerto de 5000 a 80, que es donde escucha Traefik.
-        // Como 80 es el puerto por defecto para http, puedes omitirlo.
-        target: 'http://localhost', 
+        // Apuntamos a localhost (donde está Traefik) y forzamos el Host header
+        target: 'http://localhost:80',
         changeOrigin: true,
+        secure: false,
       },
     },
   },
-})
+});

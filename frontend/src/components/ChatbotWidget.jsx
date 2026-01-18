@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FaCommentDots, FaPaperPlane, FaTimes } from 'react-icons/fa';
+import { useChatbot } from '../hooks/useAdminData';
 import './ChatbotWidget.css';
 
 function ChatbotWidget() {
@@ -8,36 +9,42 @@ function ChatbotWidget() {
     { from: 'bot', text: '¡Hola! ¿En qué puedo ayudarte hoy?' }
   ]);
   const [inputValue, setInputValue] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  const { mutate, isPending } = useChatbot();
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const toggleChat = () => setIsOpen(!isOpen);
 
-  const handleSendMessage = async (e) => {
+  const handleSendMessage = (e) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
 
-    const userMessage = { from: 'user', text: inputValue };
-    setMessages(prev => [...prev, userMessage]);
+    const userText = inputValue;
+    setMessages(prev => [...prev, { from: 'user', text: userText }]);
     setInputValue('');
-    setIsLoading(true);
 
-    try {
-      const response = await fetch('/api/v1/chatbot/query', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: inputValue }),
-      });
-      const data = await response.json();
-      
-      const botMessage = { from: 'bot', text: data.data.reply };
-      setMessages(prev => [...prev, botMessage]);
-
-    } catch (error) {
-      const errorMessage = { from: 'bot', text: 'Lo siento, hubo un error. Intenta de nuevo.' };
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-    }
+    mutate(userText, {
+      onSuccess: (response) => {
+        // Tu ResponseBuilder devuelve { data: { reply: "..." } }
+        const botReply = response.data?.reply || 'No recibí respuesta.';
+        setMessages(prev => [...prev, { from: 'bot', text: botReply }]);
+      },
+      onError: (err) => {
+        console.error("Chatbot Error Details:", err);
+        setMessages(prev => [...prev, { 
+          from: 'bot', 
+          text: 'Error al conectar con el asistente.' 
+        }]);
+      }
+    });
   };
 
   return (
@@ -58,7 +65,8 @@ function ChatbotWidget() {
                 {msg.text}
               </div>
             ))}
-            {isLoading && <div className="chat-message bot typing">...</div>}
+            {isPending && <div className="chat-message bot typing">...</div>}
+            <div ref={messagesEndRef} />
           </div>
           <form className="chat-footer" onSubmit={handleSendMessage}>
             <input
@@ -66,9 +74,9 @@ function ChatbotWidget() {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Escribe tu pregunta..."
-              disabled={isLoading}
+              disabled={isPending}
             />
-            <button type="submit" disabled={isLoading}><FaPaperPlane /></button>
+            <button type="submit" disabled={isPending}><FaPaperPlane /></button>
           </form>
         </div>
       )}

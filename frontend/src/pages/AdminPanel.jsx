@@ -1,34 +1,30 @@
-// frontend/src/pages/AdminPanel.jsx
-
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import AnalyticsDashboard from '../components/AnalyticsDashboard';
-import ArchivedReservations from '../components/ArchivedReservations'; // Importamos el nuevo componente
+import ArchivedReservations from '../components/ArchivedReservations';
 import EditReservationModal from '../components/EditReservationModal';
 import GastosManager from '../components/GastosManager';
 import PriceEditor from '../components/PriceEditor';
 import UserList from '../components/UserList';
+import { useReservas } from '../hooks/useAdminData';
 import './AdminPanel.css';
 
 function AdminPanel() {
-  const [reservas, setReservas] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { data: reservas = {}, isLoading, error, refetch } = useReservas();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [collapsedMonths, setCollapsedMonths] = useState({});
-  const [showArchived, setShowArchived] = useState(false); // Estado para controlar la visibilidad de archivadas
+  
+  // CAMBIO CLAVE: Cambiamos a expandedMonths. 
+  // Al iniciar como {}, expandedMonths[month] será undefined (falso), por lo que todo inicia cerrado.
+  const [expandedMonths, setExpandedMonths] = useState({});
+  const [showArchived, setShowArchived] = useState(false);
 
   const formatDisplayDate = (isoDate) => {
     if (!isoDate) return 'N/A';
     const dateParts = isoDate.split('-');
     const date = new Date(Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2]));
     return new Intl.DateTimeFormat('es-ES', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      timeZone: 'UTC'
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
     }).format(date);
   };
 
@@ -36,104 +32,26 @@ function AdminPanel() {
     if (!isoDateTime) return 'N/A';
     const date = new Date(isoDateTime);
     return new Intl.DateTimeFormat('es-AR', {
-      year: 'numeric',
-      month: 'numeric',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
+      year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric',
       timeZone: 'America/Argentina/Buenos_Aires'
     }).format(date);
   };
-  
-  const fetchReservas = async (signal) => {
-    const token = localStorage.getItem('authToken');
-    try {
-      const response = await fetch('/api/v1/reserva', {
-        headers: { 'Authorization': `Bearer ${token}` },
-        signal,
-      });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'No tienes permiso o hubo un error al cargar las reservas.');
-      }
-      const data = await response.json();
-      
-      const groupedReservas = data.data.sort((a, b) => new Date(a.fecha?.dia) - new Date(b.fecha?.dia))
-        .reduce((acc, reserva) => {
-          if (!reserva.fecha?.dia) return acc;
-          
-          const dateParts = reserva.fecha.dia.split('-');
-          const fecha = new Date(Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2]));
-
-          const monthYear = new Intl.DateTimeFormat('es-ES', { 
-              month: 'long', 
-              year: 'numeric',
-              timeZone: 'UTC' 
-          }).format(fecha);
-          
-          if (!acc[monthYear]) {
-            acc[monthYear] = [];
-          }
-          acc[monthYear].push(reserva);
-          return acc;
-      }, {});
-
-      setReservas(groupedReservas);
-
-    } catch (err) {
-      if (err.name !== 'AbortError') {
-        setError(err.message);
-      }
-    } finally {
-      if (!signal.aborted) {
-        setIsLoading(false);
-      }
-    }
-  };
-
-  useEffect(() => {
-    const controller = new AbortController();
-    fetchReservas(controller.signal);
-
-    return () => {
-      controller.abort();
-    };
-  }, []);
 
   const toggleMonth = (month) => {
-    setCollapsedMonths(prev => ({
-      ...prev,
-      [month]: !prev[month]
+    setExpandedMonths(prev => ({ 
+      ...prev, 
+      [month]: !prev[month] 
     }));
-  };
-  
-  const handleOpenEditModal = (reserva) => {
-    setSelectedReservation(reserva);
-    setIsCreating(false);
-    setIsModalOpen(true);
-  };
-
-  const handleOpenCreateModal = () => {
-    setSelectedReservation(null);
-    setIsCreating(true);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedReservation(null);
-    setIsCreating(false);
   };
 
   const handleUpdate = () => {
-    const controller = new AbortController();
-    setIsLoading(true);
-    fetchReservas(controller.signal)
-    handleCloseModal();
+    refetch();
+    setIsModalOpen(false);
+    setSelectedReservation(null);
   };
 
   if (isLoading) return <p style={{ textAlign: 'center', marginTop: '2rem' }}>Cargando panel de administración...</p>;
-  if (error) return <p className="error-message" style={{ textAlign: 'center' }}>{error}</p>;
+  if (error) return <p className="error-message" style={{ textAlign: 'center' }}>{error.message}</p>;
 
   return (
     <div className="admin-panel">
@@ -142,13 +60,14 @@ function AdminPanel() {
       <AnalyticsDashboard />
       <PriceEditor />
       <GastosManager />
+      
       <div className="reservas-header">
         <h2 className="reservas-title">Gestión de Reservas</h2>
         <div>
           <button className="btn-toggle-archived" onClick={() => setShowArchived(!showArchived)}>
             {showArchived ? 'Ocultar Archivadas' : 'Ver Archivadas'}
           </button>
-          <button className="btn-create" onClick={handleOpenCreateModal}>
+          <button className="btn-create" onClick={() => { setSelectedReservation(null); setIsCreating(true); setIsModalOpen(true); }}>
             + Crear Nueva Reserva
           </button>
         </div>
@@ -161,9 +80,12 @@ function AdminPanel() {
           <div key={month} className="month-section">
             <h3 className="month-header" onClick={() => toggleMonth(month)}>
               {month.charAt(0).toUpperCase() + month.slice(1)}
-              <span className={`collapse-icon ${collapsedMonths[month] ? 'collapsed' : ''}`}>▼</span>
+              {/* La flecha cambia de dirección según si está expandido o no */}
+              <span className={`collapse-icon ${expandedMonths[month] ? '' : 'collapsed'}`}>▼</span>
             </h3>
-            {!collapsedMonths[month] && (
+            
+            {/* Solo se renderiza la tabla si el mes está marcado como expandido */}
+            {expandedMonths[month] && (
               <div className="table-container">
                 <table className="reservas-table">
                   <thead>
@@ -187,9 +109,7 @@ function AdminPanel() {
                         <td><span className={`status ${reserva.estado}`}>{reserva.estado}</span></td>
                         <td>
                           {reserva.comprobante_url ? (
-                            <a href={`/${reserva.comprobante_url}`} target="_blank" rel="noopener noreferrer">
-                              Ver
-                            </a>
+                            <a href={`/${reserva.comprobante_url}`} target="_blank" rel="noopener noreferrer">Ver</a>
                           ) : 'N/A'}
                         </td>
                         <td>${(reserva.valor_alquiler || 0).toLocaleString('es-AR')}</td>
@@ -197,7 +117,7 @@ function AdminPanel() {
                         <td>{formatDisplayDateTime(reserva.fecha_aceptacion)}</td>
                         <td>{reserva.ip_aceptacion || 'N/A'}</td>
                         <td>
-                          <button className="btn-edit" onClick={() => handleOpenEditModal(reserva)}>
+                          <button className="btn-edit" onClick={() => { setSelectedReservation(reserva); setIsCreating(false); setIsModalOpen(true); }}>
                             Gestionar
                           </button>
                         </td>
@@ -209,19 +129,16 @@ function AdminPanel() {
             )}
           </div>
         ))
-      ) : (
-        <p>No hay reservas activas para mostrar.</p>
-      )}
+      ) : <p>No hay reservas activas para mostrar.</p>}
 
       {isModalOpen && (
         <EditReservationModal 
           isCreating={isCreating}
           reservation={selectedReservation}
-          onClose={handleCloseModal}
+          onClose={() => setIsModalOpen(false)}
           onUpdate={handleUpdate}
         />
       )}
-      
       <UserList />
     </div>
   );

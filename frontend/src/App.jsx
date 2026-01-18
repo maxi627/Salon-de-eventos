@@ -1,6 +1,5 @@
 import { jwtDecode } from 'jwt-decode';
 import { useEffect, useState } from 'react';
-// Importamos los íconos para el menú y las redes sociales
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import './App.css';
 import ChatbotWidget from './components/ChatbotWidget';
@@ -56,7 +55,7 @@ function App() {
                 {user.role === 'administrador' && (
                   <Link to="/admin-panel">Panel Admin</Link>
                 )}
-                <a href="#" onClick={handleLogout}>Cerrar Sesión</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); handleLogout(); }}>Cerrar Sesión</a>
               </>
             ) : (
               <>
@@ -66,7 +65,12 @@ function App() {
             )}
           </div>
           
-
+          {/* Botón para menú móvil (Hamburguesa) */}
+          <div className="menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            <span className="bar"></span>
+            <span className="bar"></span>
+            <span className="bar"></span>
+          </div>
         </nav>
       </header>
       
@@ -79,7 +83,7 @@ function App() {
                 {user.role === 'administrador' && (
                   <Link to="/admin-panel" onClick={() => setIsMenuOpen(false)}>Panel Admin</Link>
                 )}
-                <a href="#" onClick={() => { handleLogout(); setIsMenuOpen(false); }}>Cerrar Sesión</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); handleLogout(); setIsMenuOpen(false); }}>Cerrar Sesión</a>
               </>
             ) : (
               <>
@@ -91,23 +95,28 @@ function App() {
       )}
 
       <main>
+        {/* Pasamos handleLogin a través del contexto de la ruta */}
         <Outlet context={{ handleLogin }} />
       </main>
+
       <ChatbotWidget />
+
       <footer>
         <div>
-          <ul class="example-2">
-            <li class="icon-content">
+          <ul className="example-2">
+            <li className="icon-content">
               <a
                 data-social="whatsapp"
                 aria-label="Whatsapp"
-                href="https://api.whatsapp.com/send?phone=+112067101079&amp;text=Save%20this%20to%20your%20Favorites%20-%20@wilsondesouza"
+                href="https://api.whatsapp.com/send?phone=+112067101079&text=Hola!%20Quisiera%20consultar%20por%20el%20salón"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <div class="filled"></div>
+                <div className="filled"></div>
                 <svg
-                  xml:space="preserve"
+                  xmlSpace="preserve"
                   viewBox="0 0 24 24"
-                  class="bi bi-whatsapp"
+                  className="bi bi-whatsapp"
                   fill="currentColor"
                   height="24"
                   width="24"
@@ -119,19 +128,21 @@ function App() {
                   ></path>
                 </svg>
               </a>
-              <div class="tooltip">Whatsapp</div>
+              <div className="tooltip">Whatsapp</div>
             </li>
-            <li class="icon-content">
+            <li className="icon-content">
               <a
                 data-social="facebook"
                 aria-label="Facebook"
                 href="https://www.facebook.com/"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <div class="filled"></div>
+                <div className="filled"></div>
                 <svg
-                  xml:space="preserve"
+                  xmlSpace="preserve"
                   viewBox="0 0 24 24"
-                  class="bi bi-facbook"
+                  className="bi bi-facebook"
                   fill="currentColor"
                   height="24"
                   width="24"
@@ -143,19 +154,21 @@ function App() {
                   ></path>
                 </svg>
               </a>
-              <div class="tooltip">Facebook</div>
+              <div className="tooltip">Facebook</div>
             </li>
-            <li class="icon-content">
+            <li className="icon-content">
               <a
                 data-social="instagram"
                 aria-label="Instagram"
                 href="https://www.instagram.com/"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <div class="filled"></div>
+                <div className="filled"></div>
                 <svg
-                  xml:space="preserve"
+                  xmlSpace="preserve"
                   viewBox="0 0 16 16"
-                  class="bi bi-instagram"
+                  className="bi bi-instagram"
                   fill="currentColor"
                   height="16"
                   width="16"
@@ -167,7 +180,7 @@ function App() {
                   ></path>
                 </svg>
               </a>
-              <div class="tooltip">Instagram</div>
+              <div className="tooltip">Instagram</div>
             </li>
           </ul>
         </div>
@@ -178,4 +191,3 @@ function App() {
 }
 
 export default App;
-

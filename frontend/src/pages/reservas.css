@@ -144,13 +144,34 @@
 }
 
 .message-area {
-    margin-top: 1rem;
-    padding: 1rem;
-    border-radius: 5px;
-    background-color: #eaf7ff;
-    color: #333;
-    font-weight: 500;
+  position: fixed; /* Se fija a la pantalla, no al flujo del documento */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Centrado perfecto */
+  
+  background-color: #fff;
+  border: 2px solid #e74c3c; /* Borde rojo para llamar la atención */
+  color: #c0392b;
+  padding: 2rem;
+  border-radius: 12px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-align: center;
+  z-index: 1000; /* Se asegura de estar encima del calendario */
+  
+  /* Sombra para dar profundidad y un "truco" para oscurecer el fondo */
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 0 9999px rgba(0,0,0,0.5);
+  
+  /* Animación simple de entrada */
+  animation: popIn 0.3s ease-out;
 }
+
+/* Animación para que aparezca de golpe */
+@keyframes popIn {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
 .calendar-day.past {
   background-color: #f0f0f0;
   color: #b0b0b0;
