@@ -33,7 +33,7 @@ function AnalyticsDashboard() {
       const response = await api.get(`/analytics/reporte-pdf?mes=${reportDate.mes}&anio=${reportDate.anio}`, {
         responseType: 'blob'
       });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const url = window.URL.createObjectURL(new Blob([response]));
       const a = document.createElement('a');
       a.href = url;
       a.download = `reporte_contable_${reportDate.mes}_${reportDate.anio}.pdf`;
