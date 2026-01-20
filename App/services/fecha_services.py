@@ -20,7 +20,7 @@ class FechaService:
     @contextmanager
     def redis_lock(self, fecha_id: int):
         """
-        Context manager para gestionar el bloqueo de recursos en Redis.
+        Context manager para gestionar el bloqueo de recursos en Redis y evitar colisiones.
         """
         lock_key = f"fecha_lock_{fecha_id}"
         lock_value = str(time.time())
@@ -31,11 +31,11 @@ class FechaService:
             finally:
                 redis_client.delete(lock_key)
         else:
-            raise Exception(f"El recurso está bloqueado para la fecha {fecha_id}.")
+            raise Exception(f"El recurso para la fecha {fecha_id} está bloqueado por otra operación.")
 
     def all(self) -> list[Fecha]:
         """
-        Obtiene la lista de todas las fechas, con caché.
+        Obtiene la lista de todas las fechas con soporte de caché.
         """
         cached_fechas = cache.get('fechas')
         if cached_fechas is None:
@@ -47,54 +47,63 @@ class FechaService:
 
     def add(self, fecha: Fecha) -> Fecha:
         """
-        Agrega una nueva fecha y actualiza la caché.
+        Agrega una nueva fecha, asegura el commit y actualiza la caché.
         """
         new_fecha = self.repository.add(fecha)
+        # IMPORTANTE: Asegurar que se guarde en la BD antes de cachear
+        db.session.commit()
+        
         cache.set(f'fecha_{new_fecha.id}', new_fecha, timeout=self.CACHE_TIMEOUT)
         cache.delete('fechas')
         return new_fecha
 
     def update(self, fecha_id: int, updated_data: dict) -> Fecha:
         """
-        Actualiza una fecha existente a partir de un diccionario de datos.
+        Actualiza una fecha obteniéndola directamente del repositorio para 
+        garantizar que esté vinculada a la sesión de SQLAlchemy.
         """
         with self.redis_lock(fecha_id):
-            existing_fecha = self.find(fecha_id)
+            # CORRECCIÓN: Buscamos en la BD, no en la caché, para que el objeto sea "trackeable"
+            existing_fecha = self.repository.get_by_id(fecha_id) 
+
             if not existing_fecha:
                 raise Exception(f"Fecha con ID {fecha_id} no encontrada.")
 
-            # Actualizamos solo los campos que vienen en el diccionario.
-            # Esto hace la función mucho más flexible y segura para actualizaciones.
+            # Actualización flexible de campos
             if 'valor_estimado' in updated_data:
                 try:
-                    # Nos aseguramos de que el valor sea un número flotante.
-                    existing_fecha.valor_estimado = float(updated_data['valor_estimado'])
+                    val = updated_data['valor_estimado']
+                    existing_fecha.valor_estimado = float(val) if val is not None else 0.0
                 except (ValueError, TypeError):
-                    # Si el valor no es un número válido, lanzamos un error.
                     raise ValueError("El valor_estimado debe ser un número válido.")
+            
+            if 'estado' in updated_data:
+                existing_fecha.estado = updated_data['estado']
 
-            # Guardar los cambios en la base de datos
+            # Guardar los cambios físicamente
             db.session.commit()
 
-            # Actualizar la caché con el objeto modificado
+            # Sincronizar caché
             cache.set(f'fecha_{fecha_id}', existing_fecha, timeout=self.CACHE_TIMEOUT)
-            cache.delete('fechas') # Invalidamos la lista general de fechas
+            cache.delete('fechas')
 
             return existing_fecha
+
     def delete(self, fecha_id: int) -> bool:
         """
-        Elimina una fecha por su ID y actualiza la caché.
+        Elimina una fecha y limpia las referencias en caché.
         """
         with self.redis_lock(fecha_id):
             deleted = self.repository.delete(fecha_id)
             if deleted:
+                db.session.commit()
                 cache.delete(f'fecha_{fecha_id}')
                 cache.delete('fechas')
             return deleted
 
     def find(self, fecha_id: int) -> Fecha:
         """
-        Busca una fecha por su ID, con caché.
+        Busca una fecha por ID priorizando la caché.
         """
         cached_fecha = cache.get(f'fecha_{fecha_id}')
         if cached_fecha is None:
@@ -103,18 +112,20 @@ class FechaService:
                 cache.set(f'fecha_{fecha_id}', fecha, timeout=self.CACHE_TIMEOUT)
             return fecha
         return cached_fecha
+
     def find_by_dia(self, dia: date) -> Fecha:
-        """Busca una fecha por su día usando el repositorio."""
+        """
+        Busca una fecha por su día usando el repositorio.
+        """
         return self.repository.get_by_dia(dia)
 
     def get_or_create(self, dia: date) -> Fecha:
         """
-        Busca una fecha por día. Si no existe, la crea con estado 'disponible'.
-        Este método asegura que siempre tengamos un registro en la BD para trabajar.
+        Busca una fecha. Si no existe, la crea con valores por defecto.
+        Garantiza que siempre haya un registro para operar.
         """
         fecha = self.find_by_dia(dia)
         if not fecha:
-            # La fecha no existe en la BD, así que la creamos.
-            nueva_fecha = Fecha(dia=dia, estado='disponible')
-            fecha = self.add(nueva_fecha) # Reutilizamos el método add que ya maneja la BD y el caché.
+            nueva_fecha = Fecha(dia=dia, estado='disponible', valor_estimado=0.0)
+            fecha = self.add(nueva_fecha)
         return fecha

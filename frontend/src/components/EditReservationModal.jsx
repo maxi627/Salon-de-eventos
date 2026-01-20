@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import '../pages/AdminPanel.css';
+import './EditReservationModal.css';
 
 function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
   const [formData, setFormData] = useState({

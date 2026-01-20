@@ -1,391 +1,272 @@
-.admin-panel {
-  max-width: 1200px;
-  margin: 2rem auto;
-  padding: 2rem;
+/* --- RESETEO Y ESTRUCTURA GLOBAL --- */
+:root {
+  --admin-sidebar-width: 280px; /* Un poco más ancha para letras más grandes */
+  --admin-bg: #f8fafc;
+  --admin-white: #ffffff;
+  --admin-sidebar-bg: #0f172a; /* Oscuro profundo (Slate 950) */
+  --admin-primary: #3498db;
+  --admin-success: #10b981;
+  --admin-error: #ef4444;
+  --admin-border: #e2e8f0;
 }
 
-.reservas-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 2rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.reservas-table th, .reservas-table td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
-
-.reservas-table thead th {
-  background-color: #f4f7f6;
-  font-weight: 600;
-  color: var(--color-secundario);
-}
-
-.reservas-table tbody tr:hover {
-  background-color: #f9f9f9;
-}
-
-.status {
-  padding: 4px 8px;
-  border-radius: 4px;
-  color: #fff;
-  font-size: 0.8rem;
-  text-transform: capitalize;
-}
-
-.status.pendiente { background-color: #f39c12; }
-.status.confirmada { background-color: #27ae60; }
-.status.reservada { background-color: #27ae60; }
-.status.cancelada { background-color: #e74c3c; }
-
-.btn-edit {
-  padding: 6px 12px;
-  background-color: var(--color-primario);
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-
-}
-
-.btn-edit:hover {
-  background-color: #2980b9;
-}
-
-/* --- Estilos para el Modal de Edición --- */
-.modal-backdrop {
+/* Contenedor raíz */
+.admin-wrapper {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden; 
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
+  background-color: var(--admin-bg);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* --- SIDEBAR REDISEÑADA (MODERNA Y MINIMALISTA) --- */
+.admin-sidebar {
+  width: var(--admin-sidebar-width);
+  min-width: var(--admin-sidebar-width);
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--admin-sidebar-bg);
+  color: #f1f5f9;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 20;
+  flex-direction: column;
+  z-index: 100;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.modal-content {
-  background-color: #fff;
-  padding: 2rem;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 500px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+.sidebar-logo {
+  padding: 3rem 1.5rem; /* Más espacio arriba */
+  text-align: left; /* Alineado a la izquierda para un look moderno */
+  padding-left: 2rem;
 }
 
-.modal-content h2 {
-  margin-top: 0;
+.sidebar-logo h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  letter-spacing: 3px;
+  color: #fff; /* Blanco puro para el logo */
+  font-weight: 900;
+  text-transform: uppercase;
 }
 
-.modal-content .form-group {
-  margin-bottom: 1rem;
+.sidebar-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 0.8rem; /* Espacio lateral para que los botones no toquen el borde */
+  overflow-y: auto;
+}
+
+.nav-divider {
+  padding: 1.5rem 1.2rem 0.8rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #475569; /* Gris azulado discreto */
+  letter-spacing: 2px;
+  font-weight: 700;
+}
+
+.nav-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8; /* Texto base apagado */
+  padding: 16px 20px; /* Botones más altos */
   text-align: left;
-}
-
-.modal-content .form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-.modal-content .form-group input,
-.modal-content .form-group select {
-  width: 100%;
-  padding: 0.5rem;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-}
-
-.modal-actions {
+  font-size: 1.15rem; /* LETRAS MÁS GRANDES */
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 1.5rem;
-  border-top: 1px solid #eee;
-  padding-top: 1.5rem;
-}
-
-.btn-close {
-  background-color: #777;
-}
-
-.btn-save {
-  background-color: var(--color-primario);
-}
-
-.btn-approve {
+  align-items: center;
+  gap: 16px;
   width: 100%;
-  background-color: #27ae60;
-  margin-top: 1rem;
-  padding: 0.8rem;
+  border-radius: 12px; /* Bordes redondeados modernos */
+  margin-bottom: 4px;
 }
 
-.btn-close, .btn-save, .btn-approve {
+.nav-btn:hover {
+  background-color: rgba(255, 255, 255, 0.05); /* Fondo muy sutil */
   color: #fff;
-  border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 4px;
-  cursor: pointer;
+  transform: translateX(5px); /* Pequeño desplazamiento al pasar el mouse */
 }
 
-.delete-section {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #eee;
+.nav-btn.active {
+  background-color: rgba(52, 152, 219, 0.15); /* Fondo suave del color primario */
+  color: var(--admin-primary);
+  font-weight: 700;
 }
 
-.btn-delete {
+/* Indicador lateral para el botón activo */
+.nav-btn.active::before {
+  content: "";
+  width: 4px;
+  height: 20px;
+  background-color: var(--admin-primary);
+  position: absolute;
+  left: 0;
+  border-radius: 0 4px 4px 0;
+}
+
+.sidebar-footer {
+  padding: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.logout-btn { 
+  color: #94a3b8 !important; 
+  font-size: 1.1rem !important;
+}
+
+.logout-btn:hover { 
+  background-color: rgba(231, 76, 60, 0.1) !important; 
+  color: #f87171 !important; 
+}
+
+/* --- EL RESTO PERMANECE IGUAL --- */
+.admin-main-content {
+  flex: 1;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-top-header {
+  background: var(--admin-white);
+  padding: 1.5rem 3rem;
+  border-bottom: 1px solid var(--admin-border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.admin-top-header h1 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.admin-content-area {
+  padding: 2.5rem 3rem;
   width: 100%;
-  background-color: #e74c3c; /* Rojo peligro */
-  color: #fff;
-  border: none;
-  padding: 0.8rem;
-  border-radius: 4px;
-  cursor: pointer;
+  max-width: 1400px;
 }
 
-.btn-delete:hover {
-  background-color: #c0392b; /* Rojo más oscuro */
-}
-
-.btn-delete:disabled {
-  background-color: #f5b7b1;
-  cursor: not-allowed;
-}
-
-
-.reservas-title {
-  margin-top: 3rem;
-  border-bottom: 2px solid var(--color-primario);
-  padding-bottom: 0.5rem;
-}
 .reservas-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
+  margin-bottom: 2rem;
 }
+
+.title-with-refresh {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.btn-refresh {
+  background: white;
+  border: 1px solid var(--admin-border);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-refresh:hover { transform: rotate(30deg); background-color: #f1f5f9; }
+.spinning { animation: spin 1s linear infinite; }
+
+.reservas-actions { display: flex; gap: 12px; }
 
 .btn-create {
-  padding: 0.6rem 1.2rem;
-  background-color: #27ae60; /* Verde */
-  color: #fff;
+  background: var(--admin-success);
+  color: white;
   border: none;
-  border-radius: 4px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 700;
   cursor: pointer;
-  font-weight: bold;
 }
 
-.btn-create:hover {
-  background-color: #229954;
-}
-
-/* --- NUEVOS ESTILOS PARA LA SECCIÓN DE PAGOS --- */
-.payments-section {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #eee;
-}
-
-.payments-section h4 {
-  margin-top: 0;
-  margin-bottom: 1rem;
-  color: var(--color-secundario);
-}
-
-.payment-list {
-  list-style: none;
-  padding: 0;
-  margin-bottom: 1rem;
-  max-height: 150px;
-  overflow-y: auto;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.payment-list li {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.75rem;
-  border-bottom: 1px solid #eee;
-}
-
-.payment-list li:last-child {
-  border-bottom: none;
-}
-
-.payment-list li.no-payments {
-  color: #777;
-  font-style: italic;
-}
-
-.saldo-restante {
-  font-size: 1.1rem;
-  font-weight: bold;
-  text-align: right;
-  margin: 1rem 0;
-}
-
-.add-payment-form {
-  display: flex;
-  gap: 10px;
-}
-
-.add-payment-form input {
-  flex-grow: 1;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.btn-add-payment {
-  background-color: #27ae60;
-  color: #fff;
-  border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-/* --- NUEVOS ESTILOS PARA SECCIONES DE MES --- */
 .month-section {
-  margin-top: 2rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  overflow: hidden; /* Para que los bordes redondeados se apliquen bien a la tabla */
+  background: white;
+  border-radius: 16px;
+  border: 1px solid var(--admin-border);
+  margin-bottom: 1rem;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .month-header {
-  background-color: #f8f9fa;
-  padding: 12px 20px;
+  padding: 1.2rem 1.5rem;
+  margin: 0;
+  background: #f8fafc;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #e0e0e0;
-  font-size: 1.2rem;
-  color: var(--color-secundario);
+  font-size: 1rem;
+  font-weight: 700;
+  color: #334155;
 }
 
-.month-header:hover {
-  background-color: #e9ecef;
-}
+.table-container { width: 100%; overflow-x: auto; }
 
-.collapse-icon {
-  font-size: 1.1rem;
-  transition: transform 0.3s ease;
-}
-
-.collapse-icon.collapsed {
-  transform: rotate(-90deg);
-}
-
-/* Anulamos el margen superior de la tabla cuando está dentro de una sección de mes */
-.month-section .reservas-table {
-  margin-top: 0;
-  box-shadow: none;
-  border-top: none;
-}
-.user-search-container {
-  position: relative;
-}
-
-.user-search-input {
+.reservas-table {
   width: 100%;
-  padding: 0.5rem;
-  border-radius: 4px;
-  border: 1px solid #ccc;
+  border-collapse: collapse;
+  min-width: 800px;
 }
 
-.user-search-results {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-top: none;
-  border-radius: 0 0 4px 4px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  max-height: 150px;
-  overflow-y: auto;
-  z-index: 30; /* Asegura que esté por encima de otros elementos del modal */
+.reservas-table th {
+  padding: 12px 1.5rem;
+  text-align: left;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #64748b;
+  border-bottom: 2px solid #f1f5f9;
 }
 
-.user-search-results li {
-  padding: 0.75rem;
-  cursor: pointer;
+.reservas-table td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.95rem;
 }
 
-.user-search-results li:hover {
-  background-color: #f0f0f0;
+.status {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
-/* --- Media Query para el panel de admin --- */
-@media (max-width: 768px) {
-    .admin-panel {
-        padding: 1rem;
-    }
+.status.pendiente { background: #fef9c3; color: #a16207; }
+.status.confirmada { background: #dcfce7; color: #166534; }
+.status.cancelada { background: #fee2e2; color: #991b1b; }
 
-    /* Hacemos que la tabla sea desplazable horizontalmente */
-    .table-container {
-        overflow-x: auto;
-    }
-
-    .reservas-table {
-        min-width: 800px; /* Ancho mínimo para que la tabla no se comprima */
-    }
-}
-
-.btn-toggle-archived {
-  padding: 0.6rem 1.2rem;
-  background-color: #6c757d; /* Un color gris neutro */
-  color: #fff;
+.btn-edit {
+  background: var(--admin-primary);
+  color: white;
   border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-  margin-right: 1rem; /* Espacio entre los botones */
-  transition: background-color 0.3s;
-}
-
-.btn-toggle-archived:hover {
-  background-color: #5a6268;
-}
-
-/* Contenedor para la sección de archivadas */
-.archived-section {
-  margin-top: 2rem;
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  background-color: #f8f9fa;
+  padding: 6px 12px;
   border-radius: 8px;
-  border: 1px solid #dee2e6;
-}
-
-.archived-section h3 {
-  margin-top: 0;
-  margin-bottom: 1.5rem;
-  color: var(--color-secundario);
-}
-.btn-delete-pago {
-  background-color: transparent;
-  border: none;
-  color: #e74c3c;
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 0.85rem;
   cursor: pointer;
-  padding: 0 5px;
-  line-height: 1;
 }
 
-.btn-delete-pago:hover {
-  color: #c0392b;
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.admin-section-fade { animation: fadeIn 0.3s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 1024px) {
+  .admin-wrapper { flex-direction: column; position: relative; overflow: auto; }
+  .admin-sidebar { width: 100%; height: auto; min-width: 100%; }
+  .sidebar-nav { flex-direction: row; }
+  .admin-main-content { height: auto; overflow: visible; }
 }

@@ -10,161 +10,155 @@ function Reservas() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const controller = new AbortController();
-    const signal = controller.signal;
-
     const fetchFechas = async () => {
       try {
-        const response = await fetch('/api/v1/fecha', { signal });
-        if (!response.ok) throw new Error('Error al cargar el estado de las fechas.');
-        const data = await response.json();
-        const fechasMapeadas = data.data.reduce((acc, fecha) => {
-          acc[fecha.dia] = fecha;
+        const response = await fetch('/api/v1/fecha');
+        if (!response.ok) throw new Error('Error al cargar datos');
+        const result = await response.json();
+        const fechasMapeadas = result.data.reduce((acc, f) => {
+          acc[f.dia] = f;
           return acc;
         }, {});
         setFechas(fechasMapeadas);
       } catch (error) {
-        if (error.name !== 'AbortError') {
-          setMessage(error.message);
-        }
+        setMessage('Error al sincronizar el calendario.');
       } finally {
-        if (!signal.aborted) {
-            setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     };
     fetchFechas();
-
-    return () => {
-      controller.abort();
-    };
   }, []);
 
-  const handleDateClick = (dayDate) => {
-    const token = localStorage.getItem('authToken');
-
-    if (!token) {
-      setMessage('Debes iniciar sesión para poder seleccionar una fecha.');
-      setTimeout(() => setMessage(''), 3000);
+  const handleDateClick = (dateString) => {
+    if (!localStorage.getItem('authToken')) {
+      setMessage('Por favor, inicia sesión para continuar con tu reserva.');
+      setTimeout(() => setMessage(''), 4000);
       return;
     }
-
-    const dateString = dayDate.toISOString().split('T')[0];
     navigate(`/reservar/${dateString}`);
   };
 
   const changeMonth = (offset) => {
     const today = new Date();
-    const firstOfCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-
-    // --- LÓGICA PARA LIMITAR LA NAVEGACIÓN ---
-    const maxDate = new Date(today.getFullYear(), today.getMonth() + 5, 1);
+    const limitFuture = new Date(today.getFullYear(), today.getMonth() + 6, 1);
     const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1);
-
-    // Evita ir a meses pasados
-    if (newDate < firstOfCurrentMonth && offset < 0) {
-      return;
-    }
     
-    // Evita ir más de 3 meses en el futuro
-    if (newDate > maxDate && offset > 0) {
-        return;
-    }
+    if (newDate < new Date(today.getFullYear(), today.getMonth(), 1) && offset < 0) return;
+    if (newDate > limitFuture && offset > 0) return;
 
     setCurrentDate(newDate);
   };
 
   const renderCalendar = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const days = [];
+    const todayStr = new Date().toLocaleString("sv-SE", { timeZone: "America/Argentina/Buenos_Aires" }).split(" ")[0];
 
+    const days = [];
     for (let i = 0; i < firstDay; i++) {
       days.push(<div key={`empty-${i}`} className="calendar-day empty"></div>);
     }
 
     for (let i = 1; i <= daysInMonth; i++) {
-      const dayDate = new Date(year, month, i);
-      const dateString = dayDate.toISOString().split('T')[0];
+      const monthStr = String(month + 1).padStart(2, '0');
+      const dayStr = String(i).padStart(2, '0');
+      const dateString = `${year}-${monthStr}-${dayStr}`;
+      
       const fechaInfo = fechas[dateString];
-      const isPast = dayDate < today;
-      let isDisabled = false;
-      let className = 'calendar-day';
+      const isPast = dateString < todayStr;
+      
+      let statusClass = 'disponible';
+      let isDisabled = isPast;
 
       if (isPast) {
-        className += ' past';
-        isDisabled = true;
+        statusClass = 'past';
       } else if (fechaInfo) {
-        className += ` ${fechaInfo.estado}`;
+        statusClass = fechaInfo.estado;
         if (fechaInfo.estado !== 'disponible') isDisabled = true;
-      } else {
-        className += ' disponible';
       }
 
       days.push(
-        <button
-          key={i}
-          className={className}
-          onClick={() => handleDateClick(dayDate)}
-          disabled={isDisabled}
-        >
-          <span className="day-number">{i}</span>
-          {fechaInfo && fechaInfo.estado === 'disponible' && fechaInfo.valor_estimado > 0 && (
-            <span className="calendar-price">${fechaInfo.valor_estimado.toLocaleString('es-AR')}</span>
-          )}
-        </button>
+        <div key={i} className="calendar-day-wrapper">
+          <button
+            className={`calendar-day-card ${statusClass}`}
+            onClick={() => handleDateClick(dateString)}
+            disabled={isDisabled}
+          >
+            <span className="day-number">{i}</span>
+            
+            {/* --- CAMBIO AQUÍ: Solo mostrar precio si es disponible, no es pasado y tiene valor --- */}
+            {fechaInfo && 
+             fechaInfo.valor_estimado > 0 && 
+             !isPast && 
+             fechaInfo.estado === 'disponible' && (
+              <span className="day-price">
+                ${Number(fechaInfo.valor_estimado).toLocaleString('es-AR')}
+              </span>
+            )}
+          </button>
+        </div>
       );
     }
     return days;
   };
 
-  const monthName = currentDate.toLocaleString('es-ES', { month: 'long' });
-
   return (
-    <div className="reservas-container">
-      <h2>Reserva Tu Evento</h2>
-      <div className="calendar-widget">
-        <div className="calendar-header">
-          <button onClick={() => changeMonth(-1)}>‹</button>
-          <h3>{monthName.charAt(0).toUpperCase() + monthName.slice(1)} {currentDate.getFullYear()}</h3>
-          <button onClick={() => changeMonth(1)}>›</button>
-        </div>
-        <div className="calendar-days-header">
-          {['D', 'L', 'M', 'M', 'J', 'V', 'S'].map(d => <div key={d}>{d}</div>)}
-        </div>
-        <div className="calendar-grid">
-          {isLoading ? <p>Cargando calendario...</p> : renderCalendar()}
-        </div>
-      </div>
+    <div className="reservas-page-container">
+      <header className="reservas-hero">
+        <h1>Reserva tu Evento</h1>
+        <p>Selecciona una fecha disponible para comenzar</p>
+      </header>
 
-      <div className="calendar-legend">
-        <div className="legend-item">
-          <span className="legend-color-box disponible"></span>
-          <span>Disponible</span>
+      <section className="calendar-main-section">
+        <div className="calendar-container-card">
+          <div className="calendar-header-nav">
+            <button className="nav-arrow" onClick={() => changeMonth(-1)}>‹</button>
+            <div className="current-month-display">
+              <h3>{currentDate.toLocaleString('es-ES', { month: 'long', year: 'numeric' })}</h3>
+            </div>
+            <button className="nav-arrow" onClick={() => changeMonth(1)}>›</button>
+          </div>
+
+          <div className="calendar-week-labels">
+            {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(d => <div key={d}>{d}</div>)}
+          </div>
+
+          <div className="calendar-grid">
+            {isLoading ? <div className="loader-overlay">Cargando...</div> : renderCalendar()}
+          </div>
+
+          <div className="calendar-footer-legend">
+            <div className="legend-group">
+              <span className="dot disponible"></span> <span>Disponible</span>
+            </div>
+            <div className="legend-group">
+              <span className="dot pendiente"></span> <span>Pendiente</span>
+            </div>
+            <div className="legend-group">
+              <span className="dot reservada"></span> <span>Reservado</span>
+            </div>
+          </div>
         </div>
-        <div className="legend-item">
-          <span className="legend-color-box pendiente"></span>
-          <span>Pendiente de Aprobación</span>
+
+        <div className="calendar-info-bottom">
+          <div className="info-card-integrated">
+            <h4>Información de Tarifas</h4>
+            <p>Los precios mostrados son estimaciones base. El valor final se ajustará según cantidad de invitados y servicios extra seleccionados.</p>
+            <div className="disclaimer-mini">
+              <span className="icon">⚠️</span>
+              <span>Solo se muestran tarifas para fechas con disponibilidad inmediata.</span>
+            </div>
+          </div>
         </div>
-        <div className="legend-item">
-          <span className="legend-color-box reservada"></span>
-          <span>Reservado</span>
+      </section>
+
+      {message && (
+        <div className="notification-toast" onClick={() => setMessage('')}>
+          {message}
         </div>
-        <div className="legend-item">
-          <span className="legend-color-box past"></span>
-          <span>No Disponible / Pasado</span>
-        </div>
-      </div>
-      <div className="price-disclaimer">
-        <p>
-          <strong>Atención:</strong> El precio que figura en el calendario es un valor de referencia y está sujeto a modificaciones dependiendo de las características del evento (cantidad de invitados, horario, etc.).
-        </p>
-      </div>
-      {message && <p className="message-area">{message}</p>}
+      )}
     </div>
   );
 }
