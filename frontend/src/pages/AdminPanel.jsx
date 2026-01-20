@@ -130,7 +130,10 @@ function AdminPanel() {
 
   return (
     <div className="admin-wrapper">
-      <aside className="admin-sidebar">
+      <aside 
+      className="admin-sidebar"
+      style={{ backgroundColor: '#bc9e74', color: '#f1f5f9' }}
+      >
         <div className="sidebar-logo">
           <h3>SALÓN ADMIN</h3>
         </div>
