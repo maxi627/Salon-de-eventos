@@ -22,6 +22,13 @@ class Config:
     "client_x509_cert_url": os.getenv("GOOGLE_CLIENT_CERT_URL"),
     "universe_domain": os.getenv("GOOGLE_UNIVERSE_DOMAIN")
     }
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_size": 20,          # Máximo de conexiones fijas
+        "max_overflow": 10,       # Conexiones extra si hay picos
+        "pool_timeout": 30,       # Tiempo de espera antes de dar error
+        "pool_recycle": 1800,     # Reiniciar conexiones cada 30 min
+        "pool_pre_ping": True,
+    }
     @staticmethod
     def init_app(app):
         """Método para inicializar configuraciones adicionales si es necesario."""
@@ -44,7 +51,7 @@ class DevelopmentConfig(Config):
     CACHE_REDIS_PORT = os.getenv('REDIS_PORT')
     CACHE_REDIS_DB = os.getenv('REDIS_DB')
     CACHE_REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
-
+    CACHE_TYPE = "RedisCache"
     @staticmethod
     def init_app(app):
         """Valida las variables de entorno críticas para desarrollo."""

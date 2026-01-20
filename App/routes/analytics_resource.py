@@ -3,50 +3,52 @@ import os
 from datetime import date, datetime, timedelta
 
 import pytz
+import sentry_sdk
 from flask import Blueprint, Response, render_template, request
 from flask_jwt_extended import jwt_required
 from sqlalchemy import extract, func
+from sqlalchemy.orm import joinedload
 from weasyprint import HTML
 
-from app.config import ResponseBuilder
-# --- INICIO DE LA CORRECCIÓN ---
-from app.extensions import db, limiter  # Importamos el limiter
-# --- FIN DE LA CORRECCIÓN ---
+from app.config.response_builder import ResponseBuilder
+from app.extensions import db, limiter
 from app.mapping import ResponseSchema
 from app.models import Fecha, Gasto, Pago, Reserva
 from app.utils.decorators import admin_required
 
+# Definición del Blueprint
 Analytics = Blueprint('Analytics', __name__)
-response_schema = ResponseSchema()
 
 @Analytics.route('/analytics', methods=['GET'])
 @jwt_required()
 @admin_required()
-@limiter.limit("50 per minute") # <-- LÍNEA AÑADIDA
+@limiter.limit("100 per minute") # Límite aumentado para la carga inicial del dashboard
 def get_analytics():
     """
-    Endpoint que calcula y devuelve métricas de contabilidad y tendencias
-    para un mes y año específicos.
+    Endpoint que calcula y devuelve métricas de contabilidad y tendencias.
     """
+    # Instanciamos dentro para evitar errores de contexto
+    response_schema = ResponseSchema()
     response_builder = ResponseBuilder()
+    
     try:
         today = datetime.utcnow()
         mes_seleccionado = int(request.args.get('mes', today.month))
         anio_seleccionado = int(request.args.get('anio', today.year))
 
-        # --- CÁLCULO DE GASTOS PARA EL MES SELECCIONADO ---
+        # --- CÁLCULO DE GASTOS ---
         gastos_mes_seleccionado = db.session.query(func.sum(Gasto.monto)).filter(
             extract('year', Gasto.fecha) == anio_seleccionado,
             extract('month', Gasto.fecha) == mes_seleccionado
         ).scalar() or 0.0
 
-        # --- CÁLCULO DE INGRESOS PARA EL MES SELECCIONADO ---
+        # --- CÁLCULO DE INGRESOS ---
         ingresos_mes_seleccionado = db.session.query(func.sum(Pago.monto)).filter(
             extract('year', Pago.fecha_pago) == anio_seleccionado,
             extract('month', Pago.fecha_pago) == mes_seleccionado
         ).scalar() or 0.0
         
-        # --- CÁLCULO DE INGRESOS PARA EL MES ANTERIOR (PARA LA TENDENCIA) ---
+        # --- CÁLCULO DE INGRESOS MES ANTERIOR (TENDENCIA) ---
         fecha_mes_seleccionado = date(anio_seleccionado, mes_seleccionado, 1)
         fecha_mes_anterior = (fecha_mes_seleccionado - timedelta(days=1)).replace(day=1)
         
@@ -55,8 +57,13 @@ def get_analytics():
             extract('month', Pago.fecha_pago) == fecha_mes_anterior.month
         ).scalar() or 0.0
 
-        # --- LÓGICA DE RESERVAS Y GRÁFICO (PARA EL AÑO COMPLETO) ---
-        reservas_confirmadas = Reserva.query.filter_by(estado='confirmada').all()
+        # --- LÓGICA DE RESERVAS Y GRÁFICOS ---
+        # Nota: Usamos db.session.query para ser consistentes con los rollbacks
+        reservas_confirmadas = db.session.query(Reserva).options(
+            joinedload(Reserva.pagos),
+            joinedload(Reserva.usuario)
+        ).filter_by(estado='confirmada').all()
+        
         total_a_liquidar = sum(reserva.saldo_restante for reserva in reservas_confirmadas)
 
         ingresos_por_mes_query = db.session.query(
@@ -89,7 +96,7 @@ def get_analytics():
         
         reservas_mes_seleccionado = ingresos_año_completo.get(f"{anio_seleccionado}-{mes_seleccionado:02d}", {}).get('reservas', 0)
 
-        # --- CÁLCULO DE TENDENCIA (ACTUALIZADO) ---
+        # --- TENDENCIA ---
         tendencia_ingresos = 0
         if ingresos_mes_anterior > 0:
             tendencia_ingresos = ((ingresos_mes_seleccionado - ingresos_mes_anterior) / ingresos_mes_anterior) * 100
@@ -106,11 +113,13 @@ def get_analytics():
             "ingresos_por_mes": ingresos_año_completo
         }
         
-        response_builder.add_message("Analíticas generadas exitosamente.").add_status_code(200).add_data(data)
+        response_builder.add_message("Analíticas generadas con éxito").add_status_code(200).add_data(data)
         return response_schema.dump(response_builder.build()), 200
 
     except Exception as e:
-        response_builder.add_message("Error al generar analíticas").add_status_code(500).add_data(str(e))
+        db.session.rollback() # <--- LIBERA LA CONEXIÓN
+        sentry_sdk.capture_exception(e)
+        response_builder.add_message(f"Error al generar analíticas: {str(e)}").add_status_code(500)
         return response_schema.dump(response_builder.build()), 500
 
 
@@ -119,10 +128,13 @@ def get_analytics():
 @admin_required()
 def download_report():
     try:
-        # Establecer el idioma a Español (Argentina) para formatos
-        locale.setlocale(locale.LC_ALL, 'es_AR.UTF-8')
-        art_tz = pytz.timezone('America/Argentina/Buenos_Aires')
+        # Intento seguro de establecer locale para Docker
+        try:
+            locale.setlocale(locale.LC_ALL, 'es_AR.UTF-8')
+        except locale.Error:
+            locale.setlocale(locale.LC_ALL, 'C')
 
+        art_tz = pytz.timezone('America/Argentina/Buenos_Aires')
         today_utc = datetime.utcnow()
         mes = int(request.args.get('mes', today_utc.month))
         anio = int(request.args.get('anio', today_utc.year))
@@ -146,7 +158,10 @@ def download_report():
         fecha_generacion_formateada = fecha_generacion_local.strftime('%d/%m/%Y %H:%M:%S')
 
         def format_currency(value):
-            return locale.currency(value, symbol=True, grouping=True)
+            try:
+                return locale.currency(value, symbol=True, grouping=True)
+            except:
+                return f"${value:,.2f}"
 
         html_renderizado = render_template(
             'reporte_contable.html',
@@ -168,5 +183,6 @@ def download_report():
             headers={'Content-Disposition': f'attachment;filename=reporte_{nombre_mes.lower()}_{anio}.pdf'}
         )
     except Exception as e:
-        locale.setlocale(locale.LC_ALL, '')
+        db.session.rollback()
+        sentry_sdk.capture_exception(e)
         return {"message": f"Error al generar el reporte: {str(e)}"}, 500

@@ -1,21 +1,24 @@
 from flask import Blueprint, request
 from marshmallow import ValidationError
 
-from app.config import ResponseBuilder
+from app.config.response_builder import ResponseBuilder
 from app.extensions import limiter
 from app.mapping import PersonaSchema, ResponseSchema
 from app.services import PersonaService
 
+# Definición del Blueprint
 Persona = Blueprint('Persona', __name__)
-service = PersonaService()
-persona_schema = PersonaSchema()
-response_schema = ResponseSchema()
 
 # Aplicar limitadores específicos en las rutas
 @Persona.route('/persona', methods=['GET'])
 @limiter.limit("50 per minute")
 def all():
+    # Instanciación interna para evitar RuntimeError fuera del contexto
+    service = PersonaService()
+    persona_schema = PersonaSchema()
+    response_schema = ResponseSchema()
     response_builder = ResponseBuilder()
+    
     try:
         data = persona_schema.dump(service.all(), many=True)
         response_builder.add_message("Persona found").add_status_code(200).add_data(data)
@@ -27,7 +30,11 @@ def all():
 @Persona.route('/persona/<int:id>', methods=['GET'])
 @limiter.limit("50 per minute")
 def one(id):
+    service = PersonaService()
+    persona_schema = PersonaSchema()
+    response_schema = ResponseSchema()
     response_builder = ResponseBuilder()
+    
     try:
         data = service.find(id)
         if data:
@@ -44,7 +51,11 @@ def one(id):
 @Persona.route('/persona', methods=['POST'])
 @limiter.limit("50 per minute")
 def add():
+    service = PersonaService()
+    persona_schema = PersonaSchema()
+    response_schema = ResponseSchema()
     response_builder = ResponseBuilder()
+    
     try:
         json_data = request.json
         if not json_data:
@@ -64,7 +75,11 @@ def add():
 @Persona.route('/persona/<int:id>', methods=['PUT'])
 @limiter.limit("50 per minute")
 def update(id):
+    service = PersonaService()
+    persona_schema = PersonaSchema()
+    response_schema = ResponseSchema()
     response_builder = ResponseBuilder()
+    
     try:
         json_data = request.json
         if not json_data:
@@ -89,7 +104,10 @@ def update(id):
 @Persona.route('/persona/<int:id>', methods=['DELETE'])
 @limiter.limit("50 per minute")
 def delete(id):
+    service = PersonaService()
+    response_schema = ResponseSchema()
     response_builder = ResponseBuilder()
+    
     try:
         if service.delete(id):
             response_builder.add_message("Persona deleted").add_status_code(200).add_data({'id': id})

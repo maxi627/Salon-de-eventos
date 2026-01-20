@@ -105,4 +105,8 @@ def create_app(config_name=None):
     app.register_blueprint(TestNotifications, url_prefix='/api/v1')
     app.register_blueprint(GastoBP, url_prefix='/api/v1')
     app.register_blueprint(ChatbotBP, url_prefix='/api/v1')
+    
+    @app.teardown_appcontext
+    def shutdown_session(exception=None):
+        db.session.remove()
     return app

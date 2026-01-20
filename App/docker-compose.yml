@@ -1,6 +1,4 @@
 # Ubicación: /app/docker-compose.yml
-# Comando para ejecutar (desde la raíz del proyecto): docker-compose -f app/docker-compose.yml up --build
-
 version: '3.8'
 
 services:
@@ -19,7 +17,6 @@ services:
     networks:
       - red1
     restart: always
-    # --- SECCIÓN NUEVA: VERIFICACIÓN DE SALUD ---
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DEV_DB}"]
       interval: 5s
@@ -31,7 +28,6 @@ services:
     container_name: redis_service
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-    # RUTA CORREGIDA: Sube un nivel
     env_file:
       - ../App/.env
     ports:
@@ -48,14 +44,24 @@ services:
       dockerfile: Dockerfile
     env_file:
       - ../App/.env
+    # --- CAMBIOS CRÍTICOS AQUÍ ---
+    command: >
+      gunicorn --bind 0.0.0.0:5000 
+      --workers 3 
+      --threads 2 
+      --timeout 120 
+      --access-logfile - 
+      --error-logfile - 
+      app:app
+    stop_grace_period: 1m # Da tiempo a Gunicorn de cerrar conexiones limpiamente
+    # -----------------------------
     networks:
       - red1
-    # --- LÍNEA MODIFICADA: AHORA ESPERA A QUE LA DB ESTÉ SANA ---
     depends_on:
       db:
-        condition: service_healthy # <-- ¡La clave está aquí!
+        condition: service_healthy
       redis:
-        condition: service_started # Redis no necesita healthcheck, con que inicie es suficiente
+        condition: service_started
     restart: on-failure
     labels:
       - "traefik.enable=true"

@@ -21,10 +21,10 @@ class Reserva(db.Model):
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     fecha_id = db.Column(db.Integer, db.ForeignKey('fecha.id'), nullable=False)
 
-    usuario = db.relationship('Usuario', back_populates='reservas')
+    usuario = db.relationship('Usuario', back_populates='reservas', lazy='joined')
     fecha = db.relationship('Fecha', back_populates='reserva')
 
-    pagos = db.relationship('Pago', back_populates='reserva')
+    pagos = db.relationship('Pago', back_populates='reserva', lazy='joined')
 
 
     @property

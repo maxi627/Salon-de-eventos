@@ -32,13 +32,19 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0,
 });
 
-// 2. Configuración de React Query
+// 2. Configuración de React Query (AJUSTADA)
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 2,
+      // Reducimos retry a 1 para no atacar al servidor si ya está dando error 500
+      retry: 1, 
       refetchOnWindowFocus: false,
+      // Los datos se mantienen "frescos" por 5 minutos
       staleTime: 1000 * 60 * 5,
+      // Tiempo que los datos permanecen en caché antes de eliminarse (5 min)
+      gcTime: 1000 * 60 * 5,
+      // Evita reintentos si el error es por falta de conexión
+      refetchOnReconnect: false,
     },
   },
 });
@@ -66,11 +72,13 @@ const router = createBrowserRouter([
   },
 ]);
 
-// 4. Renderizado Final
+// 4. Renderizado Final con ErrorBoundary de Sentry
 ReactDOM.createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
+    <Sentry.ErrorBoundary fallback={<p>Algo salió mal. Por favor, refresca la página.</p>}>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    </Sentry.ErrorBoundary>
   </StrictMode>
 );

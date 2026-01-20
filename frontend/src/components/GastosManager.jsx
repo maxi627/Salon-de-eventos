@@ -25,7 +25,6 @@ function GastosManager() {
         headers: { 'Authorization': `Bearer ${token}` },
       });
 
-      // --- INICIO DE LA CORRECCIÓN ---
       const contentType = response.headers.get("content-type");
       if (!response.ok) {
           if (contentType && contentType.indexOf("application/json") === -1) {
@@ -34,10 +33,10 @@ function GastosManager() {
           const errorData = await response.json();
           throw new Error(errorData.message || 'Error al cargar los gastos.');
       }
-      // --- FIN DE LA CORRECCIÓN ---
 
       const result = await response.json();
-      setGastos(result.data);
+      // Nos aseguramos de que result.data sea siempre un array
+      setGastos(Array.isArray(result.data) ? result.data : []);
     } catch (err) {
       setError(err.message);
       setGastos([]);
@@ -161,13 +160,15 @@ function GastosManager() {
                 </tr>
               </thead>
               <tbody>
-                {gastos.length > 0 ? (
+                {gastos && gastos.length > 0 ? (
                   gastos.map(gasto => (
                     <tr key={gasto.id}>
-                      <td>{new Date(gasto.fecha).toLocaleDateString('es-ES', {timeZone: 'UTC'})}</td>
-                      <td>{gasto.descripcion}</td>
-                      <td>{gasto.categoria}</td>
-                      <td>${gasto.monto.toLocaleString('es-AR')}</td>
+                      {/* Agregamos validación a la fecha */}
+                      <td>{gasto.fecha ? new Date(gasto.fecha).toLocaleDateString('es-ES', {timeZone: 'UTC'}) : '---'}</td>
+                      <td>{gasto.descripcion || 'Sin descripción'}</td>
+                      <td>{gasto.categoria || 'General'}</td>
+                      {/* CORRECCIÓN CRÍTICA: Encadenamiento opcional para evitar el crash */}
+                      <td>${gasto.monto?.toLocaleString('es-AR') || '0,00'}</td>
                       <td><button className="btn-delete-gasto" onClick={() => handleDelete(gasto.id)}>Eliminar</button></td>
                     </tr>
                   ))
