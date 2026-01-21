@@ -58,13 +58,23 @@ class ReservaService:
             return reserva
         return cached_reserva
 
+    # --- NUEVO MÉTODO CENTRAL PARA EL PROBLEMA DE SALDOS ---
+# --- VERSIÓN CORREGIDA PARA PROPIEDADES DINÁMICAS ---
+    def recalcular_saldo(self, reserva_id: int):
+        """
+        Como 'saldo_restante' es una @property en el modelo, no se guarda en la DB.
+        Este método solo necesita invalidar la caché para que, al volver a leer la reserva,
+        se ejecute el cálculo automático con los nuevos pagos.
+        """
+        # Solo limpiamos la memoria para obligar a recalcular
+        cache.delete(f'reserva_{reserva_id}')
+        cache.delete('reservas')
+
     def add(self, reserva: Reserva) -> Reserva:
         """
         Crea una reserva y sincroniza el estado de la fecha.
-        Utiliza el bloqueo de fecha para evitar reservas duplicadas.
         """
         with self.fecha_service.redis_lock(reserva.fecha_id):
-            # IMPORTANTE: Obtener la fecha del repositorio para que esté en la sesión de DB
             fecha_entidad = self.fecha_service.repository.get_by_id(reserva.fecha_id)
 
             if not fecha_entidad:
@@ -74,17 +84,17 @@ class ReservaService:
                 raise Exception("Lo sentimos, esta fecha ya ha sido seleccionada por otro usuario.")
 
             try:
-                # Sincronizar estado de la fecha
+                # Inicializar saldo restante igual al valor del alquiler al crear
+                reserva.saldo_restante = reserva.valor_alquiler
+
                 if reserva.estado == 'confirmada':
                     fecha_entidad.estado = 'reservada'
                 else:
                     fecha_entidad.estado = 'pendiente'
                 
-                # Persistencia atómica
                 db.session.add(reserva)
                 db.session.commit()
 
-                # Invalida cachés
                 cache.delete('reservas')
                 cache.delete(f'fecha_{fecha_entidad.id}')
                 cache.delete('fechas')
@@ -97,24 +107,25 @@ class ReservaService:
 
     def update(self, reserva_id: int, updated_data: dict) -> Reserva:
         """
-        Actualiza los datos de una reserva y sincroniza estados de fecha si es necesario.
+        Actualiza los datos de una reserva y recalcula saldos si cambia el precio.
         """
         with self.redis_lock(reserva_id):
-            # Obtener de DB para asegurar que el objeto sea trackeable
             reserva = self.repository.get_by_id(reserva_id)
             if not reserva:
                 raise Exception(f"Reserva ID {reserva_id} no encontrada.")
 
             estado_anterior = reserva.estado
+            precio_cambio = False # Flag para saber si cambió el precio
 
-            # Actualización dinámica de campos
             for key, value in updated_data.items():
                 if hasattr(reserva, key):
+                    # Si cambia el valor_alquiler, marcamos para recalcular
+                    if key == 'valor_alquiler' and float(getattr(reserva, key)) != float(value):
+                        precio_cambio = True
                     setattr(reserva, key, value)
             
             nuevo_estado = reserva.estado
 
-            # Lógica de estados cruzados
             if nuevo_estado == 'confirmada' and estado_anterior != 'confirmada':
                 reserva.fecha.estado = 'reservada'
             elif nuevo_estado == 'cancelada' and estado_anterior != 'cancelada':
@@ -123,7 +134,13 @@ class ReservaService:
             try:
                 db.session.commit()
 
-                # Limpieza de caché
+                # Si cambió el precio, recalculamos el saldo inmediatamente
+                if precio_cambio:
+                    # Nota: recalcular_saldo hace su propio commit y limpieza de caché
+                    # pero como ya estamos dentro de un lock, podemos llamar a la lógica interna
+                    # o simplemente invocar al método después.
+                    pass 
+
                 cache.delete(f'reserva_{reserva_id}')
                 cache.delete('reservas')
                 cache.delete(f'fecha_{reserva.fecha_id}')
@@ -133,6 +150,11 @@ class ReservaService:
             except Exception as e:
                 db.session.rollback()
                 raise e
+            finally:
+                # Si hubo cambio de precio, recalculamos fuera del bloque try principal 
+                # para asegurar limpieza completa
+                if precio_cambio:
+                    self.recalcular_saldo(reserva_id)
 
     def delete(self, reserva_id: int) -> bool:
         """
@@ -160,13 +182,7 @@ class ReservaService:
                 raise e
 
     def get_by_user_id(self, user_id: int) -> list[Reserva]:
-        """
-        Obtiene el historial de reservas de un usuario específico.
-        """
         return self.repository.get_by_user_id(user_id)
 
     def get_all_archived(self) -> list[Reserva]:
-        """
-        Obtiene las reservas archivadas para el panel de administración.
-        """
         return self.repository.get_all_archived()
