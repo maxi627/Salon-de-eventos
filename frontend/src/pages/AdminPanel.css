@@ -1,8 +1,8 @@
 /* --- RESETEO Y ESTRUCTURA GLOBAL --- */
 :root {
   --admin-sidebar-width: 280px; /* Un poco más ancha para letras más grandes */
-  --admin-bg: #f8fafc;
-  --admin-white: #ffffff;
+  --admin-bg: #f9f9f980;
+  --admin-white: #efbe8b6c;
   --admin-sidebar-bg: #0f172a; /* Oscuro profundo (Slate 950) */
   --admin-primary: #3498db;
   --admin-success: #10b981;

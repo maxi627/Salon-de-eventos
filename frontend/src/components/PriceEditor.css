@@ -1,7 +1,7 @@
 /* --- CONTENEDOR PRINCIPAL --- */
 .price-editor-container {
   padding: 2rem;
-  background-color: #fff;
+  background-color: #ffffff64;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   margin-top: 1rem;
@@ -13,7 +13,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #c6a4a4;
   padding-bottom: 1.5rem;
   flex-wrap: wrap;
   gap: 1rem;
@@ -98,7 +98,7 @@
   grid-template-columns: repeat(7, 1fr);
   gap: 10px;
   padding: 12px;
-  background-color: #f9fafb;
+  background-color: #edf1f5;
   border-radius: 12px;
   border: 1px solid #edf2f7;
 }

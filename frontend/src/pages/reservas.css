@@ -1,7 +1,7 @@
 /* --- CONFIGURACIÓN GENERAL --- */
 :root {
-  --res-bg: #f8fafc;
-  --res-card: #ffffff;
+  --res-bg: #cbd5e1;
+  --res-card: #f8fafc;
   --res-text-main: #1e293b;
   --res-text-muted: #64748b;
   --res-primary: #3498db;
@@ -47,7 +47,7 @@
   border-radius: var(--res-radius);
   padding: 30px;
   box-shadow: var(--res-shadow);
-  border: 1px solid #eef2f6;
+  border: 1px solid #92bde9;
   width: 100%;
   max-width: 750px; /* Limita el ancho para que no se vea tan largo */
 }
@@ -113,7 +113,7 @@
 .calendar-day-card {
   width: 100%;
   height: 100%;
-  border: 1px solid #f1f5f9;
+  border: 1px solid #a0ccf8;
   border-radius: 14px;
   background: white;
   display: flex;
@@ -148,8 +148,8 @@
 }
 
 .calendar-day-card.past { opacity: 0.4; cursor: not-allowed; }
-.calendar-day-card.reservada { background: #fff5f5; border-color: #fee2e2; }
-.calendar-day-card.pendiente { background: #fffbeb; border-color: #fef3c7; }
+.calendar-day-card.reservada { background: #ee8b8b; border-color: #c45454; }
+.calendar-day-card.pendiente { background: #f3dd82; border-color: #fef3c7; }
 
 .calendar-day.empty { background: transparent; border: none; }
 
@@ -160,10 +160,10 @@
 }
 
 .info-card-integrated {
-  background: white;
+  background: #ffffffcd;
   padding: 20px 30px;
   border-radius: 20px;
-  border: 1px solid #eef2f6;
+  border: 1px solid #6da2d6;
   text-align: left;
   box-shadow: 0 4px 15px rgba(0,0,0,0.02);
 }
@@ -197,7 +197,7 @@
 .calendar-footer-legend {
   margin-top: 25px;
   padding-top: 20px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid #badafa;
   display: flex;
   justify-content: center;
   gap: 25px;
