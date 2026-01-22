@@ -58,21 +58,17 @@ class ReservaService:
             return reserva
         return cached_reserva
 
-    # --- NUEVO MÉTODO CENTRAL PARA EL PROBLEMA DE SALDOS ---
-# --- VERSIÓN CORREGIDA PARA PROPIEDADES DINÁMICAS ---
     def recalcular_saldo(self, reserva_id: int):
         """
-        Como 'saldo_restante' es una @property en el modelo, no se guarda en la DB.
-        Este método solo necesita invalidar la caché para que, al volver a leer la reserva,
-        se ejecute el cálculo automático con los nuevos pagos.
+        Invalida la caché para forzar el recálculo del saldo_restante (propiedad dinámica).
         """
-        # Solo limpiamos la memoria para obligar a recalcular
         cache.delete(f'reserva_{reserva_id}')
         cache.delete('reservas')
 
     def add(self, reserva: Reserva) -> Reserva:
         """
         Crea una reserva y sincroniza el estado de la fecha.
+        Actualiza caché de reservas Y usuarios.
         """
         with self.fecha_service.redis_lock(reserva.fecha_id):
             fecha_entidad = self.fecha_service.repository.get_by_id(reserva.fecha_id)
@@ -98,6 +94,10 @@ class ReservaService:
                 cache.delete('reservas')
                 cache.delete(f'fecha_{fecha_entidad.id}')
                 cache.delete('fechas')
+                
+
+                cache.delete('usuarios')
+                cache.delete(f'usuario_{reserva.usuario_id}')
 
                 return reserva
 
@@ -115,11 +115,10 @@ class ReservaService:
                 raise Exception(f"Reserva ID {reserva_id} no encontrada.")
 
             estado_anterior = reserva.estado
-            precio_cambio = False # Flag para saber si cambió el precio
+            precio_cambio = False 
 
             for key, value in updated_data.items():
                 if hasattr(reserva, key):
-                    # Si cambia el valor_alquiler, marcamos para recalcular
                     if key == 'valor_alquiler' and float(getattr(reserva, key)) != float(value):
                         precio_cambio = True
                     setattr(reserva, key, value)
@@ -134,25 +133,21 @@ class ReservaService:
             try:
                 db.session.commit()
 
-                # Si cambió el precio, recalculamos el saldo inmediatamente
-                if precio_cambio:
-                    # Nota: recalcular_saldo hace su propio commit y limpieza de caché
-                    # pero como ya estamos dentro de un lock, podemos llamar a la lógica interna
-                    # o simplemente invocar al método después.
-                    pass 
-
+                # Invalidación de caché
                 cache.delete(f'reserva_{reserva_id}')
                 cache.delete('reservas')
                 cache.delete(f'fecha_{reserva.fecha_id}')
                 cache.delete('fechas')
+                
+                # Actualizamos usuarios por si cambia el estado visual en la lista
+                cache.delete('usuarios')
+                cache.delete(f'usuario_{reserva.usuario_id}')
 
                 return reserva
             except Exception as e:
                 db.session.rollback()
                 raise e
             finally:
-                # Si hubo cambio de precio, recalculamos fuera del bloque try principal 
-                # para asegurar limpieza completa
                 if precio_cambio:
                     self.recalcular_saldo(reserva_id)
 
@@ -166,6 +161,9 @@ class ReservaService:
                 return False
 
             try:
+                # Guardamos usuario_id antes de archivar para limpiar caché
+                user_id = reserva.usuario_id
+                
                 reserva.estado = 'archivada'
                 if reserva.fecha:
                     reserva.fecha.estado = 'disponible'
@@ -176,6 +174,11 @@ class ReservaService:
                 cache.delete(f'reserva_{reserva_id}')
                 cache.delete('reservas')
                 cache.delete('fechas')
+                
+                # Invalidamos caché de usuarios
+                cache.delete('usuarios')
+                cache.delete(f'usuario_{user_id}')
+                
                 return True
             except Exception as e:
                 db.session.rollback()

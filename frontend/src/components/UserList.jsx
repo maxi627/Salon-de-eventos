@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import EditReservationModal from './EditReservationModal';
 import './UserList.css';
 
 // Componente para la paginación
@@ -29,42 +30,35 @@ function UserList() {
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   
+  // Estado para el modal de reserva
+  const [selectedReservation, setSelectedReservation] = useState(null);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage] = useState(10); 
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const signal = controller.signal;
-
-    const fetchUsers = async () => {
-      setIsLoading(true);
-      setError('');
-      const token = localStorage.getItem('authToken');
-      try {
-        const response = await fetch('/api/v1/usuario', {
-          headers: { 'Authorization': `Bearer ${token}` },
-          signal,
-        });
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || 'No tienes permiso para ver los usuarios.');
-        }
-        const data = await response.json();
-        setUsers(data.data);
-      } catch (err) {
-        if (err.name !== 'AbortError') {
-          setError(err.message);
-        }
-      } finally {
-        setIsLoading(false);
+  const fetchUsers = async () => {
+    // setIsLoading(true); 
+    const token = localStorage.getItem('authToken');
+    try {
+      const response = await fetch('/api/v1/usuario', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'No tienes permiso para ver los usuarios.');
       }
-    };
+      const data = await response.json();
+      setUsers(data.data); // data.data porque asumo que tu API devuelve { data: [...] }
+    } catch (err) {
+        console.error(err);
+        setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchUsers();
-
-    return () => {
-      controller.abort();
-    };
   }, []);
 
   const handleDelete = async (userId) => {
@@ -87,6 +81,33 @@ function UserList() {
       setTimeout(() => setError(''), 3000);
     }
   };
+
+  // --- NUEVAS FUNCIONES PARA EL MODAL ---
+  const handleViewReservation = (user) => {
+    if (user.reservas && user.reservas.length > 0) {
+        // MEJORA: Ordenamos por ID descendente para tomar siempre la más reciente
+        // (Asumiendo que ID más alto = más reciente)
+        const reservasOrdenadas = [...user.reservas].sort((a, b) => b.id - a.id);
+        const ultimaReserva = reservasOrdenadas[0]; 
+        
+        // Inyectamos el objeto usuario dentro de la reserva
+        const reservaConUsuario = { ...ultimaReserva, usuario: user };
+        
+        setSelectedReservation(reservaConUsuario);
+    } else {
+        alert("Este usuario no tiene reservas registradas visibles.");
+    }
+  };
+
+  const handleCloseModal = () => {
+    setSelectedReservation(null);
+  };
+
+  const handleUpdateList = () => {
+    fetchUsers(); 
+  };
+
+  // -------------------------------------
 
   const filteredUsers = users.filter(user =>
     user.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -146,12 +167,26 @@ function UserList() {
                   <td>{user.dni}</td>
                   <td>{user.telefono || 'N/A'}</td>
                   <td>
-                    <button
-                      className="btn-delete"
-                      onClick={() => handleDelete(user.id)}
-                    >
-                      Eliminar
-                    </button>
+                    <div className="action-buttons">
+                        {/* BOTÓN VER RESERVA - Solo aparece si tiene reservas */}
+                        {user.reservas && user.reservas.length > 0 && (
+                            <button 
+                                className="btn-view-reserva"
+                                onClick={() => handleViewReservation(user)}
+                                title="Ver Última Reserva"
+                            >
+                                📅 Ver
+                            </button>
+                        )}
+
+                        <button
+                        className="btn-delete"
+                        onClick={() => handleDelete(user.id)}
+                        title="Eliminar Usuario"
+                        >
+                        🗑️
+                        </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -170,6 +205,16 @@ function UserList() {
             totalUsers={filteredUsers.length}
             paginate={paginate}
             currentPage={currentPage}
+        />
+      )}
+
+      {/* RENDERIZADO DEL MODAL */}
+      {selectedReservation && (
+        <EditReservationModal
+          reservation={selectedReservation}
+          onClose={handleCloseModal}
+          onUpdate={handleUpdateList}
+          isCreating={false}
         />
       )}
     </div>
