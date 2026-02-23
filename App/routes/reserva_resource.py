@@ -1,5 +1,6 @@
-import sentry_sdk
 from datetime import datetime
+
+import sentry_sdk
 from flask import Blueprint, render_template, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from marshmallow import ValidationError

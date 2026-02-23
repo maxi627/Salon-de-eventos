@@ -1,3 +1,4 @@
+import datetime
 import os
 
 from dotenv import load_dotenv
@@ -8,7 +9,7 @@ load_dotenv(os.path.join(basedir, "..", ".env"))  # Ajusta la ruta según tu est
 class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
-
+    JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(hours=2)
     GOOGLE_CREDENTIALS = {
     "type": os.getenv("GOOGLE_TYPE"),
     "project_id": os.getenv("GOOGLE_PROJECT_ID"),

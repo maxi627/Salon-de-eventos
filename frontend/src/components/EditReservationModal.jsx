@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react';
 import './EditReservationModal.css';
 
 function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
-  const [localReservation, setLocalReservation] = useState(reservation);
-
   const [formData, setFormData] = useState({
     usuario_id: reservation?.usuario?.id || '',
     fecha_dia: reservation?.fecha?.dia || '',
@@ -11,29 +9,17 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
     estado: reservation?.estado || 'confirmada',
   });
 
+  // Estado local para que la UI reaccione instantáneamente
+  const [localReservation, setLocalReservation] = useState(reservation);
+
   const [users, setUsers] = useState([]);
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [showUserList, setShowUserList] = useState(false);
-
   const [newPayment, setNewPayment] = useState({ monto: '' });
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false); // Nuevo estado para bloquear botones
-
-  // Sincronización protegida con el padre
-  useEffect(() => {
-    if (reservation && (!localReservation || reservation.id !== localReservation.id)) {
-      setLocalReservation(reservation);
-      setFormData({
-        usuario_id: reservation.usuario?.id || '',
-        fecha_dia: reservation.fecha?.dia || '',
-        valor_alquiler: reservation.valor_alquiler || 0,
-        estado: reservation.estado || 'confirmada',
-      });
-    }
-  }, [reservation]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -56,29 +42,6 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
     fetchUsers();
   }, [isCreating, reservation]);
 
-  // Función infalible para recargar datos frescos
-  const reloadData = async () => {
-    const token = localStorage.getItem('authToken');
-    try {
-      // Agregamos timestamp para evitar caché del navegador
-      const response = await fetch(`/api/v1/reserva/${localReservation.id}?t=${Date.now()}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const result = await response.json();
-      if (response.ok && result.data) {
-        setLocalReservation(result.data);
-        // También actualizamos el form por si el backend normalizó algún dato
-        setFormData(prev => ({
-            ...prev,
-            valor_alquiler: result.data.valor_alquiler,
-            estado: result.data.estado
-        }));
-      }
-    } catch (err) {
-      console.error("Error recargando datos:", err);
-    }
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -89,7 +52,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
     setUserSearchTerm(term);
     if (term) {
       const filtered = users.filter(user =>
-        `${user.nombre} ${user.apellido}`.toLowerCase().includes(term.toLowerCase())
+        `${user.nombre} ${user.apellido} ${user.dni}`.toLowerCase().includes(term.toLowerCase())
       );
       setFilteredUsers(filtered);
       setShowUserList(true);
@@ -109,110 +72,101 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
     setNewPayment({ monto: e.target.value });
   };
 
-  // --- LÓGICA DE AÑADIR PAGO (ENCADENADA) ---
   const handleAddPayment = async () => {
     const montoAAgregar = parseFloat(newPayment.monto);
 
     if (!montoAAgregar || montoAAgregar <= 0) {
-      setError('El monto del pago debe ser positivo.');
+      setError('El monto del pago debe ser un número positivo.');
       return;
     }
-
+    
+    if (montoAAgregar > localReservation.saldo_restante) {
+      setError('El pago no puede ser mayor que el saldo restante.');
+      return;
+    }
+    
     setError('');
-    setMessage('Procesando cambios y pago...');
-    setIsProcessing(true); // Bloqueamos para evitar doble click
     const token = localStorage.getItem('authToken');
-
     try {
-      // PASO 1: Actualizar la Reserva (Precio/Estado)
-      // Esto asegura que el backend tenga el "Valor Alquiler" nuevo antes de calcular saldos
-      const updateResponse = await fetch(`/api/v1/reserva/${localReservation.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-            ...formData,
-            valor_alquiler: parseFloat(formData.valor_alquiler) // Aseguramos que sea número
-        }),
-      });
-
-      if (!updateResponse.ok) throw new Error('Error al guardar los cambios de la reserva.');
-
-      // PASO 2: Crear el Pago
-      const pagoResponse = await fetch(`/api/v1/reserva/${localReservation.id}/pagos`, {
+      const response = await fetch(`/api/v1/reserva/${reservation.id}/pagos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ monto: montoAAgregar }),
       });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message);
+      
+      const nuevoPago = {
+        id: result.pago?.id || result.id || Date.now(),
+        monto: montoAAgregar,
+        fecha_pago: result.pago?.fecha_pago || result.fecha_pago || new Date().toISOString()
+      };
 
-      const pagoResult = await pagoResponse.json();
-      if (!pagoResponse.ok) throw new Error(pagoResult.message || 'Error al agregar el pago.');
+      // 1. Actualizamos visualmente el modal primero
+      setLocalReservation(prev => ({
+        ...prev,
+        pagos: [...(prev.pagos || []), nuevoPago],
+        saldo_restante: prev.saldo_restante - montoAAgregar
+      }));
 
-      // PASO 3: Recargar TODO desde el servidor
-      // Ya no hacemos cálculos manuales, confiamos en la DB
-      await reloadData();
+      // 2. IMPORTANTE: Esperamos a que el AdminPanel (padre) refresque sus datos del servidor
+      await onUpdate(); 
 
-      setMessage('Pago registrado y datos actualizados.');
+      setMessage('Pago añadido con éxito.');
       setNewPayment({ monto: '' });
       
-      // Notificar al padre
-      if(onUpdate) onUpdate();
-
     } catch (err) {
-      console.error(err);
-      setError(err.message || 'Ocurrió un error inesperado.');
-    } finally {
-      setIsProcessing(false); // Desbloqueamos
+      setError(err.message);
     }
   };
   
   const handleDeletePayment = async (pagoId) => {
-    const masterPassword = window.prompt("Ingresa la contraseña maestra para eliminar:");
+    const masterPassword = window.prompt("Para eliminar este pago, por favor ingresa la contraseña maestra:");
     if (!masterPassword) return;
 
     setError('');
-    setMessage('Eliminando pago...');
-    setIsProcessing(true);
+    setMessage('');
     const token = localStorage.getItem('authToken');
 
     try {
       const response = await fetch(`/api/v1/pago/${pagoId}`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ master_password: masterPassword })
       });
 
-      if (!response.ok) {
-          const res = await response.json();
-          throw new Error(res.message || 'Error al eliminar pago.');
-      }
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || 'Error al eliminar el pago.');
 
-      await reloadData(); // Recargamos para ver el saldo actualizado
+      const pagoEliminado = localReservation.pagos.find(p => p.id === pagoId);
+      const montoRecuperado = pagoEliminado ? parseFloat(pagoEliminado.monto) : 0;
+
+      // 1. Actualizamos visualmente el modal
+      setLocalReservation(prev => ({
+        ...prev,
+        pagos: prev.pagos.filter(p => p.id !== pagoId),
+        saldo_restante: prev.saldo_restante + montoRecuperado
+      }));
+
+      // 2. Esperamos el refresco del padre
+      await onUpdate();
+
       setMessage('Pago eliminado correctamente.');
-      if(onUpdate) onUpdate();
 
     } catch (err) {
       setError(err.message);
-    } finally {
-      setIsProcessing(false);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setMessage('Guardando...');
-    setIsProcessing(true);
+    setMessage('');
     const token = localStorage.getItem('authToken');
     const { saldo_restante, ...dataToSend } = formData;
 
     const method = isCreating ? 'POST' : 'PUT';
-    const url = isCreating ? '/api/v1/reserva/crear' : `/api/v1/reserva/${localReservation.id}`;
+    const url = isCreating ? '/api/v1/reserva/crear' : `/api/v1/reserva/${reservation.id}`;
 
     try {
       const response = await fetch(url, {
@@ -226,43 +180,27 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || 'Ocurrió un error.');
       
-      setMessage('Guardado con éxito.');
-      
-      if (!isCreating) {
-         await reloadData();
-      } else {
-         // Si es creación, cerramos o actualizamos según lógica del padre
-         setTimeout(() => {
-            if(onUpdate) onUpdate();
-            onClose();
-         }, 1000);
-      }
+      setMessage(isCreating ? 'Reserva creada con éxito.' : 'Reserva actualizada con éxito.');
+      await onUpdate();
+      onClose();
     } catch (err) {
       setError(err.message);
-    } finally {
-      setIsProcessing(false);
     }
   };
   
   const handleDelete = async () => {
-    if (!window.confirm(`¿Archivar reserva del ${localReservation.fecha.dia}?`)) return;
-
+    if (!window.confirm(`¿Estás seguro de que quieres archivar la reserva?`)) return;
     setIsDeleting(true);
     const token = localStorage.getItem('authToken');
-
     try {
-      const response = await fetch(`/api/v1/reserva/${localReservation.id}`, {
+      const response = await fetch(`/api/v1/reserva/${reservation.id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` },
       });
-
       if (!response.ok) throw new Error('Error al archivar.');
-      
-      setMessage('Reserva archivada.');
-      setTimeout(() => {
-        if(onUpdate) onUpdate();
-      }, 1000);
-      
+      setMessage('¡Reserva archivada!');
+      await onUpdate();
+      onClose();
     } catch (err) {
       setError(err.message);
       setIsDeleting(false);
@@ -270,12 +208,11 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
   };
 
   return (
-    <div className="modal-backdrop">
-      <div className="modal-content">
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <h2>{isCreating ? 'Crear Nueva Reserva' : `Gestionar Reserva`}</h2>
-        
         {!isCreating && localReservation?.usuario && (
-            <p><strong>Usuario:</strong> {localReservation.usuario.nombre} {localReservation.usuario.apellido}</p>
+          <p><strong>Usuario:</strong> {localReservation.usuario.nombre} {localReservation.usuario.apellido}</p>
         )}
         
         <form onSubmit={handleSubmit}>
@@ -288,7 +225,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
                   id="usuario_search"
                   value={userSearchTerm}
                   onChange={handleUserSearch}
-                  placeholder="Buscar por nombre..."
+                  placeholder="Buscar por nombre o DNI..."
                   autoComplete="off"
                   className="user-search-input"
                   onBlur={() => setTimeout(() => setShowUserList(false), 200)}
@@ -326,10 +263,9 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
           </div>
 
           <div className="modal-actions">
-            <button type="button" className="btn-close" onClick={onClose} disabled={isProcessing}>Cerrar</button>
-            {/* Si no estamos creando, ocultamos este botón porque "Añadir Pago" ya guarda */}
-            <button type="submit" className="btn-save" disabled={isProcessing}>
-                {isProcessing ? 'Guardando...' : (isCreating ? 'Crear Reserva' : 'Guardar Cambios')}
+            <button type="button" className="btn-close" onClick={onClose}>Cerrar</button>
+            <button type="submit" className="btn-save">
+              {isCreating ? 'Crear Reserva' : 'Guardar Cambios'}
             </button>
           </div>
         </form>
@@ -338,21 +274,14 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
           <div className="payments-section">
             <h4>Pagos Registrados</h4>
             <ul className="payment-list">
-              {localReservation && localReservation.pagos && localReservation.pagos.length > 0 ? (
+              {localReservation.pagos && localReservation.pagos.length > 0 ? (
                 localReservation.pagos.map(pago => (
                   <li key={pago.id}>
                     <div>
                       <span>{new Date(pago.fecha_pago).toLocaleDateString('es-ES')}</span>
                       <strong> - ${(pago.monto || 0).toLocaleString('es-AR')}</strong>
                     </div>
-                    <button 
-                      className="btn-delete-pago" 
-                      onClick={() => handleDeletePayment(pago.id)}
-                      title="Eliminar pago"
-                      disabled={isProcessing}
-                    >
-                      &times;
-                    </button>
+                    <button className="btn-delete-pago" onClick={() => handleDeletePayment(pago.id)} title="Eliminar pago">&times;</button>
                   </li>
                 ))
               ) : (
@@ -360,7 +289,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
               )}
             </ul>
             <p className="saldo-restante">
-              Saldo Restante: <strong>${(localReservation?.saldo_restante || 0).toLocaleString('es-AR')}</strong>
+              Saldo Restante: <strong>${(localReservation.saldo_restante || 0).toLocaleString('es-AR')}</strong>
             </p>
 
             <div className="add-payment-form">
@@ -370,30 +299,22 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
                 value={newPayment.monto}
                 onChange={handlePaymentChange}
                 min="0"
-                disabled={isProcessing}
               />
-              <button 
-                type="button" 
-                className="btn-add-payment" 
-                onClick={handleAddPayment}
-                disabled={isProcessing || !newPayment.monto}
-              >
-                {isProcessing ? 'Procesando...' : 'Añadir Pago y Guardar'}
-              </button>
+              <button type="button" className="btn-add-payment" onClick={handleAddPayment}>Añadir Pago</button>
             </div>
           </div>
         )}
 
         {!isCreating && (
           <div className="delete-section">
-            <button onClick={handleDelete} className="btn-delete" disabled={isDeleting || isProcessing}>
+            <button onClick={handleDelete} className="btn-delete" disabled={isDeleting}>
               {isDeleting ? 'Archivando...' : 'Archivar Reserva'}
             </button>
           </div>
         )}
 
         {error && <p className="error-message">{error}</p>}
-        {message && <p className="message-area">{message}</p>}
+        {message && <p className="message-area" style={{color: 'green', textAlign: 'center', marginTop: '10px'}}>{message}</p>}
       </div>
     </div>
   );
