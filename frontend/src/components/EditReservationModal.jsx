@@ -1,7 +1,10 @@
+import { useQueryClient } from '@tanstack/react-query'; // <-- 1. Importamos el hook
 import { useEffect, useState } from 'react';
 import './EditReservationModal.css';
 
 function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
+  const queryClient = useQueryClient(); // <-- 2. Instanciamos el cliente
+  
   const [formData, setFormData] = useState({
     usuario_id: reservation?.usuario?.id || '',
     fecha_dia: reservation?.fecha?.dia || '',
@@ -182,6 +185,10 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
       
       setMessage(isCreating ? 'Reserva creada con éxito.' : 'Reserva actualizada con éxito.');
       await onUpdate();
+      
+      // <-- 3. Forzamos la recarga de las fechas en el calendario -->
+      queryClient.invalidateQueries({ queryKey: ['fechas'] });
+
       onClose();
     } catch (err) {
       setError(err.message);
@@ -199,7 +206,12 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
       });
       if (!response.ok) throw new Error('Error al archivar.');
       setMessage('¡Reserva archivada!');
+      
       await onUpdate();
+      
+      // <-- 4. Al archivar, liberamos el día en el calendario -->
+      queryClient.invalidateQueries({ queryKey: ['fechas'] });
+
       onClose();
     } catch (err) {
       setError(err.message);

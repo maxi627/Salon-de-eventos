@@ -16,8 +16,8 @@ class UsuarioRepository(Repository_add, Repository_get, Repository_delete):
             db.session.rollback()  # Deshace la transacción si hay un error
             raise e  # Propaga la excepción para manejo externo
 
-    def get_all(self) -> List[Usuario]:
-        return Usuario.query.all()
+    def get_all(self):
+        return Usuario.query.filter_by(activo=True).all()
 
     def get_by_id(self, id: int) -> Usuario:
         return Usuario.query.get(id)

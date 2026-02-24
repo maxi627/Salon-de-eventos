@@ -134,6 +134,29 @@ def delete(id):
         else:
             response_builder.add_message("Usuario no encontrado").add_status_code(404).add_data({'id': id})
             return response_schema.dump(response_builder.build()), 404
+            
+    except ValueError as ve:
+        # 🟢 ATRAPAMOS EL ERROR DE NEGOCIO Y DEVOLVEMOS 400
+        db.session.rollback()
+        response_builder.add_message(str(ve)).add_status_code(400)
+        return response_schema.dump(response_builder.build()), 400
+        
+    except Exception as e:
+        # Los errores 500 reales se quedan aquí
+        db.session.rollback()
+        response_builder.add_message("Error al eliminar usuario").add_status_code(500).add_data(str(e))
+        return response_schema.dump(response_builder.build()), 500
+    service = UsuarioService()
+    response_schema = ResponseSchema()
+    response_builder = ResponseBuilder()
+    
+    try:
+        if service.delete(id):
+            response_builder.add_message("Usuario eliminado").add_status_code(200).add_data({'id': id})
+            return response_schema.dump(response_builder.build()), 200
+        else:
+            response_builder.add_message("Usuario no encontrado").add_status_code(404).add_data({'id': id})
+            return response_schema.dump(response_builder.build()), 404
     except Exception as e:
         db.session.rollback()
         response_builder.add_message("Error al eliminar usuario").add_status_code(500).add_data(str(e))

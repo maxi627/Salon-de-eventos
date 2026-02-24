@@ -20,7 +20,7 @@ class Persona(db.Model):
     telefono: str = db.Column('telefono', db.String(50), nullable=True)
     password_hash: str = db.Column(db.String(128), nullable=False)
     tipo = db.Column(db.String(50), nullable=False)
-
+    activo = db.Column(db.Boolean, default=True, nullable=False)
     __mapper_args__ = {
         'polymorphic_identity': 'persona',
         'polymorphic_on': tipo

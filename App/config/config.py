@@ -60,7 +60,6 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
-    # --- CORREGIDO: Define la URI directamente ---
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     CACHE_TYPE = "SimpleCache"
     CACHE_DEFAULT_TIMEOUT = 300

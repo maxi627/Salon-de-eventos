@@ -32,6 +32,11 @@ def login():
 
         user = repo.get_by_email(correo)
 
+        # 🟢 NUEVA VALIDACIÓN: Revisar si el usuario existe pero está inactivo (Soft Delete)
+        if user and hasattr(user, 'activo') and not user.activo:
+            return response_builder.add_message("Tu cuenta ha sido desactivada. Por favor, regístrate de nuevo para reactivarla.").add_status_code(403).build(), 403
+
+        # Si el usuario existe, está activo y la contraseña es correcta
         if user and user.check_password(password):
             # Configuramos el usuario en Sentry para rastreo de errores
             sentry_sdk.set_user({"id": user.id, "email": user.correo, "role": user.tipo})
@@ -50,12 +55,12 @@ def login():
 
             return response_builder.add_message("Inicio de sesión exitoso").add_data({"token": access_token}).add_status_code(200).build(), 200
 
+        # Si no existe o la contraseña es mala
         return response_builder.add_message("Credenciales inválidas").add_status_code(401).build(), 401
 
     except Exception as e:
         db.session.rollback() # Limpia la conexión si algo falló en la consulta
         return response_builder.add_message("Error interno en el login").add_status_code(500).add_data(str(e)).build(), 500
-
 @Auth.route('/forgot-password', methods=['POST'])
 def forgot_password():
     repo = PersonaRepository()

@@ -63,22 +63,24 @@ class ReservaService:
                 raise Exception(f"La fecha seleccionada ya no está disponible.")
 
             try:
-                # --- INICIO DE LA MODIFICACIÓN ---
                 # Ahora el estado de la fecha depende del estado de la reserva
                 if reserva.estado == 'confirmada':
                     fecha_a_reservar.estado = 'reservada'
                 else: # Si es 'pendiente' o cualquier otro estado inicial
                     fecha_a_reservar.estado = 'pendiente'
-                # --- FIN DE LA MODIFICACIÓN ---
                 
                 db.session.add(reserva)
                 db.session.commit()
 
                 cache.set(f'reserva_{reserva.id}', reserva, timeout=self.CACHE_TIMEOUT)
                 cache.delete('reservas')
-                
+
                 cache.set(f'fecha_{fecha_a_reservar.id}', fecha_a_reservar, timeout=self.CACHE_TIMEOUT)
+                
+                # --- MEJORA: Limpieza profunda de caché de fechas ---
                 cache.delete('fechas')
+                cache.delete('fechas_disponibles')
+                cache.delete('todas_las_fechas')
 
                 return reserva
 
@@ -91,7 +93,8 @@ class ReservaService:
         Actualiza una reserva existente con nuevos datos.
         """
         with self.redis_lock(reserva_id):
-            reserva_a_actualizar = self.find(reserva_id)
+            reserva_a_actualizar = self.repository.get_by_id(reserva_id)
+            
             if not reserva_a_actualizar:
                 raise Exception(f"Reserva con ID {reserva_id} no encontrada.")
 
@@ -102,25 +105,38 @@ class ReservaService:
                 if hasattr(reserva_a_actualizar, key):
                     setattr(reserva_a_actualizar, key, value)
             
-            # --- INICIO DE LA MODIFICACIÓN ---
-            # Comprobamos el nuevo estado para actualizar la fecha asociada.
+            # Comprobamos los estados para actualizar la fecha
             if nuevo_estado == 'confirmada' and estado_anterior != 'confirmada':
                 reserva_a_actualizar.fecha.estado = 'reservada'
             elif nuevo_estado == 'cancelada' and estado_anterior != 'cancelada':
-                # Si la reserva se cancela, la fecha vuelve a estar disponible.
                 reserva_a_actualizar.fecha.estado = 'disponible'
-            # --- FIN DE LA MODIFICACIÓN ---
+            elif nuevo_estado == 'pendiente' and estado_anterior != 'pendiente':
+                reserva_a_actualizar.fecha.estado = 'pendiente'
 
+            db.session.add(reserva_a_actualizar)
+            if reserva_a_actualizar.fecha:
+                db.session.add(reserva_a_actualizar.fecha)
+
+            # Confirmamos los cambios en la BD. Aquí el objeto 'reserva_a_actualizar' expira.
             db.session.commit()
 
-            cache.set(f'reserva_{reserva_id}', reserva_a_actualizar, timeout=self.CACHE_TIMEOUT)
+            # 🟢 SOLUCIÓN: Volvemos a traer la reserva "fresca" y completa desde la BD
+            # Esto evita el error de "not bound to a Session" y asegura que la caché guarde el objeto sano.
+            reserva_fresca = self.repository.get_by_id(reserva_id)
+
+            cache.set(f'reserva_{reserva_id}', reserva_fresca, timeout=self.CACHE_TIMEOUT)
             cache.delete('reservas')
-            # Invalidamos la caché de la fecha para que se muestre el nuevo estado en el calendario.
-            cache.delete(f'fecha_{reserva_a_actualizar.fecha_id}')
+            
+            # Invalidamos la caché de la fecha usando la reserva fresca
+            if reserva_fresca and reserva_fresca.fecha_id:
+                cache.delete(f'fecha_{reserva_fresca.fecha_id}')
+            
+            # Limpieza profunda de caché de fechas
             cache.delete('fechas')
+            cache.delete('fechas_disponibles')
+            cache.delete('todas_las_fechas')
 
-            return reserva_a_actualizar
-
+            return reserva_fresca
     def delete(self, reserva_id: int) -> bool:
         """
         Archiva una reserva en lugar de eliminarla permanentemente (soft delete).
@@ -142,7 +158,11 @@ class ReservaService:
                 if fecha_asociada:
                     fecha_asociada.estado = 'disponible'
                     cache.delete(f'fecha_{fecha_asociada.id}')
+                    
+                    # --- MEJORA: Limpieza profunda de caché de fechas ---
                     cache.delete('fechas')
+                    cache.delete('fechas_disponibles')
+                    cache.delete('todas_las_fechas')
 
                 db.session.commit()
 
@@ -155,6 +175,7 @@ class ReservaService:
             except Exception as e:
                 db.session.rollback()
                 raise e
+
     def get_all_archived(self) -> list[Reserva]:
         """
         Obtiene la lista de todas las reservas archivadas, con caché.
@@ -166,6 +187,7 @@ class ReservaService:
                 cache.set('reservas_archivadas', reservas, timeout=self.CACHE_TIMEOUT)
             return reservas
         return cached_reservas
+
     def find(self, reserva_id: int) -> Reserva:
         """
         Busca una reserva por su ID, con caché.
@@ -177,6 +199,7 @@ class ReservaService:
                 cache.set(f'reserva_{reserva_id}', reserva, timeout=self.CACHE_TIMEOUT)
             return reserva
         return cached_reserva
+
     def recalcular_saldo(self, reserva_id: int):
         """
         Invalida la caché para forzar el recálculo del saldo_restante (propiedad dinámica).

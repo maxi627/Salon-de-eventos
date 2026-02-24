@@ -35,7 +35,7 @@ class UsuarioService:
 
     def all(self) -> list[Usuario]:
         """
-        Obtiene la lista de todos los usuarios, con caché.
+        Obtiene la lista de todos los usuarios (activos), con caché.
         """
         cached_usuarios = cache.get('usuarios')
         if cached_usuarios is None:
@@ -47,19 +47,54 @@ class UsuarioService:
 
     def add(self, usuario: Usuario) -> Usuario:
         """
-        Agrega un nuevo usuario y actualiza la caché.
+        Agrega un nuevo usuario o REACTIVA uno que había sido eliminado (Soft Delete).
         """
+        # 1. Buscamos si ya existe alguien con ese correo en la base de datos (incluso inactivos)
+        usuario_existente = Usuario.query.filter_by(correo=usuario.correo).first()
+        
+        if usuario_existente:
+            if not usuario_existente.activo:
+                # ¡MAGIA! El usuario estaba "eliminado", lo reactivamos y actualizamos sus datos
+                usuario_existente.activo = True
+                usuario_existente.nombre = usuario.nombre
+                usuario_existente.apellido = usuario.apellido
+                usuario_existente.dni = usuario.dni
+                
+                # Si manejas contraseña en el modelo de registro, asegúrate de actualizarla.
+                # (Ajusta 'contrasena' por el nombre de tu campo si es diferente, ej: 'password')
+                if hasattr(usuario, 'contrasena') and usuario.contrasena:
+                    usuario_existente.contrasena = usuario.contrasena 
+                
+                db.session.commit()
+                
+                # Refrescamos la entidad desde la DB para evitar problemas de caché
+                usuario_fresco = self.repository.get_by_id(usuario_existente.id)
+                if usuario_fresco:
+                    cache.set(f'usuario_{usuario_fresco.id}', usuario_fresco, timeout=self.CACHE_TIMEOUT)
+                cache.delete('usuarios')
+                return usuario_fresco
+            else:
+                # Si existe y está activo, es un error normal de correo duplicado
+                raise ValueError("Este correo ya está registrado en el sistema.")
+
+        # 2. Si no existe, lo creamos de forma normal
         new_usuario = self.repository.add(usuario)
-        cache.set(f'usuario_{new_usuario.id}', new_usuario, timeout=self.CACHE_TIMEOUT)
+        db.session.commit()
+        
+        usuario_fresco = self.repository.get_by_id(new_usuario.id)
+        
+        if usuario_fresco:
+            cache.set(f'usuario_{usuario_fresco.id}', usuario_fresco, timeout=self.CACHE_TIMEOUT)
         cache.delete('usuarios')
-        return new_usuario
+        
+        return usuario_fresco
 
     def update(self, usuario_id: int, updated_usuario: Usuario) -> Usuario:
         """
         Actualiza un usuario existente.
         """
         with self.redis_lock(usuario_id):
-            existing_usuario = self.find(usuario_id)
+            existing_usuario = self.repository.get_by_id(usuario_id)
             if not existing_usuario:
                 raise Exception(f"Usuario con ID {usuario_id} no encontrada.")
 
@@ -69,33 +104,34 @@ class UsuarioService:
             existing_usuario.correo = updated_usuario.correo
 
             db.session.commit()
-            cache.set(f'usuario_{usuario_id}', existing_usuario, timeout=self.CACHE_TIMEOUT)
+            
+            # Recargar fresco después del commit
+            usuario_fresco = self.repository.get_by_id(usuario_id)
+            
+            cache.set(f'usuario_{usuario_id}', usuario_fresco, timeout=self.CACHE_TIMEOUT)
             cache.delete('usuarios')
 
-            return existing_usuario
+            return usuario_fresco
 
     def delete(self, usuario_id: int) -> bool:
         """
-        Elimina un usuario por su ID solo si no tiene reservas asociadas.
+        Realiza un Borrado Lógico (Soft Delete) apagando al usuario.
         """
         with self.redis_lock(usuario_id):
-            # Buscamos al usuario para poder inspeccionar sus relaciones
             usuario_a_eliminar = self.repository.get_by_id(usuario_id)
 
             if not usuario_a_eliminar:
-                return False # El usuario no existe
+                return False
 
-            # --- LÓGICA DE VERIFICACIÓN ---
-            # Si la lista de reservas del usuario no está vacía, lanzamos un error.
-            if usuario_a_eliminar.reservas:
-                raise Exception("No se puede eliminar el usuario porque tiene una o más reservas asociadas.")
+            # En lugar de lanzar error o usar db.session.delete(), simplemente lo desactivamos
+            usuario_a_eliminar.activo = False
+            db.session.commit()
 
-            # Si no hay reservas, procedemos con la eliminación
-            deleted = self.repository.delete(usuario_id)
-            if deleted:
-                cache.delete(f'usuario_{usuario_id}')
-                cache.delete('usuarios')
-            return deleted
+            # Limpiamos las cachés para que desaparezca al instante del frontend
+            cache.delete(f'usuario_{usuario_id}')
+            cache.delete('usuarios')
+            
+            return True
 
     def find(self, usuario_id: int) -> Usuario:
         """
@@ -104,7 +140,9 @@ class UsuarioService:
         cached_usuario = cache.get(f'usuario_{usuario_id}')
         if cached_usuario is None:
             usuario = self.repository.get_by_id(usuario_id)
-            if usuario:
+            # Solo devolvemos si existe y está activo
+            if usuario and getattr(usuario, 'activo', True):
                 cache.set(f'usuario_{usuario_id}', usuario, timeout=self.CACHE_TIMEOUT)
-            return usuario
+                return usuario
+            return None
         return cached_usuario

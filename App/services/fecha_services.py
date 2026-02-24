@@ -53,9 +53,18 @@ class FechaService:
         # IMPORTANTE: Asegurar que se guarde en la BD antes de cachear
         db.session.commit()
         
-        cache.set(f'fecha_{new_fecha.id}', new_fecha, timeout=self.CACHE_TIMEOUT)
+        # 🟢 SOLUCIÓN: Recargar la entidad fresca tras el commit
+        fecha_fresca = self.repository.get_by_id(new_fecha.id)
+        
+        if fecha_fresca:
+            cache.set(f'fecha_{fecha_fresca.id}', fecha_fresca, timeout=self.CACHE_TIMEOUT)
+        
+        # Limpieza profunda de cachés
         cache.delete('fechas')
-        return new_fecha
+        cache.delete('fechas_disponibles')
+        cache.delete('todas_las_fechas')
+        
+        return fecha_fresca
 
     def update(self, fecha_id: int, updated_data: dict) -> Fecha:
         """
@@ -63,7 +72,7 @@ class FechaService:
         garantizar que esté vinculada a la sesión de SQLAlchemy.
         """
         with self.redis_lock(fecha_id):
-            # CORRECCIÓN: Buscamos en la BD, no en la caché, para que el objeto sea "trackeable"
+            # Buscamos en la BD, no en la caché, para que el objeto sea "trackeable"
             existing_fecha = self.repository.get_by_id(fecha_id) 
 
             if not existing_fecha:
@@ -80,14 +89,24 @@ class FechaService:
             if 'estado' in updated_data:
                 existing_fecha.estado = updated_data['estado']
 
-            # Guardar los cambios físicamente
+            db.session.add(existing_fecha)
+            
+            # Guardar los cambios físicamente. Aquí la entidad expira.
             db.session.commit()
 
-            # Sincronizar caché
-            cache.set(f'fecha_{fecha_id}', existing_fecha, timeout=self.CACHE_TIMEOUT)
-            cache.delete('fechas')
+            # 🟢 SOLUCIÓN: Recargar la entidad fresca tras el commit
+            fecha_fresca = self.repository.get_by_id(fecha_id)
 
-            return existing_fecha
+            # Sincronizar caché
+            if fecha_fresca:
+                cache.set(f'fecha_{fecha_id}', fecha_fresca, timeout=self.CACHE_TIMEOUT)
+            
+            # Limpieza profunda de cachés
+            cache.delete('fechas')
+            cache.delete('fechas_disponibles')
+            cache.delete('todas_las_fechas')
+
+            return fecha_fresca
 
     def delete(self, fecha_id: int) -> bool:
         """
@@ -98,7 +117,11 @@ class FechaService:
             if deleted:
                 db.session.commit()
                 cache.delete(f'fecha_{fecha_id}')
+                
+                # Limpieza profunda
                 cache.delete('fechas')
+                cache.delete('fechas_disponibles')
+                cache.delete('todas_las_fechas')
             return deleted
 
     def find(self, fecha_id: int) -> Fecha:
