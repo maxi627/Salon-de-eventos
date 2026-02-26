@@ -40,5 +40,4 @@ RUN mkdir -p uploads/comprobantes && chown -R flaskapp:flaskapp /home/flaskapp
 USER flaskapp
 EXPOSE 5000
 
-# Usamos Gunicorn apuntando a tu archivo app.py
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "3", "--threads", "2", "--chdir", "/home/flaskapp", "app.main:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "3", "--threads", "2", "main:app"]

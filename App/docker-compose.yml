@@ -40,20 +40,20 @@ services:
       context: ../App
       dockerfile: Dockerfile
     environment:
-      - PYTHONPATH=/home/flaskapp # Indica a Python que busque módulos aquí
+      - PYTHONPATH=/home/flaskapp
     env_file:
       - ../App/.env
     volumes:
       - ../App:/home/flaskapp
       - ../App/uploads:/home/flaskapp/uploads
-    # El comando usa --chdir para asegurar que el contexto sea /home/flaskapp
+    working_dir: /home/flaskapp
+    # CAMBIO VITAL: Usamos 'main:app' directamente porque main.py está en la raíz
     command: >
       gunicorn --bind 0.0.0.0:5000 
       --workers 3 
       --threads 2 
       --timeout 120 
-      --chdir /home/flaskapp 
-      app.main:app
+      main:app
     networks:
       - red1
     depends_on:
@@ -98,7 +98,7 @@ services:
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
       - "--certificatesresolvers.leresolver.acme.tlschallenge=true"
-      - "--certificatesresolvers.leresolver.acme.email=tu-email@gmail.com" # Cambia esto por tu mail real
+      - "--certificatesresolvers.leresolver.acme.email=eulamaxi1@gmail.com" 
       - "--certificatesresolvers.leresolver.acme.storage=/letsencrypt/acme.json"
     ports:
       - "80:80"
