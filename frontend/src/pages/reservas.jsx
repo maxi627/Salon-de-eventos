@@ -38,23 +38,32 @@ function Reservas() {
     navigate(`/reservar/${dateString}`);
   };
 
+  // --- 1. LÓGICA DE NAVEGACIÓN LIMITADA A 3 MESES ---
   const changeMonth = (offset) => {
     const today = new Date();
-    const limitFuture = new Date(today.getFullYear(), today.getMonth() + 6, 1);
+    // Definimos el límite: mes actual + 3 meses
+    const limitFuture = new Date(today.getFullYear(), today.getMonth() + 3, 1);
     const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1);
     
+    // Evitar ir al pasado
     if (newDate < new Date(today.getFullYear(), today.getMonth(), 1) && offset < 0) return;
+    
+    // Evitar ir más allá de 3 meses
     if (newDate > limitFuture && offset > 0) return;
 
     setCurrentDate(newDate);
   };
 
   const renderCalendar = () => {
+    const today = new Date();
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const todayStr = new Date().toLocaleString("sv-SE", { timeZone: "America/Argentina/Buenos_Aires" }).split(" ")[0];
+    
+    // Fecha límite exacta para deshabilitar días individuales (Hoy + 3 meses)
+    const maxFutureDate = new Date(today.getFullYear(), today.getMonth() + 3, today.getDate());
+    const todayStr = today.toLocaleString("sv-SE", { timeZone: "America/Argentina/Buenos_Aires" }).split(" ")[0];
 
     const days = [];
     for (let i = 0; i < firstDay; i++) {
@@ -65,15 +74,21 @@ function Reservas() {
       const monthStr = String(month + 1).padStart(2, '0');
       const dayStr = String(i).padStart(2, '0');
       const dateString = `${year}-${monthStr}-${dayStr}`;
+      const dateObj = new Date(year, month, i);
       
       const fechaInfo = fechas[dateString];
       const isPast = dateString < todayStr;
       
+      // --- 2. BLOQUEO DE DÍAS FUERA DEL RANGO DE 3 MESES ---
+      const isTooFar = dateObj > maxFutureDate;
+      
       let statusClass = 'disponible';
-      let isDisabled = isPast;
+      let isDisabled = isPast || isTooFar; // Bloqueado si es pasado o fuera de los 3 meses
 
       if (isPast) {
         statusClass = 'past';
+      } else if (isTooFar) {
+        statusClass = 'too-far'; // Puedes agregar este estilo en tu CSS si quieres que se vea gris
       } else if (fechaInfo) {
         statusClass = fechaInfo.estado;
         if (fechaInfo.estado !== 'disponible') isDisabled = true;
@@ -88,10 +103,9 @@ function Reservas() {
           >
             <span className="day-number">{i}</span>
             
-            {/* --- CAMBIO AQUÍ: Solo mostrar precio si es disponible, no es pasado y tiene valor --- */}
             {fechaInfo && 
              fechaInfo.valor_estimado > 0 && 
-             !isPast && 
+             !isDisabled && 
              fechaInfo.estado === 'disponible' && (
               <span className="day-price">
                 ${Number(fechaInfo.valor_estimado).toLocaleString('es-AR')}
@@ -108,7 +122,7 @@ function Reservas() {
     <div className="reservas-page-container">
       <header className="reservas-hero">
         <h1>Reserva tu Evento</h1>
-        <p>Selecciona una fecha disponible para comenzar</p>
+        <p>Selecciona una fecha disponible para comenzar (Próximos 3 meses)</p>
       </header>
 
       <section className="calendar-main-section">
@@ -148,7 +162,7 @@ function Reservas() {
             <p>Los precios mostrados son estimaciones base. El valor final se ajustará según cantidad de invitados y servicios extra seleccionados.</p>
             <div className="disclaimer-mini">
               <span className="icon">⚠️</span>
-              <span>Solo se muestran tarifas para fechas con disponibilidad inmediata.</span>
+              <span>Solo se permiten reservas con hasta 90 días de anticipación.</span>
             </div>
           </div>
         </div>
