@@ -44,10 +44,10 @@ services:
     env_file:
       - ../App/.env
     volumes:
-      - ../App:/home/flaskapp/app  # Mapeamos tu código a la subcarpeta 'app'
+      - ../App:/home/flaskapp
       - ../App/uploads:/home/flaskapp/uploads
     working_dir: /home/flaskapp
-    # CAMBIO VITAL: Usamos 'main:app' directamente porque main.py está en la raíz
+    # Usamos main:app porque main.py está en la raíz de /home/flaskapp
     command: >
       gunicorn --bind 0.0.0.0:5000 
       --workers 3 
