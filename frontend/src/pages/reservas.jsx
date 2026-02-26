@@ -122,7 +122,7 @@ function Reservas() {
     <div className="reservas-page-container">
       <header className="reservas-hero">
         <h1>Reserva tu Evento</h1>
-        <p>Selecciona una fecha disponible para comenzar (Próximos 3 meses)</p>
+        <p>Selecciona una fecha disponible para comenzar</p>
       </header>
 
       <section className="calendar-main-section">
