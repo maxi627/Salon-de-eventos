@@ -29,7 +29,6 @@ services:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
     env_file:
       - ../App/.env
-    # Sin puertos expuestos para mayor seguridad en la KVM
     command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
     networks:
       - red1
@@ -42,6 +41,9 @@ services:
       dockerfile: Dockerfile
     env_file:
       - ../App/.env
+    # --- CAMBIO AQUÍ: Volumen para persistencia de comprobantes ---
+    volumes:
+      - ../App/uploads:/app/uploads
     command: >
       gunicorn --bind 0.0.0.0:5000 
       --workers 3 
@@ -59,7 +61,6 @@ services:
         condition: service_started
     labels:
       - "traefik.enable=true"
-      # Solo peticiones que vengan a saloneventos.cloud/api
       - "traefik.http.routers.salonapp.rule=Host(`saloneventos.cloud`) && PathPrefix(`/api`)"
       - "traefik.http.routers.salonapp.entrypoints=websecure"
       - "traefik.http.routers.salonapp.tls.certresolver=leresolver"
@@ -69,12 +70,14 @@ services:
     container_name: salon_frontend
     build:
       context: ../frontend
-      dockerfile: Dockerfile # Asegúrate de tener un Dockerfile en la carpeta frontend
+      dockerfile: Dockerfile
+    # --- CAMBIO AQUÍ: Mismo volumen para que Nginx pueda mostrar las fotos ---
+    volumes:
+      - ../App/uploads:/usr/share/nginx/html/uploads:ro
     networks:
       - red1
     labels:
       - "traefik.enable=true"
-      # Todo lo que no sea /api caerá aquí
       - "traefik.http.routers.frontend.rule=Host(`saloneventos.cloud`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls.certresolver=leresolver"
@@ -83,16 +86,16 @@ services:
   traefik:
     image: traefik:v2.11
     container_name: traefik
+    environment:
+      - DOCKER_API_VERSION=1.44
     command:
       - "--api.insecure=false"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
-      # Redirección forzada a HTTPS
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-      # Certificados Let's Encrypt
       - "--certificatesresolvers.leresolver.acme.tlschallenge=true"
       - "--certificatesresolvers.leresolver.acme.email=tu-email@gmail.com"
       - "--certificatesresolvers.leresolver.acme.storage=/letsencrypt/acme.json"

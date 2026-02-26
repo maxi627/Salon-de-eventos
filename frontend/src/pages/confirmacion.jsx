@@ -132,50 +132,39 @@ function Confirmacion() {
   }, [dateString, navigate]);
 
   const handleRequestReservation = async () => {
-    if (!contractAccepted) {
-      setError('Debes aceptar los términos y condiciones.');
-      return;
-    }
-    if (!receiptFile) {
-      setError('Debes subir un comprobante de pago.');
-      return;
-    }
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
+  if (!contractAccepted || !receiptFile) {
+    setError('Debes aceptar los términos y subir el comprobante.');
+    return;
+  }
 
-    setIsLoading(true);
-    setError('');
-    setMessage('');
+  const token = localStorage.getItem('authToken');
+  setIsLoading(true);
 
-    try {
-      const simulatedUrl = `comprobantes/${fechaInfo.id}_${receiptFile.name}`;
-      
-      const response = await fetch('/api/v1/reserva/solicitar', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          fecha_id: fechaInfo.id,
-          comprobante_url: simulatedUrl,
-        })
-      });
+  // Usamos FormData para enviar el archivo físico
+  const formData = new FormData();
+  formData.append('fecha_id', fechaInfo.id);
+  formData.append('comprobante', receiptFile); // El archivo real
 
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.message);
+  try {
+    const response = await fetch('/api/v1/reserva/solicitar', {
+      method: 'POST',
+      headers: {
+        // IMPORTANTE: No pongas Content-Type, el navegador lo hará solo
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
 
-      setMessage('¡Solicitud enviada con éxito! Un administrador la revisará a la brevedad. Serás redirigido...');
-      setTimeout(() => navigate('/'), 4000);
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message);
 
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
+    setMessage('¡Solicitud enviada con éxito! Redirigiendo...');
+    setTimeout(() => navigate('/'), 3000);
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setIsLoading(false);
+  }
   };
 
   if (isLoading) {
