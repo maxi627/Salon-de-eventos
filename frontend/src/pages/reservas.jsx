@@ -41,14 +41,10 @@ function Reservas() {
   // --- 1. LÓGICA DE NAVEGACIÓN LIMITADA A 3 MESES ---
   const changeMonth = (offset) => {
     const today = new Date();
-    // Definimos el límite: mes actual + 3 meses
     const limitFuture = new Date(today.getFullYear(), today.getMonth() + 3, 1);
     const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1);
     
-    // Evitar ir al pasado
     if (newDate < new Date(today.getFullYear(), today.getMonth(), 1) && offset < 0) return;
-    
-    // Evitar ir más allá de 3 meses
     if (newDate > limitFuture && offset > 0) return;
 
     setCurrentDate(newDate);
@@ -61,7 +57,6 @@ function Reservas() {
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     
-    // Fecha límite exacta para deshabilitar días individuales (Hoy + 3 meses)
     const maxFutureDate = new Date(today.getFullYear(), today.getMonth() + 3, today.getDate());
     const todayStr = today.toLocaleString("sv-SE", { timeZone: "America/Argentina/Buenos_Aires" }).split(" ")[0];
 
@@ -78,17 +73,19 @@ function Reservas() {
       
       const fechaInfo = fechas[dateString];
       const isPast = dateString < todayStr;
-      
-      // --- 2. BLOQUEO DE DÍAS FUERA DEL RANGO DE 3 MESES ---
       const isTooFar = dateObj > maxFutureDate;
+      const isSunday = dateObj.getDay() === 0; // Bloqueo para la iglesia
       
       let statusClass = 'disponible';
-      let isDisabled = isPast || isTooFar; // Bloqueado si es pasado o fuera de los 3 meses
+      // El botón se deshabilita si es pasado, muy futuro o si es domingo
+      let isDisabled = isPast || isTooFar || isSunday; 
 
       if (isPast) {
         statusClass = 'past';
+      } else if (isSunday) {
+        statusClass = 'reservada'; // Se muestra en rojo indicando que no está disponible
       } else if (isTooFar) {
-        statusClass = 'too-far'; // Puedes agregar este estilo en tu CSS si quieres que se vea gris
+        statusClass = 'too-far';
       } else if (fechaInfo) {
         statusClass = fechaInfo.estado;
         if (fechaInfo.estado !== 'disponible') isDisabled = true;
@@ -103,10 +100,11 @@ function Reservas() {
           >
             <span className="day-number">{i}</span>
             
+            {/* Solo mostrar precio si está disponible y NO es domingo ni pasado */}
             {fechaInfo && 
              fechaInfo.valor_estimado > 0 && 
              !isDisabled && 
-             fechaInfo.estado === 'disponible' && (
+             fechaInfo.estado === 'disponible' && !isSunday && (
               <span className="day-price">
                 ${Number(fechaInfo.valor_estimado).toLocaleString('es-AR')}
               </span>
@@ -122,7 +120,7 @@ function Reservas() {
     <div className="reservas-page-container">
       <header className="reservas-hero">
         <h1>Reserva tu Evento</h1>
-        <p>Selecciona una fecha disponible para comenzar</p>
+        <p>Selecciona una fecha disponible para comenzar (Próximos 3 meses)</p>
       </header>
 
       <section className="calendar-main-section">
@@ -151,7 +149,7 @@ function Reservas() {
               <span className="dot pendiente"></span> <span>Pendiente</span>
             </div>
             <div className="legend-group">
-              <span className="dot reservada"></span> <span>Reservado</span>
+              <span className="dot reservada"></span> <span>Reservado / No Disponible</span>
             </div>
           </div>
         </div>
@@ -162,7 +160,7 @@ function Reservas() {
             <p>Los precios mostrados son estimaciones base. El valor final se ajustará según cantidad de invitados y servicios extra seleccionados.</p>
             <div className="disclaimer-mini">
               <span className="icon">⚠️</span>
-              <span>Solo se permiten reservas con hasta 90 días de anticipación.</span>
+              <span>Solo se permiten reservas con hasta 90 días de anticipación. Los domingos no se encuentran disponibles para eventos privados.</span>
             </div>
           </div>
         </div>
