@@ -7,15 +7,15 @@ import './PhotoGallery.css';
 // Agrega los objetos de imagen que quieras mostrar.
 // Asegúrate de que las imágenes estén en la carpeta `frontend/public/gallery/`
 const images = [
-  { src: "./public/foto_salon_1.jpg" },
-  { src: "./public/foto_salon_2.jpg" },
-  { src: "./public/foto_salon_3.jpg" },
-  { src: "./public/foto_salon_4.jpg" },
-  { src: "./public/foto_salon_5.jpg" },
-  { src: "./public/foto_salon_6.jpg" },
-  { src: "./public/foto_salon_7.jpg" },
-  { src: "./public/foto_salon_8.jpg" },
-  { src: "./public/foto_salon_9.jpg" },
+  { src: "/foto_salon_1.jpg" },
+  { src: "/foto_salon_2.jpg" },
+  { src: "/foto_salon_3.jpg" },
+  { src: "/foto_salon_4.jpg" },
+  { src: "/foto_salon_5.jpg" },
+  { src: "/foto_salon_6.jpg" },
+  { src: "/foto_salon_7.jpg" },
+  { src: "/foto_salon_8.jpg" },
+  { src: "/foto_salon_9.jpg" },
 ];
 
 function PhotoGallery() {

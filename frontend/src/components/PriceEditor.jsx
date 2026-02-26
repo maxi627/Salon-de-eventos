@@ -39,7 +39,7 @@ function PriceEditor() {
     fetchAllPrices();
   }, [fetchAllPrices]);
 
-  // --- 2. BUSCAR FECHA ESPECÍFICA (Manual o Clic) ---
+  // --- 2. BUSCAR FECHA ESPECÍFICA (Asegura existencia en DB) ---
   const handleManualSearch = async (date) => {
     setSelectedDate(date);
     if (!date) {
@@ -51,6 +51,7 @@ function PriceEditor() {
     try {
       setIsLoading(true);
       setError('');
+      // Usamos by-date para que el backend la cree si no existe (get_or_create)
       const response = await fetch(`/api/v1/fecha/by-date/${date}`);
       const result = await response.json();
       
@@ -60,7 +61,7 @@ function PriceEditor() {
       } else {
         setFechaData(null);
         setPrice('0');
-        setError("Esta fecha no está configurada en la base de datos.");
+        setError("No se pudo obtener o crear la fecha.");
       }
     } catch (err) {
       setError("Error al conectar con el servidor.");
@@ -103,7 +104,7 @@ function PriceEditor() {
     }
   };
 
-  // --- 4. ACTUALIZACIÓN MASIVA (Lógica corregida) ---
+  // --- 4. ACTUALIZACIÓN MASIVA (Corregida para KVM vacía) ---
   const [bulkDay, setBulkDay] = useState(0);
   const [bulkMonths, setBulkMonths] = useState(3);
 
@@ -130,10 +131,15 @@ function PriceEditor() {
     try {
       let count = 0;
       for (const d of targetDates) {
-        // Buscamos si la fecha existe en nuestro mapa local primero
-        const existing = monthPrices[d];
-        if (existing) {
-          await fetch(`/api/v1/fecha/${existing.id}`, {
+        // PASO A: Aseguramos que la fecha existe en Postgres (get_or_create)
+        const getOrCreateRes = await fetch(`/api/v1/fecha/by-date/${d}`);
+        const getOrCreateResult = await getOrCreateRes.json();
+        
+        if (getOrCreateRes.ok && getOrCreateResult.data) {
+          const idParaActualizar = getOrCreateResult.data.id;
+
+          // PASO B: Ahora que tenemos el ID (nuevo o viejo), actualizamos el valor
+          await fetch(`/api/v1/fecha/${idParaActualizar}`, {
             method: 'PUT',
             headers: { 
               'Content-Type': 'application/json', 
@@ -145,7 +151,7 @@ function PriceEditor() {
         }
       }
       await fetchAllPrices();
-      setMessage(`Se actualizaron ${count} fechas con éxito.`);
+      setMessage(`Se procesaron y actualizaron ${count} fechas con éxito.`);
     } catch (err) {
       setError("Error en proceso masivo: " + err.message);
     } finally {
@@ -231,7 +237,7 @@ function PriceEditor() {
             </div>
           </form>
           {!fechaData && selectedDate && !isLoading && (
-            <p className="error-text">La fecha seleccionada no existe en la base de datos.</p>
+            <p className="error-text">No se pudo encontrar o inicializar la fecha.</p>
           )}
         </div>
       )}
@@ -260,7 +266,7 @@ function PriceEditor() {
             </div>
             <div className="action-buttons">
               <button type="submit" className="btn-save" disabled={isLoading || !price}>
-                {isLoading ? 'Procesando...' : 'Aplicar a todos'}
+                {isLoading ? 'Procesando (creando y actualizando)...' : 'Aplicar a todos'}
               </button>
               <button type="button" className="btn-cancel" onClick={() => setMode('calendar')}>Cancelar</button>
             </div>
