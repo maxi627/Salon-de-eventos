@@ -2,7 +2,7 @@
 FROM python:3.10-slim-bullseye
 
 # Variables de entorno
-ENV FLASK_ENV=development \
+ENV FLASK_ENV=production \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/home/flaskapp
 
@@ -10,8 +10,7 @@ ENV FLASK_ENV=development \
 RUN useradd --create-home --home-dir /home/flaskapp flaskapp
 WORKDIR /home/flaskapp
 
-# --- INICIO DE LA CORRECCIÓN ---
-# Instalar dependencias del sistema, incluyendo el paquete de 'locales'
+# --- INICIO DE LA CORRECCIÓN LOCALES ---
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
@@ -23,28 +22,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     locales \
     && rm -rf /var/lib/apt/lists/*
 
-# Configurar el locale para español de Argentina
 RUN sed -i -e 's/# es_AR.UTF-8 UTF-8/es_AR.UTF-8 UTF-8/' /etc/locale.gen && \
     dpkg-reconfigure --frontend=noninteractive locales
 ENV LANG es_AR.UTF-8
-# --- FIN DE LA CORRECCIÓN ---
+# --- FIN DE LA CORRECCIÓN LOCALES ---
 
-
-# Copiar solo requirements.txt
 COPY requirements.txt .
-
-# Instalar dependencias de Python
 RUN pip install --no-cache-dir "setuptools<58.0.0"
 RUN pip install --no-cache-dir --no-build-isolation -r requirements.txt
 
-# Copiar el código de tu aplicación a una carpeta 'app' dentro del workdir
+# Copiamos el código a 'app' como siempre hiciste
 COPY . ./app
 
-# Cambiar de usuario
+# CREAMOS LA CARPETA DE UPLOADS Y DAMOS PERMISOS
+# Debe estar en /home/flaskapp/app/uploads porque tu ENTRYPOINT corre desde /home/flaskapp
+USER root
+RUN mkdir -p /home/flaskapp/app/uploads/comprobantes && \
+    chown -R flaskapp:flaskapp /home/flaskapp/app/uploads
 USER flaskapp
 
-# Exponer puerto
 EXPOSE 5000
 
-# Punto de entrada para ejecutar la aplicación
+# Tu ENTRYPOINT original que SI funciona
 ENTRYPOINT [ "python", "app/main.py" ]
