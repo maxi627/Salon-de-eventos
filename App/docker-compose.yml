@@ -41,9 +41,8 @@ services:
       dockerfile: Dockerfile
     env_file:
       - ../App/.env
-    # --- PERSISTENCIA DE COMPROBANTES ---
     volumes:
-      - ../App/uploads:/home/flaskapp/app/uploads # Mapeo exacto a la carpeta del código
+      - ../App/uploads:/home/flaskapp/app/uploads
     networks:
       - red1
     depends_on:
@@ -63,14 +62,14 @@ services:
     build:
       context: ../frontend
       dockerfile: Dockerfile
-    # --- VOLUMEN PARA NGINX ---
     volumes:
       - ../App/uploads:/usr/share/nginx/html/uploads:ro
     networks:
       - red1
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`saloneventos.cloud`)"
+      # Esta regla permite que tanto la web como las fotos en /uploads funcionen
+      - "traefik.http.routers.frontend.rule=Host(`saloneventos.cloud`) || (Host(`saloneventos.cloud`) && PathPrefix(`/uploads`))"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls.certresolver=leresolver"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
