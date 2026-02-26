@@ -43,6 +43,7 @@ services:
       - ../App/.env
     # --- CAMBIO AQUÍ: Volumen para persistencia de comprobantes ---
     volumes:
+      - .:/app
       - ./uploads:/app/uploads
     working_dir: /app
     command: >
