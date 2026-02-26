@@ -39,11 +39,21 @@ services:
     build:
       context: ../App
       dockerfile: Dockerfile
+    environment:
+      - PYTHONPATH=/home/flaskapp # Indica a Python que busque módulos aquí
     env_file:
       - ../App/.env
     volumes:
       - ../App:/home/flaskapp
       - ../App/uploads:/home/flaskapp/uploads
+    # El comando usa --chdir para asegurar que el contexto sea /home/flaskapp
+    command: >
+      gunicorn --bind 0.0.0.0:5000 
+      --workers 3 
+      --threads 2 
+      --timeout 120 
+      --chdir /home/flaskapp 
+      app.main:app
     networks:
       - red1
     depends_on:
