@@ -41,10 +41,11 @@ services:
       dockerfile: Dockerfile
     env_file:
       - ../App/.env
-    # --- CAMBIO AQUÍ: Volumen para persistencia de comprobantes ---
+    # --- CORRECCIÓN DE VOLÚMENES ---
     volumes:
-      - .:/app
-      - ./uploads:/app/uploads
+      - ../App:/app             # Mapea tu código a la carpeta /app del contenedor
+      - ../App/uploads:/app/uploads # Mapea los comprobantes
+    # --- CORRECCIÓN DE RUTA DE EJECUCIÓN ---
     working_dir: /app
     command: >
       gunicorn --bind 0.0.0.0:5000 
@@ -73,7 +74,7 @@ services:
     build:
       context: ../frontend
       dockerfile: Dockerfile
-    # --- CAMBIO AQUÍ: Mismo volumen para que Nginx pueda mostrar las fotos ---
+    # --- VOLUMEN PARA QUE EL FRONTEND MUESTRE LOS COMPROBANTES ---
     volumes:
       - ../App/uploads:/usr/share/nginx/html/uploads:ro
     networks:
@@ -89,7 +90,7 @@ services:
     image: traefik:v2.11
     container_name: traefik
     environment:
-      - DOCKER_API_VERSION=1.44
+      - DOCKER_API_VERSION=1.44 # Para evitar conflictos de versión en la KVM
     command:
       - "--api.insecure=false"
       - "--providers.docker=true"
