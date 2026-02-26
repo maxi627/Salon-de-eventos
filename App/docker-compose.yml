@@ -47,12 +47,13 @@ services:
       - ../App:/home/flaskapp
       - ../App/uploads:/home/flaskapp/uploads
     working_dir: /home/flaskapp
-    # Usamos main:app porque main.py está en la raíz de /home/flaskapp
+    # Forzamos el pythonpath en el comando del compose también
     command: >
       gunicorn --bind 0.0.0.0:5000 
       --workers 3 
       --threads 2 
       --timeout 120 
+      --pythonpath . 
       main:app
     networks:
       - red1

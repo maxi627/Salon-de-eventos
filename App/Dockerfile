@@ -30,8 +30,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir "setuptools<58.0.0" && \
     pip install --no-cache-dir --no-build-isolation -r requirements.txt
 
-# Copiamos todo el contenido directamente en /home/flaskapp
-# Según tu imagen, esto incluye la carpeta app/, main.py, etc.
+# Copiamos todo el contenido (app/, main.py, etc.) a /home/flaskapp
 COPY . .
 
 # Aseguramos permisos para las subidas
@@ -40,5 +39,5 @@ RUN mkdir -p uploads/comprobantes && chown -R flaskapp:flaskapp /home/flaskapp
 USER flaskapp
 EXPOSE 5000
 
-# IMPORTANTE: Ejecutamos main:app porque main.py está en la raíz de /home/flaskapp
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "3", "--threads", "2", "main:app"]
+# Ejecutamos con --pythonpath . para que encuentre la carpeta 'app' al hacer 'from app import...'
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "3", "--threads", "2", "--pythonpath", ".", "main:app"]
