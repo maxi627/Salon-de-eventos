@@ -43,6 +43,7 @@ services:
       - ../App/.env
     volumes:
       - ../App/uploads:/home/flaskapp/app/uploads
+      - ../App/uploads:/home/flaskapp/uploads       # Ruta relativa al home
     networks:
       - red1
     depends_on:
