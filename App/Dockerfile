@@ -2,16 +2,16 @@
 FROM python:3.10-slim-bullseye
 
 # Variables de entorno
-ENV FLASK_ENV=development \
+ENV FLASK_ENV=production \
     PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/home/flaskapp
+    PYTHONPATH=/home/flaskapp \
+    LANG=es_AR.UTF-8
 
 # Crear usuario y directorio de trabajo
 RUN useradd --create-home --home-dir /home/flaskapp flaskapp
 WORKDIR /home/flaskapp
 
-# --- INICIO DE LA CORRECCIÓN ---
-# Instalar dependencias del sistema, incluyendo el paquete de 'locales'
+# Instalar dependencias del sistema y configurar locales
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
@@ -21,30 +21,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libfontconfig1 \
     libpangoft2-1.0-0 \
     locales \
+    && sed -i -e 's/# es_AR.UTF-8 UTF-8/es_AR.UTF-8 UTF-8/' /etc/locale.gen \
+    && dpkg-reconfigure --frontend=noninteractive locales \
     && rm -rf /var/lib/apt/lists/*
 
-# Configurar el locale para español de Argentina
-RUN sed -i -e 's/# es_AR.UTF-8 UTF-8/es_AR.UTF-8 UTF-8/' /etc/locale.gen && \
-    dpkg-reconfigure --frontend=noninteractive locales
-ENV LANG es_AR.UTF-8
-# --- FIN DE LA CORRECCIÓN ---
-
-
-# Copiar solo requirements.txt
+# Copiar requirements e instalar
 COPY requirements.txt .
+RUN pip install --no-cache-dir "setuptools<58.0.0" && \
+    pip install --no-cache-dir --no-build-isolation -r requirements.txt
 
-# Instalar dependencias de Python
-RUN pip install --no-cache-dir "setuptools<58.0.0"
-RUN pip install --no-cache-dir --no-build-isolation -r requirements.txt
+# --- EL CAMBIO CLAVE ---
+# Copiamos todo el contenido directamente en /home/flaskapp
+COPY . .
 
-# Copiar el código de tu aplicación a una carpeta 'app' dentro del workdir
-COPY . ./app
+# Aseguramos permisos para las subidas
+RUN mkdir -p uploads/comprobantes && chown -R flaskapp:flaskapp /home/flaskapp
 
-# Cambiar de usuario
 USER flaskapp
-
-# Exponer puerto
 EXPOSE 5000
 
-# Punto de entrada para ejecutar la aplicación
-ENTRYPOINT [ "python", "app/main.py" ]
+# Usamos Gunicorn apuntando a tu archivo app.py
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "3", "--threads", "2", "app:app"]

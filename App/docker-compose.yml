@@ -41,34 +41,15 @@ services:
       dockerfile: Dockerfile
     env_file:
       - ../App/.env
-    # --- CORRECCIÓN DE VOLÚMENES ---
     volumes:
-      - ../App:/app             # Mapea tu código a la carpeta /app del contenedor
-      - ../App/uploads:/app/uploads # Mapea los comprobantes
-    # --- CORRECCIÓN DE RUTA DE EJECUCIÓN ---
-    working_dir: /app
-    command: >
-      gunicorn --bind 0.0.0.0:5000 
-      --workers 3 
-      --threads 2 
-      --timeout 120 
-      --access-logfile - 
-      --error-logfile - 
-      app:app
+      - ../App:/home/flaskapp             # Mapeo a la nueva ruta del Dockerfile
+      - ../App/uploads:/home/flaskapp/uploads
+    # No hace falta 'command' aquí, ya lo pusimos en el Dockerfile
     networks:
       - red1
     depends_on:
       db:
         condition: service_healthy
-      redis:
-        condition: service_started
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.salonapp.rule=Host(`saloneventos.cloud`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.salonapp.entrypoints=websecure"
-      - "traefik.http.routers.salonapp.tls.certresolver=leresolver"
-      - "traefik.http.services.salonapp.loadbalancer.server.port=5000"
-
   frontend:
     container_name: salon_frontend
     build:
