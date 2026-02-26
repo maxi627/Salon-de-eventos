@@ -32,7 +32,7 @@ RUN pip install --no-cache-dir "setuptools<58.0.0" && \
 
 # --- EL CAMBIO CLAVE ---
 # Copiamos todo el contenido directamente en /home/flaskapp
-COPY . .
+COPY . ./app
 
 # Aseguramos permisos para las subidas
 RUN mkdir -p uploads/comprobantes && chown -R flaskapp:flaskapp /home/flaskapp
@@ -40,4 +40,4 @@ RUN mkdir -p uploads/comprobantes && chown -R flaskapp:flaskapp /home/flaskapp
 USER flaskapp
 EXPOSE 5000
 
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "3", "--threads", "2", "main:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "3", "--threads", "2", "app.main:app"]
