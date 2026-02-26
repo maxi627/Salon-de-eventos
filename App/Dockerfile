@@ -2,16 +2,16 @@
 FROM python:3.10-slim-bullseye
 
 # Variables de entorno
-ENV FLASK_ENV=production \
+ENV FLASK_ENV=development \
     PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/home/flaskapp \
-    LANG=es_AR.UTF-8
+    PYTHONPATH=/home/flaskapp
 
 # Crear usuario y directorio de trabajo
 RUN useradd --create-home --home-dir /home/flaskapp flaskapp
 WORKDIR /home/flaskapp
 
-# Instalar dependencias del sistema y configurar locales
+# --- INICIO DE LA CORRECCIÓN ---
+# Instalar dependencias del sistema, incluyendo el paquete de 'locales'
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
@@ -21,23 +21,30 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libfontconfig1 \
     libpangoft2-1.0-0 \
     locales \
-    && sed -i -e 's/# es_AR.UTF-8 UTF-8/es_AR.UTF-8 UTF-8/' /etc/locale.gen \
-    && dpkg-reconfigure --frontend=noninteractive locales \
     && rm -rf /var/lib/apt/lists/*
 
-# Copiar requirements e instalar
+# Configurar el locale para español de Argentina
+RUN sed -i -e 's/# es_AR.UTF-8 UTF-8/es_AR.UTF-8 UTF-8/' /etc/locale.gen && \
+    dpkg-reconfigure --frontend=noninteractive locales
+ENV LANG es_AR.UTF-8
+# --- FIN DE LA CORRECCIÓN ---
+
+
+# Copiar solo requirements.txt
 COPY requirements.txt .
-RUN pip install --no-cache-dir "setuptools<58.0.0" && \
-    pip install --no-cache-dir --no-build-isolation -r requirements.txt
 
-# Copiamos todo el contenido (app/, main.py, etc.) a /home/flaskapp
-COPY . .
+# Instalar dependencias de Python
+RUN pip install --no-cache-dir "setuptools<58.0.0"
+RUN pip install --no-cache-dir --no-build-isolation -r requirements.txt
 
-# Aseguramos permisos para las subidas
-RUN mkdir -p uploads/comprobantes && chown -R flaskapp:flaskapp /home/flaskapp
+# Copiar el código de tu aplicación a una carpeta 'app' dentro del workdir
+COPY . ./app
 
+# Cambiar de usuario
 USER flaskapp
+
+# Exponer puerto
 EXPOSE 5000
 
-# Ejecutamos con --pythonpath . para que encuentre la carpeta 'app' al hacer 'from app import...'
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "3", "--threads", "2", "--pythonpath", ".", "main:app"]
+# Punto de entrada para ejecutar la aplicación
+ENTRYPOINT [ "python", "app/main.py" ]

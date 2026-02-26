@@ -39,22 +39,19 @@ services:
     build:
       context: ../App
       dockerfile: Dockerfile
-    environment:
-      - PYTHONPATH=/home/flaskapp
     env_file:
       - ../App/.env
+    # --- CAMBIO AQUÍ: Volumen para persistencia de comprobantes ---
     volumes:
-      - ../App:/home/flaskapp
-      - ../App/uploads:/home/flaskapp/uploads
-    working_dir: /home/flaskapp
-    # Forzamos el pythonpath en el comando del compose también
+      - ../App/uploads:/app/uploads
     command: >
       gunicorn --bind 0.0.0.0:5000 
       --workers 3 
       --threads 2 
       --timeout 120 
-      --pythonpath . 
-      main:app
+      --access-logfile - 
+      --error-logfile - 
+      app:app
     networks:
       - red1
     depends_on:
@@ -74,6 +71,7 @@ services:
     build:
       context: ../frontend
       dockerfile: Dockerfile
+    # --- CAMBIO AQUÍ: Mismo volumen para que Nginx pueda mostrar las fotos ---
     volumes:
       - ../App/uploads:/usr/share/nginx/html/uploads:ro
     networks:
@@ -99,7 +97,7 @@ services:
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
       - "--certificatesresolvers.leresolver.acme.tlschallenge=true"
-      - "--certificatesresolvers.leresolver.acme.email=eulamaxi1@gmail.com" 
+      - "--certificatesresolvers.leresolver.acme.email=tu-email@gmail.com"
       - "--certificatesresolvers.leresolver.acme.storage=/letsencrypt/acme.json"
     ports:
       - "80:80"
