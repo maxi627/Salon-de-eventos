@@ -211,6 +211,9 @@
     .hero-section, .about-section, .services-section, .gallery-section, .location-section {
         padding: 2.5rem 1rem;
     }
+    .hero-section {
+        height: 60vh; /* Reducimos la altura del hero en móvil */
+    }
 
     /* Hacemos que el texto del hero sea más pequeño */
     .hero-content h1 {
