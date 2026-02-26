@@ -1,9 +1,9 @@
-import { useQueryClient } from '@tanstack/react-query'; // <-- 1. Importamos el hook
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import './EditReservationModal.css';
 
 function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
-  const queryClient = useQueryClient(); // <-- 2. Instanciamos el cliente
+  const queryClient = useQueryClient();
   
   const [formData, setFormData] = useState({
     usuario_id: reservation?.usuario?.id || '',
@@ -12,9 +12,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
     estado: reservation?.estado || 'confirmada',
   });
 
-  // Estado local para que la UI reaccione instantáneamente
   const [localReservation, setLocalReservation] = useState(reservation);
-
   const [users, setUsers] = useState([]);
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [filteredUsers, setFilteredUsers] = useState([]);
@@ -77,12 +75,10 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
 
   const handleAddPayment = async () => {
     const montoAAgregar = parseFloat(newPayment.monto);
-
     if (!montoAAgregar || montoAAgregar <= 0) {
       setError('El monto del pago debe ser un número positivo.');
       return;
     }
-    
     if (montoAAgregar > localReservation.saldo_restante) {
       setError('El pago no puede ser mayor que el saldo restante.');
       return;
@@ -105,19 +101,15 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
         fecha_pago: result.pago?.fecha_pago || result.fecha_pago || new Date().toISOString()
       };
 
-      // 1. Actualizamos visualmente el modal primero
       setLocalReservation(prev => ({
         ...prev,
         pagos: [...(prev.pagos || []), nuevoPago],
         saldo_restante: prev.saldo_restante - montoAAgregar
       }));
 
-      // 2. IMPORTANTE: Esperamos a que el AdminPanel (padre) refresque sus datos del servidor
       await onUpdate(); 
-
       setMessage('Pago añadido con éxito.');
       setNewPayment({ monto: '' });
-      
     } catch (err) {
       setError(err.message);
     }
@@ -144,18 +136,14 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
       const pagoEliminado = localReservation.pagos.find(p => p.id === pagoId);
       const montoRecuperado = pagoEliminado ? parseFloat(pagoEliminado.monto) : 0;
 
-      // 1. Actualizamos visualmente el modal
       setLocalReservation(prev => ({
         ...prev,
         pagos: prev.pagos.filter(p => p.id !== pagoId),
         saldo_restante: prev.saldo_restante + montoRecuperado
       }));
 
-      // 2. Esperamos el refresco del padre
       await onUpdate();
-
       setMessage('Pago eliminado correctamente.');
-
     } catch (err) {
       setError(err.message);
     }
@@ -185,10 +173,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
       
       setMessage(isCreating ? 'Reserva creada con éxito.' : 'Reserva actualizada con éxito.');
       await onUpdate();
-      
-      // <-- 3. Forzamos la recarga de las fechas en el calendario -->
       queryClient.invalidateQueries({ queryKey: ['fechas'] });
-
       onClose();
     } catch (err) {
       setError(err.message);
@@ -206,12 +191,8 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
       });
       if (!response.ok) throw new Error('Error al archivar.');
       setMessage('¡Reserva archivada!');
-      
       await onUpdate();
-      
-      // <-- 4. Al archivar, liberamos el día en el calendario -->
       queryClient.invalidateQueries({ queryKey: ['fechas'] });
-
       onClose();
     } catch (err) {
       setError(err.message);
@@ -223,6 +204,32 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <h2>{isCreating ? 'Crear Nueva Reserva' : `Gestionar Reserva`}</h2>
+
+        {/* --- Sección de Comprobante de Pago --- */}
+        {!isCreating && localReservation?.comprobante_url && (
+          <div className="receipt-view-section">
+            <h4>Comprobante de Solicitud</h4>
+            <div className="receipt-container">
+              <a 
+                href={`/uploads/comprobantes/${localReservation.comprobante_url}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="receipt-link"
+              >
+                <img 
+                  src={`/uploads/comprobantes/${localReservation.comprobante_url}`} 
+                  alt="Comprobante de transferencia" 
+                  className="receipt-thumbnail"
+                  onError={(e) => {
+                    e.target.src = 'https://placehold.co/400x200?text=Error+al+cargar+comprobante';
+                  }}
+                />
+                <span className="view-full-text">Ver en pantalla completa 🔍</span>
+              </a>
+            </div>
+          </div>
+        )}
+
         {!isCreating && localReservation?.usuario && (
           <p><strong>Usuario:</strong> {localReservation.usuario.nombre} {localReservation.usuario.apellido}</p>
         )}

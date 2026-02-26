@@ -30,7 +30,7 @@ const MiReserva = ({ reservas, onClose }) => {
         // Validación básica por si falta el dato
         if (!reserva.fecha || !reserva.fecha.dia) return false;
 
-        // Convertimos la fecha de la reserva (agregamos hora 00:00 para comparar peras con peras)
+        // Convertimos la fecha de la reserva 
         const fechaReserva = new Date(reserva.fecha.dia + 'T00:00:00');
         const hoy = new Date();
 

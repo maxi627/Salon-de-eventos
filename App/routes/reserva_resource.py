@@ -1,9 +1,11 @@
+import os
 from datetime import datetime
 
 import sentry_sdk
 from flask import Blueprint, render_template, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from marshmallow import ValidationError
+from werkzeug.utils import secure_filename
 
 from app.config.response_builder import ResponseBuilder
 from app.extensions import db, limiter
@@ -11,6 +13,7 @@ from app.mapping import ReservaSchema, ResponseSchema
 from app.services import NotificationService, ReservaService
 from app.utils.decorators import admin_required
 
+UPLOAD_FOLDER = 'uploads/comprobantes'
 # Definición del Blueprint
 Reserva = Blueprint('Reserva', __name__)
 
@@ -60,18 +63,49 @@ def request_by_user():
     response_builder = ResponseBuilder()
     
     try:
-        json_data = request.json
-        if not json_data:
-            raise ValidationError("No data provided")
+        # 1. Verificar si viene el archivo
+        if 'comprobante' not in request.files:
+            return response_builder.add_message("No se subió ningún comprobante").add_status_code(400).build(), 400
 
-        user_id = int(get_jwt_identity())
-        json_data['usuario_id'] = user_id
+        archivo = request.files['comprobante']
         
-        reserva = reserva_schema.load(json_data)
+        # 2. Obtener los datos del formulario (no es JSON, es request.form)
+        fecha_id = request.form.get('fecha_id')
+        user_id = int(get_jwt_identity())
+
+        if not fecha_id:
+            raise ValidationError("Falta el ID de la fecha")
+
+        # 3. Procesar y guardar el archivo físicamente
+        if archivo.filename == '':
+            return response_builder.add_message("Archivo sin nombre").add_status_code(400).build(), 400
+
+        # Creamos un nombre seguro: reserva_fechaID_nombreoriginal.ext
+        nombre_seguro = secure_filename(f"reserva_{fecha_id}_{archivo.filename}")
+        
+        # Aseguramos que la carpeta exista (por si las dudas)
+        if not os.path.exists(UPLOAD_FOLDER):
+            os.makedirs(UPLOAD_FOLDER)
+
+        ruta_final = os.path.join(UPLOAD_FOLDER, nombre_seguro)
+        archivo.save(ruta_final)
+
+        # 4. Preparar el objeto para la base de datos
+        # Guardamos solo el nombre del archivo o la subruta en comprobante_url
+        reserva_data = {
+            'fecha_id': int(fecha_id),
+            'usuario_id': user_id,
+            'comprobante_url': nombre_seguro, # Guardamos el nombre para construir la URL después
+            'estado': 'pendiente'
+        }
+        
+        reserva = reserva_schema.load(reserva_data)
         reserva.ip_aceptacion = request.remote_addr
         reserva.fecha_aceptacion = datetime.utcnow()
 
+        # 5. Guardar en DB mediante el servicio
         data = reserva_schema.dump(service.add(reserva))
+        
         response_builder.add_message("Reserva solicitada con éxito").add_status_code(201).add_data(data)
         return response_builder.build(), 201
         
@@ -80,8 +114,9 @@ def request_by_user():
         return response_builder.add_message("Error de validación").add_status_code(422).add_data(err.messages).build(), 422
     except Exception as e:
         db.session.rollback()
-        return response_builder.add_message(f"Error al crear la reserva: {str(e)}").add_status_code(500).build(), 500
-
+        sentry_sdk.capture_exception(e)
+        return response_builder.add_message(f"Error al procesar reserva: {str(e)}").add_status_code(500).build(), 500
+    
 @Reserva.route('/reserva/crear', methods=['POST'])
 @limiter.limit("50 per minute")
 @jwt_required()
