@@ -148,8 +148,8 @@
 }
 
 .calendar-day-card.past { opacity: 0.4; cursor: not-allowed; }
-.calendar-day-card.reservada { background: #ee8b8b; border-color: #c45454; }
-.calendar-day-card.pendiente { background: #f3dd82; border-color: #fef3c7; }
+.calendar-day-card.reservada { background: #ee8b8b; border-color: #c45454; cursor: not-allowed; }
+.calendar-day-card.pendiente { background: #f3dd82; border-color: #fef3c7; cursor: not-allowed;  }
 
 .calendar-day.empty { background: transparent; border: none; }
 
