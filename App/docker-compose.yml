@@ -43,7 +43,7 @@ services:
       - ../App/.env
     # --- CAMBIO AQUÍ: Volumen para persistencia de comprobantes ---
     volumes:
-      - ../App/uploads:/app/uploads
+      - ./uploads:/app/uploads
     command: >
       gunicorn --bind 0.0.0.0:5000 
       --workers 3 
