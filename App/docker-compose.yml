@@ -55,6 +55,7 @@ services:
       - "traefik.http.routers.salonapp.rule=Host(`saloneventos.cloud`) && PathPrefix(`/api`)"
       - "traefik.http.routers.salonapp.entrypoints=websecure"
       - "traefik.http.routers.salonapp.tls.certresolver=leresolver"
+      - "traefik.http.routers.salonapp.priority=100" # Prioridad alta para la API
       - "traefik.http.services.salonapp.loadbalancer.server.port=5000"
 
   frontend:
@@ -68,10 +69,10 @@ services:
       - red1
     labels:
       - "traefik.enable=true"
-      # Esta regla permite que tanto la web como las fotos en /uploads funcionen
       - "traefik.http.routers.frontend.rule=Host(`saloneventos.cloud`) || (Host(`saloneventos.cloud`) && PathPrefix(`/uploads`))"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls.certresolver=leresolver"
+      - "traefik.http.routers.frontend.priority=10" # Prioridad baja para el resto
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
 
   traefik:
