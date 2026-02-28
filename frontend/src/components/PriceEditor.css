@@ -342,96 +342,65 @@
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
-/* --- RESPONSIVE OPTIMIZADO --- */
-@media (max-width: 992px) {
-  .calendar-grid {
-    gap: 6px;
-  }
-  .calendar-cell {
-    min-height: 80px;
-    padding: 8px;
-  }
-}
-
+/* --- RESPONSIVE DEFINITIVO PARA MÓVILES --- */
 @media (max-width: 768px) {
+  /* 1. Achicamos el contenedor padre para ganar aire */
   .price-editor-container {
-    padding: 1rem; /* Menos padding lateral en el contenedor */
+    padding: 0.5rem !important; 
+    margin: 0.5rem !important;
   }
 
-  .price-editor-header h3 {
-    font-size: 1.2rem;
-  }
-
-  .calendar-controls {
-    gap: 1rem;
-  }
-
-  .calendar-controls h4 {
-    font-size: 0.95rem;
-    min-width: 150px;
-  }
-
-  /* Reducción de la grilla para que no desborde */
+  /* 2. Forzamos a que la grilla no se pase del ancho de la pantalla */
   .calendar-grid {
-    grid-template-columns: repeat(7, 1fr);
-    gap: 2px; /* Espacio mínimo entre días */
-    padding: 4px;
-    border-radius: 8px;
+    grid-template-columns: repeat(7, 1fr) !important;
+    gap: 2px !important;
+    padding: 2px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
 
-  .calendar-day-label {
-    font-size: 0.6rem; /* Nombres de días (LUN, MAR...) muy pequeños */
-    padding: 5px 0;
-  }
-
+  /* 3. Reducción drástica de las celdas */
   .calendar-cell {
-    min-height: 65px; /* Reducción drástica de altura */
-    padding: 4px;     /* Padding mínimo para ganar espacio interno */
-    border-radius: 6px;
+    min-height: 50px !important; /* Bajamos de 100px a 50px */
+    padding: 2px !important;
+    border-radius: 4px !important;
+    overflow: hidden !important; /* Evita que el precio se escape */
   }
 
+  /* 4. El número del día bien chiquito arriba */
   .day-number {
-    font-size: 0.75rem; /* Número del día más chico */
+    font-size: 0.7rem !important;
+    margin-bottom: 2px !important;
   }
 
-  /* Domar el precio ($100.000) */
+  /* 5. EL PRECIO: Esto es lo que rompe todo. 
+     Lo hacemos microscópico y le quitamos márgenes internos */
   .price-tag {
-    font-size: 0.55rem; /* Fuente muy pequeña para que quepa el número largo */
-    padding: 2px 1px;
-    font-weight: 700;
-    letter-spacing: -0.5px; /* Juntar un poco los números */
-    border-radius: 4px;
+    font-size: 0.45rem !important; /* Muy pequeño para que entre el $100.000 */
+    padding: 1px 0 !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.8px !important; /* Juntamos los ceros a morir */
+    line-height: 1 !important;
+    display: block !important;
+    width: 100% !important;
+    border: none !important; /* Quitamos borde para ganar 2px de ancho */
   }
 
+  /* 6. Si usas etiquetas de "No hay precio" */
   .price-missing {
-    font-size: 0.5rem;
-    padding: 2px;
+    font-size: 0.4rem !important;
+    padding: 1px !important;
   }
 
-  .price-editor-form {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .form-group {
-    min-width: 100%;
+  /* 7. Los nombres de los días (DOM, LUN...) */
+  .calendar-day-label {
+    font-size: 0.55rem !important;
+    padding: 2px 0 !important;
   }
 
-  .action-buttons {
-    flex-direction: column;
-  }
-  
-  .btn-save, .btn-cancel {
-    width: 100%;
-  }
-}
-
-/* Ajuste extra para celulares muy pequeños (iPhone SE, etc) */
-@media (max-width: 380px) {
-  .price-tag {
-    font-size: 0.5rem;
-  }
-  .calendar-cell {
-    min-height: 55px;
+  /* 8. Controles del mes */
+  .calendar-controls h4 {
+    font-size: 0.9rem !important;
+    min-width: 120px !important;
   }
 }
