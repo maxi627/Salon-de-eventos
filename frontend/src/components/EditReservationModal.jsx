@@ -205,30 +205,30 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <h2>{isCreating ? 'Crear Nueva Reserva' : `Gestionar Reserva`}</h2>
 
-        {/* --- Sección de Comprobante de Pago --- */}
-        {!isCreating && localReservation?.comprobante_url && (
-          <div className="receipt-view-section">
+      {/* --- Sección de Comprobante de Pago --- */}
+      {!isCreating && localReservation?.comprobante_url && (
+        <div className="receipt-view-section">
+          <div className="receipt-header-row">
             <h4>Comprobante de Solicitud</h4>
-            <div className="receipt-container">
-              <a 
-                href={`/uploads/comprobantes/${localReservation.comprobante_url}`} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="receipt-link"
-              >
-                <img 
-                  src={`/uploads/comprobantes/${localReservation.comprobante_url}`} 
-                  alt="Comprobante de transferencia" 
-                  className="receipt-thumbnail"
-                  onError={(e) => {
-                    e.target.src = 'https://placehold.co/400x200?text=Error+al+cargar+comprobante';
-                  }}
-                />
-                <span className="view-full-text">Ver en pantalla completa 🔍</span>
-              </a>
-            </div>
+            <span className="receipt-status-badge">Adjunto</span>
           </div>
-        )}
+          <div className="receipt-action-container">
+            <a
+              href={`/uploads/comprobantes/${localReservation.comprobante_url}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="receipt-action-btn"
+            >
+              <span className="icon">📄</span>
+              <div className="text-content">
+                <span className="main-text">Abrir Comprobante de Transferencia</span>
+                <span className="sub-text">Se abrirá en una nueva pestaña (Imagen/PDF)</span>
+              </div>
+              <span className="external-link-icon">↗</span>
+            </a>
+          </div>
+        </div>
+      )}
 
         {!isCreating && localReservation?.usuario && (
           <p><strong>Usuario:</strong> {localReservation.usuario.nombre} {localReservation.usuario.apellido}</p>
