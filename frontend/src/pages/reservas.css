@@ -48,7 +48,7 @@
   padding: 30px;
   box-shadow: var(--res-shadow);
   border: 1px solid #92bde9;
-
+  width: 100%;
   max-width: 750px; /* Limita el ancho para que no se vea tan largo */
 }
 
@@ -230,11 +230,75 @@
   z-index: 9999;
 }
 
-/* --- RESPONSIVE --- */
+
+/* --- RESPONSIVE CORREGIDO --- */
 @media (max-width: 600px) {
-  .calendar-container-card { padding: 15px; }
-  .calendar-grid { gap: 6px; }
-  .calendar-day-card { border-radius: 8px; padding: 4px; }
-  .day-number { font-size: 0.85rem; }
-  .day-price { font-size: 0.6rem; }
+  .reservas-page-container {
+    padding: 20px 10px; /* Menos espacio en los bordes de la pantalla */
+  }
+
+  .reservas-hero h1 {
+    font-size: 1.8rem; /* Título más acorde al móvil */
+  }
+
+  .calendar-container-card { 
+    padding: 10px; 
+    border-radius: 16px; /* Bordes un poco más suaves */
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .calendar-grid { 
+    gap: 4px; /* Bajamos de 10px a 4px para ganar 36px de ancho total */
+  }
+
+  .calendar-week-labels {
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+
+  .calendar-week-labels div {
+    font-size: 0.6rem; /* Nombres de días (DOM, LUN...) más chicos */
+    letter-spacing: 0;
+  }
+
+  .calendar-day-wrapper {
+    /* ELIMINAMOS el aspect-ratio para que la celda no se ensanche por culpa del precio */
+    aspect-ratio: auto; 
+    min-height: 55px; /* Altura mínima fija para que no queden chatos */
+  }
+
+  .calendar-day-card { 
+    border-radius: 6px; 
+    padding: 4px 2px; /* Padding lateral mínimo */
+    justify-content: space-around; /* Distribuye mejor número y precio */
+  }
+
+  .day-number { 
+    font-size: 0.8rem; 
+  }
+
+  .day-price { 
+    font-size: 0.55rem; /* Fuente pequeña para el $100.000 */
+    padding: 1px 0;
+    border-radius: 4px;
+    letter-spacing: -0.5px; /* Juntamos los números un poquito */
+    font-weight: 700;
+    width: 100%;
+    display: block;
+    text-align: center;
+  }
+
+  /* Ajuste para la leyenda inferior */
+  .calendar-footer-legend {
+    gap: 10px;
+    flex-wrap: wrap; /* Para que si no entran, bajen de línea */
+  }
+}
+
+/* Ajuste extra para teléfonos muy angostos */
+@media (max-width: 380px) {
+  .day-price {
+    font-size: 0.5rem;
+  }
 }
