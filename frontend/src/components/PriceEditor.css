@@ -342,8 +342,7 @@
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
-/* --- RESPONSIVE --- */
+/* --- RESPONSIVE OPTIMIZADO --- */
 @media (max-width: 992px) {
   .calendar-grid {
     gap: 6px;
@@ -355,20 +354,59 @@
 }
 
 @media (max-width: 768px) {
-  .price-editor-header {
-    flex-direction: column;
-    align-items: flex-start;
+  .price-editor-container {
+    padding: 1rem; /* Menos padding lateral en el contenedor */
   }
-  
+
+  .price-editor-header h3 {
+    font-size: 1.2rem;
+  }
+
+  .calendar-controls {
+    gap: 1rem;
+  }
+
+  .calendar-controls h4 {
+    font-size: 0.95rem;
+    min-width: 150px;
+  }
+
+  /* Reducción de la grilla para que no desborde */
   .calendar-grid {
     grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
-    padding: 5px;
+    gap: 2px; /* Espacio mínimo entre días */
+    padding: 4px;
+    border-radius: 8px;
   }
-  
-  .day-number { font-size: 0.8rem; }
-  .price-tag { font-size: 0.7rem; padding: 2px; }
-  .price-missing { font-size: 0.6rem; }
+
+  .calendar-day-label {
+    font-size: 0.6rem; /* Nombres de días (LUN, MAR...) muy pequeños */
+    padding: 5px 0;
+  }
+
+  .calendar-cell {
+    min-height: 65px; /* Reducción drástica de altura */
+    padding: 4px;     /* Padding mínimo para ganar espacio interno */
+    border-radius: 6px;
+  }
+
+  .day-number {
+    font-size: 0.75rem; /* Número del día más chico */
+  }
+
+  /* Domar el precio ($100.000) */
+  .price-tag {
+    font-size: 0.55rem; /* Fuente muy pequeña para que quepa el número largo */
+    padding: 2px 1px;
+    font-weight: 700;
+    letter-spacing: -0.5px; /* Juntar un poco los números */
+    border-radius: 4px;
+  }
+
+  .price-missing {
+    font-size: 0.5rem;
+    padding: 2px;
+  }
 
   .price-editor-form {
     flex-direction: column;
@@ -377,5 +415,23 @@
   
   .form-group {
     min-width: 100%;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .btn-save, .btn-cancel {
+    width: 100%;
+  }
+}
+
+/* Ajuste extra para celulares muy pequeños (iPhone SE, etc) */
+@media (max-width: 380px) {
+  .price-tag {
+    font-size: 0.5rem;
+  }
+  .calendar-cell {
+    min-height: 55px;
   }
 }
