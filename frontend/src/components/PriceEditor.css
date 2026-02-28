@@ -342,65 +342,64 @@
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
-/* --- RESPONSIVE DEFINITIVO PARA MÓVILES --- */
+
+/* --- RESPONSIVE RADICAL PARA PRECIOS VISIBLES --- */
 @media (max-width: 768px) {
-  /* 1. Achicamos el contenedor padre para ganar aire */
+  /* 1. Quitamos todo el margen lateral del contenedor para ganar espacio */
   .price-editor-container {
-    padding: 0.5rem !important; 
-    margin: 0.5rem !important;
+    padding: 0.2rem !important;
+    margin: 0 !important;
+    width: 100% !important;
   }
 
-  /* 2. Forzamos a que la grilla no se pase del ancho de la pantalla */
+  /* 2. Reducción total de la grilla */
   .calendar-grid {
-    grid-template-columns: repeat(7, 1fr) !important;
-    gap: 2px !important;
+    gap: 1px !important; /* El mínimo posible */
     padding: 2px !important;
     width: 100% !important;
-    box-sizing: border-box !important;
   }
 
-  /* 3. Reducción drástica de las celdas */
+  /* 3. Las celdas deben ser flexibles */
   .calendar-cell {
-    min-height: 50px !important; /* Bajamos de 100px a 50px */
+    min-height: 55px !important;
     padding: 2px !important;
-    border-radius: 4px !important;
-    overflow: hidden !important; /* Evita que el precio se escape */
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
-  /* 4. El número del día bien chiquito arriba */
-  .day-number {
-    font-size: 0.7rem !important;
-    margin-bottom: 2px !important;
-  }
-
-  /* 5. EL PRECIO: Esto es lo que rompe todo. 
-     Lo hacemos microscópico y le quitamos márgenes internos */
+  /* 4. EL TRUCO DEL PRECIO: Usamos unidades dinámicas (vw) */
   .price-tag {
-    font-size: 0.45rem !important; /* Muy pequeño para que entre el $100.000 */
-    padding: 1px 0 !important;
-    font-weight: 700 !important;
-    letter-spacing: -0.8px !important; /* Juntamos los ceros a morir */
-    line-height: 1 !important;
-    display: block !important;
-    width: 100% !important;
-    border: none !important; /* Quitamos borde para ganar 2px de ancho */
-  }
-
-  /* 6. Si usas etiquetas de "No hay precio" */
-  .price-missing {
-    font-size: 0.4rem !important;
+    /* 2.2vw significa que la letra mide el 2.2% del ancho de la pantalla */
+    font-size: 2.2vw !important; 
     padding: 1px !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.5px !important;
+    line-height: 1 !important;
+    text-align: center !important;
+    width: 100% !important;
+    white-space: nowrap !important; /* Evita que el precio se rompa en dos líneas */
+    background: transparent !important; /* Quitamos fondo para que no se vea amontonado */
+    border: none !important;
+    color: #27ae60 !important; /* Verde fuerte para que se vea bien sin fondo */
   }
 
-  /* 7. Los nombres de los días (DOM, LUN...) */
+  /* 5. Nombres de los días ultra compactos */
   .calendar-day-label {
-    font-size: 0.55rem !important;
+    font-size: 0.6rem !important;
     padding: 2px 0 !important;
   }
 
-  /* 8. Controles del mes */
-  .calendar-controls h4 {
-    font-size: 0.9rem !important;
-    min-width: 120px !important;
+  .day-number {
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+  }
+}
+
+/* Ajuste para celulares muy chicos (iPhone SE o similares) */
+@media (max-width: 360px) {
+  .price-tag {
+    font-size: 2vw !important;
   }
 }
