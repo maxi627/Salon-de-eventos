@@ -48,7 +48,7 @@
   padding: 30px;
   box-shadow: var(--res-shadow);
   border: 1px solid #92bde9;
-  width: 100%;
+
   max-width: 750px; /* Limita el ancho para que no se vea tan largo */
 }
 
