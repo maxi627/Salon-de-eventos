@@ -97,7 +97,7 @@ services:
       - "443:443"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "./certs:/letsencrypt"
+      - traefik_certs:/letsencrypt
     networks:
       - red1
     restart: always
@@ -108,3 +108,4 @@ networks:
 
 volumes:
   postgres_data:
+  traefik_certs:
