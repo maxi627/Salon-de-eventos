@@ -57,7 +57,7 @@ function Home() {
             </p>
           </div>
           <div className="about-image">
-            <img src="/foto_salon.jpg" alt="Exterior del salón de eventos" />
+            <img src="/foto_salon.jpeg" alt="Exterior del salón de eventos" />
           </div>
         </div>
       </section>
