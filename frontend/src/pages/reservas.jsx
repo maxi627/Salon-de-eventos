@@ -157,7 +157,7 @@ function Reservas() {
         <div className="calendar-info-bottom">
           <div className="info-card-integrated">
             <h4>Información de Tarifas</h4>
-            <p>Los precios mostrados son estimaciones base. El valor final se ajustará según cantidad de invitados y servicios extra seleccionados.</p>
+            <p>Los precios mostrados son estimaciones base para 40 invitados aprox. El valor final se ajustará según cantidad de invitados y servicios extra seleccionados.</p>
             <div className="disclaimer-mini">
               <span className="icon">⚠️</span>
               <span>Solo se permiten reservas con hasta 90 días de anticipación. Los domingos no se encuentran disponibles para eventos privados.</span>

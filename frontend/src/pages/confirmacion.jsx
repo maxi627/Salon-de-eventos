@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import './confirmacion.css';
 
-// Componente separado para el texto del contrato para mantener el código limpio.
+// Componente con el flujo de "Capacidad Base" para que el admin ajuste luego
 const ContractTerms = () => (
   <>
     <h3>Términos y Condiciones</h3>
@@ -41,7 +41,7 @@ const ContractTerms = () => (
         por cuenta del LOCATARIO.
       </li>
       <li>
-        <strong>Pagos y Cancelaciones:</strong> El LOCATARIO deberá abonar la seña establecida 
+        <strong>Pagos y Cancelaciones:</strong> EL LOCATARIO deberá abonar la seña establecida 
         al momento de la reserva. En caso de cancelación, no 
         habrá devolución de la seña. En caso de cancelación por parte del LOCADOR por causas de 
         fuerza mayor, se reintegrará el monto abonado sin derecho a reclamos adicionales.
@@ -50,6 +50,12 @@ const ContractTerms = () => (
         <strong>Penalidades:</strong> En caso de incumplimiento de alguna cláusula, EL LOCADOR 
         podrá suspender el evento sin derecho a reclamo o reembolso, además de iniciar las 
         acciones legales correspondientes.
+      </li>
+      <li>
+        <strong>Capacidad Base y Ajustes:</strong> El presente contrato se emite inicialmente bajo una estimación de <strong>40 personas</strong>. En caso de requerir una capacidad superior, EL LOCATARIO deberá coordinar con EL LOCADOR el ajuste de capacidad y precio final. El contrato definitivo con el valor legal final será enviado por correo electrónico una vez que EL LOCADOR confirme la reserva desde el panel de administración.
+      </li>
+      <li>
+        <strong>Jurisdicción:</strong> Para cualquier conflicto legal derivado del presente, las partes se someten a la jurisdicción de los Tribunales Ordinarios de la Segunda Circunscripción Judicial de la Provincia de Mendoza, con asiento en la ciudad de San Rafael.
       </li>
       <li>
         <strong>Aceptación Digital:</strong> La aceptación del presente contrato mediante el 
@@ -132,39 +138,39 @@ function Confirmacion() {
   }, [dateString, navigate]);
 
   const handleRequestReservation = async () => {
-  if (!contractAccepted || !receiptFile) {
-    setError('Debes aceptar los términos y subir el comprobante.');
-    return;
-  }
+    if (!contractAccepted || !receiptFile) {
+      setError('Debes aceptar los términos y subir el comprobante.');
+      return;
+    }
 
-  const token = localStorage.getItem('authToken');
-  setIsLoading(true);
+    const token = localStorage.getItem('authToken');
+    setIsLoading(true);
 
-  // Usamos FormData para enviar el archivo físico
-  const formData = new FormData();
-  formData.append('fecha_id', fechaInfo.id);
-  formData.append('comprobante', receiptFile); // El archivo real
+    const formData = new FormData();
+    formData.append('fecha_id', fechaInfo.id);
+    formData.append('comprobante', receiptFile);
+    // Enviamos el valor base inicial (40)
+    formData.append('capacidad_declarada', 40);
 
-  try {
-    const response = await fetch('/api/v1/reserva/solicitar', {
-      method: 'POST',
-      headers: {
-        // IMPORTANTE: No pongas Content-Type, el navegador lo hará solo
-        'Authorization': `Bearer ${token}`
-      },
-      body: formData
-    });
+    try {
+      const response = await fetch('/api/v1/reserva/solicitar', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
 
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.message);
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message);
 
-    setMessage('¡Solicitud enviada con éxito! Redirigiendo...');
-    setTimeout(() => navigate('/'), 3000);
-  } catch (err) {
-    setError(err.message);
-  } finally {
-    setIsLoading(false);
-  }
+      setMessage('¡Solicitud enviada con éxito! El administrador revisará tu comprobante y confirmará la capacidad final.');
+      setTimeout(() => navigate('/'), 4000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (isLoading) {
@@ -181,7 +187,7 @@ function Confirmacion() {
             <p className="confirm-date">{displayDate}</p>
 
             <div className="payment-info">
-              <p>Para confirmar, por favor realiza una transferencia al siguiente alias y adjunta el comprobante.</p>
+              <p>Realiza la transferencia al siguiente alias y adjunta el comprobante para iniciar el proceso.</p>
               {paymentAlias ? (
                 <p className="payment-alias">{paymentAlias}</p>
               ) : (
@@ -200,11 +206,11 @@ function Confirmacion() {
                 checked={contractAccepted}
                 onChange={() => setContractAccepted(!contractAccepted)}
               />
-              <label htmlFor="accept">He leído y acepto los términos y condiciones.</label>
+              <label htmlFor="accept">He leído y acepto los términos base del contrato.</label>
             </div>
 
             <div className="form-group">
-              <label htmlFor="receipt">Subir Comprobante de Pago (50%)</label>
+              <label htmlFor="receipt">Subir Comprobante de Pago</label>
               <input 
                 type="file" 
                 id="receipt"
@@ -218,7 +224,7 @@ function Confirmacion() {
               className="confirm-button"
               disabled={isLoading || !contractAccepted || !receiptFile}
             >
-              {isLoading ? 'Enviando...' : 'Enviar Solicitud de Reserva'}
+              {isLoading ? 'Enviando...' : 'Enviar Solicitud'}
             </button>
           </>
         ) : (

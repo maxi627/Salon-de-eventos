@@ -10,6 +10,8 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
     fecha_dia: reservation?.fecha?.dia || '',
     valor_alquiler: reservation?.valor_alquiler || 0,
     estado: reservation?.estado || 'confirmada',
+    // Nuevo campo: Iniciamos con 40 o el valor que ya tenga la reserva
+    cantidad_personas: reservation?.cantidad_personas || 40,
   });
 
   const [localReservation, setLocalReservation] = useState(reservation);
@@ -172,6 +174,12 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
       if (!response.ok) throw new Error(result.message || 'Ocurrió un error.');
       
       setMessage(isCreating ? 'Reserva creada con éxito.' : 'Reserva actualizada con éxito.');
+      
+      // Si el estado pasó a 'confirmada', el backend debería disparar el mail
+      if (formData.estado === 'confirmada' && !isCreating) {
+        setMessage('Reserva confirmada. El contrato definitivo ha sido enviado.');
+      }
+
       await onUpdate();
       queryClient.invalidateQueries({ queryKey: ['fechas'] });
       onClose();
@@ -267,24 +275,42 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
             <input type="date" name="fecha_dia" value={formData.fecha_dia} onChange={handleChange} required />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="valor_alquiler">Valor del Alquiler</label>
-            <input type="number" name="valor_alquiler" value={formData.valor_alquiler} onChange={handleChange} min="0" />
+          <div className="form-group-row">
+            <div className="form-group">
+              <label htmlFor="valor_alquiler">Valor del Alquiler ($)</label>
+              <input type="number" name="valor_alquiler" value={formData.valor_alquiler} onChange={handleChange} min="0" />
+            </div>
+
+            {/* --- NUEVO CAMPO: CANTIDAD DE PERSONAS --- */}
+            <div className="form-group">
+              <label htmlFor="cantidad_personas">Cantidad de Personas</label>
+              <input 
+                type="number" 
+                name="cantidad_personas" 
+                value={formData.cantidad_personas} 
+                onChange={handleChange} 
+                min="1" 
+                required 
+              />
+            </div>
           </div>
           
           <div className="form-group">
-            <label htmlFor="estado">Estado</label>
+            <label htmlFor="estado">Estado de la Reserva</label>
             <select name="estado" value={formData.estado} onChange={handleChange}>
-              <option value="pendiente">Pendiente</option>
-              <option value="confirmada">Confirmada</option>
+              <option value="pendiente">Pendiente (Revisión de comprobante)</option>
+              <option value="confirmada">Confirmada (Envía contrato definitivo)</option>
               <option value="cancelada">Cancelada</option>
             </select>
+            {formData.estado === 'confirmada' && !isCreating && (
+              <p className="status-help-text">Al guardar en "Confirmada", se generará y enviará el PDF legal.</p>
+            )}
           </div>
 
           <div className="modal-actions">
             <button type="button" className="btn-close" onClick={onClose}>Cerrar</button>
             <button type="submit" className="btn-save">
-              {isCreating ? 'Crear Reserva' : 'Guardar Cambios'}
+              {isCreating ? 'Crear Reserva' : 'Guardar y Confirmar'}
             </button>
           </div>
         </form>

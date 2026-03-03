@@ -13,7 +13,7 @@ class ReservaSchema(Schema):
     ip_aceptacion = fields.Str(dump_only=True)
     fecha_aceptacion = fields.DateTime(dump_only=True)
     version_contrato = fields.Str(dump_only=True)
-    
+    cantidad_personas = fields.Int()
     usuario = fields.Nested('UsuarioSchema', only=("id", "nombre", "apellido", "correo"), dump_only=True)
     fecha = fields.Nested('FechaSchema', only=("id", "dia"), dump_only=True)
 

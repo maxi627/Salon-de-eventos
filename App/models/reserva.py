@@ -17,7 +17,7 @@ class Reserva(db.Model):
     ip_aceptacion = db.Column(db.String(45), nullable=True) 
     fecha_aceptacion = db.Column(db.DateTime, nullable=True) 
     version_contrato = db.Column(db.String(50), nullable=True, default='1.0') 
-    
+    cantidad_personas = db.Column(db.Integer, nullable=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     fecha_id = db.Column(db.Integer, db.ForeignKey('fecha.id'), nullable=False)
 

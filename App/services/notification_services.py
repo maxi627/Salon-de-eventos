@@ -16,7 +16,7 @@ class NotificationService:
         self.sender_email = os.getenv('SENDER_EMAIL')
         self.sender_password = os.getenv('SENDER_APP_PASSWORD')
         
-        # Correo del administrador configurado mediante variable de entorno
+        # Correo del administrador (leído desde .env en la KVM)
         self.admin_email = os.getenv('ADMIN_EMAIL') 
         
         # Verificación de configuración completa
@@ -38,45 +38,49 @@ class NotificationService:
             return False
 
         try:
-            # 1. Generar el PDF a partir del contenido HTML
+            # 1. Generar el PDF a partir del contenido HTML definitivo (confirmado por admin)
             pdf_bytes = HTML(string=html_contract).write_pdf()
 
-            # 2. Guardar copia física en el servidor (KVM) para respaldo
+            # 2. Guardar copia física en el servidor (KVM) para respaldo legal
             safe_user_name = user_name.replace(" ", "_")
-            file_name = f"contrato_{safe_user_name}_{event_date}.pdf"
+            # Usamos un prefijo 'definitivo' para diferenciarlo de cualquier borrador previo
+            file_name = f"contrato_confirmado_{safe_user_name}_{event_date.replace('/', '-')}.pdf"
             file_path = os.path.join("uploads/contratos", file_name)
             
-            # Asegurar que la ruta de destino exista
+            # Asegurar que la ruta de destino exista en la KVM
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
             
             with open(file_path, "wb") as f:
                 f.write(pdf_bytes)
 
-            # 3. Preparar el correo electrónico (MIME Mixto para adjuntos)
+            # 3. Preparar el correo electrónico
             message = MIMEMultipart("mixed")
-            message["Subject"] = f"Confirmación de tu reserva para el {event_date}"
+            message["Subject"] = f"Reserva Confirmada - Contrato Definitivo - {event_date}"
             message["From"] = self.sender_email
             message["To"] = to_email
             
-            # Copia oculta (BCC) al administrador para registro interno
+            # Copia oculta (BCC) para vos (eulamaxi1@gmail.com configurado en .env)
             message["Bcc"] = self.admin_email 
 
-            # Cuerpo del mensaje en formato HTML
+            # Cuerpo del mensaje adaptado al flujo de confirmación manual
             email_body_html = f"""
             <html>
-                <body style="font-family: sans-serif; color: #333;">
-                    <h2 style="color: #2c3e50;">¡Tu reserva ha sido confirmada!</h2>
+                <body style="font-family: sans-serif; color: #333; line-height: 1.5;">
+                    <h2 style="color: #2c3e50;">¡Tu reserva ha sido confirmada satisfactoriamente!</h2>
                     <p>Hola, <strong>{user_name}</strong>,</p>
-                    <p>Adjuntamos una copia en PDF del contrato y los términos y condiciones que has aceptado para tu reserva del día <strong>{event_date}</strong>.</p>
-                    <p>Puedes contactarnos por WhatsApp 24 o 48 horas antes del evento para coordinar los detalles de ingreso.</p>
+                    <p>Nos complace informarte que tu reserva para el día <strong>{event_date}</strong> ha sido confirmada por la administración.</p>
+                    <p>Adjuntamos el <strong>Contrato de Alquiler Definitivo</strong>, el cual incluye la capacidad acordada y las cláusulas legales aceptadas. Este documento sirve como comprobante legal de tu evento.</p>
+                    <p>Recordá que podés contactarnos por WhatsApp 24 o 48 horas antes para coordinar los detalles finales del ingreso al salón.</p>
                     <br>
-                    <p>¡Gracias por elegirnos!</p>
+                    <p>¡Gracias por elegirnos para tu evento!</p>
+                    <hr style="border: none; border-top: 1px solid #eee;">
+                    <p style="font-size: 0.8em; color: #7f8c8d;">Este es un mensaje automático, por favor no lo respondas.</p>
                 </body>
             </html>
             """
             message.attach(MIMEText(email_body_html, "html"))
             
-            # Adjuntar el archivo PDF generado
+            # Adjuntar el contrato PDF definitivo
             adjunto = MIMEApplication(pdf_bytes, _subtype="pdf")
             adjunto.add_header('Content-Disposition', 'attachment', filename=file_name)
             message.attach(adjunto)
@@ -86,11 +90,11 @@ class NotificationService:
             with smtplib.SMTP_SSL(self.smtp_server, int(self.smtp_port), context=context) as server:
                 server.login(self.sender_email, self.sender_password)
                 
-                # Lista de destinatarios: incluye el destinatario principal y la copia oculta
+                # Lista de destinatarios: usuario + administrador (BCC)
                 recipients = [to_email, self.admin_email]
                 server.sendmail(self.sender_email, recipients, message.as_string())
             
-            print(f"ÉXITO: Contrato guardado en {file_path} y enviado a {to_email} (con copia BCC a admin).")
+            print(f"ÉXITO: Contrato definitivo guardado en {file_path} y enviado a {to_email} (BCC a admin).")
             return True
 
         except Exception as e:
