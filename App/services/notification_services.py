@@ -10,77 +10,118 @@ from weasyprint import HTML
 
 class NotificationService:
     def __init__(self):
+        # Configuración desde variables de entorno para mayor seguridad
         self.smtp_server = os.getenv('SMTP_SERVER')
         self.smtp_port = os.getenv('SMTP_PORT')
         self.sender_email = os.getenv('SENDER_EMAIL')
         self.sender_password = os.getenv('SENDER_APP_PASSWORD')
-        self.is_configured = all([self.smtp_server, self.smtp_port, self.sender_email, self.sender_password])
+        
+        # Correo del administrador configurado mediante variable de entorno
+        self.admin_email = os.getenv('ADMIN_EMAIL') 
+        
+        # Verificación de configuración completa
+        self.is_configured = all([
+            self.smtp_server, 
+            self.smtp_port, 
+            self.sender_email, 
+            self.sender_password,
+            self.admin_email
+        ])
 
     def send_email_confirmation(self, to_email: str, user_name: str, event_date: str, html_contract: str):
         if not self.is_configured:
-            print("ERROR: El servicio de email no está configurado.")
+            print("ERROR: El servicio de email no está configurado correctamente en las variables de entorno.")
             return False
 
         if not to_email:
-            print(f"ALERTA: No se pudo enviar email a {user_name} porque no tiene correo.")
+            print(f"ALERTA: No se pudo enviar email a {user_name} porque no tiene correo registrado.")
             return False
 
-        pdf_bytes = HTML(string=html_contract).write_pdf()
-        message = MIMEMultipart("alternative")
-        message["Subject"] = f"Confirmación de tu reserva para el {event_date}"
-        message["From"] = self.sender_email
-        message["To"] = to_email
-
-        email_body_html = f"""
-        <html><body>
-            <h2>¡Tu reserva ha sido confirmada!</h2>
-            <p>Hola, {user_name},</p>
-            <p>Adjuntamos una copia en PDF del contrato y los términos y condiciones que has aceptado para tu reserva del día <strong>{event_date}</strong>.</p>
-            <p>Puedes contactarnos por WhatsApp 24 o 48 horas antes del evento para coordinar el ingreso.</p>
-            <p>¡Gracias por elegirnos!</p>
-        </body></html>
-        """
-        message.attach(MIMEText(email_body_html, "html"))
-        
-        adjunto = MIMEApplication(pdf_bytes, _subtype="pdf")
-        adjunto.add_header('Content-Disposition', 'attachment', filename='contrato_reserva.pdf')
-        message.attach(adjunto)
-
-        context = ssl.create_default_context()
         try:
+            # 1. Generar el PDF a partir del contenido HTML
+            pdf_bytes = HTML(string=html_contract).write_pdf()
+
+            # 2. Guardar copia física en el servidor (KVM) para respaldo
+            safe_user_name = user_name.replace(" ", "_")
+            file_name = f"contrato_{safe_user_name}_{event_date}.pdf"
+            file_path = os.path.join("uploads/contratos", file_name)
+            
+            # Asegurar que la ruta de destino exista
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            
+            with open(file_path, "wb") as f:
+                f.write(pdf_bytes)
+
+            # 3. Preparar el correo electrónico (MIME Mixto para adjuntos)
+            message = MIMEMultipart("mixed")
+            message["Subject"] = f"Confirmación de tu reserva para el {event_date}"
+            message["From"] = self.sender_email
+            message["To"] = to_email
+            
+            # Copia oculta (BCC) al administrador para registro interno
+            message["Bcc"] = self.admin_email 
+
+            # Cuerpo del mensaje en formato HTML
+            email_body_html = f"""
+            <html>
+                <body style="font-family: sans-serif; color: #333;">
+                    <h2 style="color: #2c3e50;">¡Tu reserva ha sido confirmada!</h2>
+                    <p>Hola, <strong>{user_name}</strong>,</p>
+                    <p>Adjuntamos una copia en PDF del contrato y los términos y condiciones que has aceptado para tu reserva del día <strong>{event_date}</strong>.</p>
+                    <p>Puedes contactarnos por WhatsApp 24 o 48 horas antes del evento para coordinar los detalles de ingreso.</p>
+                    <br>
+                    <p>¡Gracias por elegirnos!</p>
+                </body>
+            </html>
+            """
+            message.attach(MIMEText(email_body_html, "html"))
+            
+            # Adjuntar el archivo PDF generado
+            adjunto = MIMEApplication(pdf_bytes, _subtype="pdf")
+            adjunto.add_header('Content-Disposition', 'attachment', filename=file_name)
+            message.attach(adjunto)
+
+            # 4. Enviar el correo utilizando SSL
+            context = ssl.create_default_context()
             with smtplib.SMTP_SSL(self.smtp_server, int(self.smtp_port), context=context) as server:
                 server.login(self.sender_email, self.sender_password)
-                server.sendmail(self.sender_email, to_email, message.as_string())
-            print(f"Email de confirmación con PDF adjunto enviado a {to_email}")
+                
+                # Lista de destinatarios: incluye el destinatario principal y la copia oculta
+                recipients = [to_email, self.admin_email]
+                server.sendmail(self.sender_email, recipients, message.as_string())
+            
+            print(f"ÉXITO: Contrato guardado en {file_path} y enviado a {to_email} (con copia BCC a admin).")
             return True
+
         except Exception as e:
-            print(f"ERROR al enviar email con adjunto: {e}")
+            print(f"ERROR en send_email_confirmation: {e}")
             return False
 
-    # --- NUEVO MÉTODO PARA EMAIL DE RESETEO ---
     def send_password_reset_email(self, to_email: str, user_name: str, reset_link: str):
         if not self.is_configured:
             print("ERROR: El servicio de email no está configurado.")
             return False
 
         message = MIMEMultipart("alternative")
-        message["Subject"] = "Restablece tu contraseña para Salón de Eventos"
+        message["Subject"] = "Restablece tu contraseña - Salón de Eventos"
         message["From"] = self.sender_email
         message["To"] = to_email
 
         email_body_html = f"""
-        <html><body>
-            <h2>Solicitud de cambio de contraseña</h2>
-            <p>Hola, {user_name},</p>
-            <p>Hemos recibido una solicitud para restablecer tu contraseña. Haz clic en el siguiente enlace para continuar:</p>
-            <p style="margin: 20px 0;">
-                <a href="{reset_link}" style="padding: 12px 20px; background-color: #c3a177; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                    Restablecer Contraseña
-                </a>
-            </p>
-            <p>Si no solicitaste este cambio, puedes ignorar este correo de forma segura.</p>
-            <p><em>El enlace expirará en 10 minutos.</em></p>
-        </body></html>
+        <html>
+            <body style="font-family: sans-serif;">
+                <h2 style="color: #2c3e50;">Solicitud de cambio de contraseña</h2>
+                <p>Hola, {user_name},</p>
+                <p>Hemos recibido una solicitud para restablecer tu contraseña. Haz clic en el siguiente botón para continuar:</p>
+                <p style="margin: 30px 0;">
+                    <a href="{reset_link}" style="padding: 12px 25px; background-color: #3498db; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+                        Restablecer Contraseña
+                    </a>
+                </p>
+                <p style="color: #7f8c8d; font-size: 0.9em;">Si no solicitaste este cambio, puedes ignorar este correo de forma segura.</p>
+                <p style="color: #e74c3c; font-size: 0.8em;"><em>Nota: El enlace expirará en 10 minutos por motivos de seguridad.</em></p>
+            </body>
+        </html>
         """
         message.attach(MIMEText(email_body_html, "html"))
         
@@ -89,7 +130,7 @@ class NotificationService:
             with smtplib.SMTP_SSL(self.smtp_server, int(self.smtp_port), context=context) as server:
                 server.login(self.sender_email, self.sender_password)
                 server.sendmail(self.sender_email, to_email, message.as_string())
-            print(f"Email de reseteo de contraseña enviado a {to_email}")
+            print(f"ÉXITO: Email de reseteo enviado a {to_email}")
             return True
         except Exception as e:
             print(f"ERROR al enviar email de reseteo: {e}")
