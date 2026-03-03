@@ -96,7 +96,8 @@ def request_by_user():
             'fecha_id': int(fecha_id),
             'usuario_id': user_id,
             'comprobante_url': nombre_seguro, # Guardamos el nombre para construir la URL después
-            'estado': 'pendiente'
+            'estado': 'pendiente',
+            'cantidad_personas': request.form.get('cantidad_personas', 40)
         }
         
         reserva = reserva_schema.load(reserva_data)
@@ -182,7 +183,8 @@ def update(id):
                     "user_dni": updated_reserva.usuario.dni,
                     "event_date": updated_reserva.fecha.dia.strftime('%d/%m/%Y'),
                     "acceptance_date": updated_reserva.fecha_aceptacion.strftime('%d/%m/%Y a las %H:%M:%S UTC'),
-                    "acceptance_ip": updated_reserva.ip_aceptacion
+                    "acceptance_ip": updated_reserva.ip_aceptacion,
+                    "cantidad_personas": updated_reserva.cantidad_personas
                 }
                 html_contrato = render_template('contrato.html', **template_data)
                 notification_service.send_email_confirmation(

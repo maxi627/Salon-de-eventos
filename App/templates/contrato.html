@@ -11,54 +11,52 @@
         strong { font-weight: bold; }
         ol { padding-left: 25px; }
         li { margin-bottom: 12px; }
-        .header-info { margin-bottom: 20px; padding: 15px; background-color: #f4f7f6; border-radius: 5px;}
+        .header-info { margin-bottom: 20px; padding: 15px; background-color: #f4f7f6; border-radius: 5px; border: 1px solid #e1e1e1;}
         .footer { margin-top: 40px; padding-top: 15px; border-top: 1px solid #ccc; font-size: 0.9em; color: #777; }
     </style>
 </head>
 <body>
     <h1>Contrato de Alquiler de Salón de Eventos</h1>
+    
     <div class="header-info">
         <p><strong>Fecha del Evento:</strong> {{ event_date }}</p>
         <p><strong>Cliente (LOCATARIO):</strong> {{ user_name }} (DNI: {{ user_dni }})</p>
+        <p><strong>Capacidad Máxima Pactada:</strong> {{ cantidad_personas }} Personas</p>
     </div>
     
     <h2>Términos y Condiciones</h2>
     <p>
       El presente contrato se celebra entre EL LOCADOR (propietario del salón) y EL LOCATARIO 
-      (usuario que realiza la reserva a través de la página web, cuyos datos personales se registran en el formulario de reserva), 
-      sujeto a las siguientes cláusulas:
+      (usuario que realiza la reserva a través de la página web), sujeto a las siguientes cláusulas:
     </p>
     
     <ol>
       <li>
-        <strong>Objeto:</strong> EL LOCADOR alquila a EL LOCATARIO el salón de eventos ubicado en Bolivar 1425, para uso exclusivo en la fecha y horario acordados en la reserva.
+        <strong>Objeto:</strong> EL LOCADOR alquila a EL LOCATARIO el salón de eventos ubicado en Bolivar 1425, para uso exclusivo en la fecha y horario acordados[cite: 6].
       </li>
       <li>
-        <strong>Uso y Responsabilidad:</strong> EL LOCADOR no se responsabiliza por el tipo de actividad o evento que se realice, siempre que sea lícito. Queda prohibida la venta de entradas, la venta o suministro de alcohol a menores de edad, el consumo de sustancias ilegales y cualquier actividad contraria a la ley. EL LOCATARIO es único responsable por cualquier daño material, accidente o hecho ocurrido durante el evento, así como de las acciones de los invitados y terceros que ingresen al salón.
+        <strong>Capacidad de Invitados:</strong> Se establece una asistencia máxima de <strong>{{ cantidad_personas }} personas</strong>. EL LOCATARIO se compromete a no exceder dicho número por razones de seguridad, comodidad y preservación de las instalaciones. El ingreso de personas adicionales no está permitido salvo autorización expresa del LOCADOR.
       </li>
       <li>
-        <strong>Cumplimiento Legal:</strong> EL LOCATARIO asume toda responsabilidad por cumplir con las disposiciones legales vigentes en materia de seguridad, salubridad y control de menores. En caso de incumplimiento, EL LOCADOR queda totalmente exento de toda responsabilidad civil, penal o administrativa.
+        <strong>Uso y Responsabilidad:</strong> EL LOCADOR no se responsabiliza por el tipo de actividad que se realice, siempre que sea lícita. Queda estrictamente prohibida la venta de entradas, el suministro de alcohol a menores y cualquier actividad ilegal[cite: 7, 8]. EL LOCATARIO es el único responsable por cualquier daño, accidente o hecho ocurrido durante el evento[cite: 9].
       </li>
       <li>
-        <strong>Daños y Limpieza:</strong> EL LOCATARIO deberá restituir el salón en las mismas condiciones en que lo recibió, siendo responsable por cualquier daño ocasionado a las instalaciones, mobiliario o equipamiento. Los gastos de reparación o reposición correrán por cuenta del LOCATARIO.
+        <strong>Deslinde de Responsabilidad:</strong> EL LOCATARIO asume toda la responsabilidad civil y penal derivada del evento, dejando al LOCADOR totalmente exento de cualquier reclamo por parte de invitados o terceros[cite: 10, 11].
       </li>
       <li>
-        <strong>Pagos y Cancelaciones:</strong> El LOCATARIO deberá abonar la seña establecida al momento de la reserva. En caso de cancelación, no habrá devolución de la seña. En caso de cancelación por parte del LOCADOR por causas de fuerza mayor, se reintegrará el monto abonado sin derecho a reclamos adicionales.
-      </li>
-       <li>
-        <strong>Penalidades:</strong> En caso de incumplimiento de alguna cláusula, EL LOCADOR podrá suspender el evento sin derecho a reclamo o reembolso, además de iniciar las acciones legales correspondientes.
+        <strong>Daños y Limpieza:</strong> EL LOCATARIO deberá restituir el salón en las mismas condiciones en que lo recibió, siendo responsable por roturas en las instalaciones o mobiliario[cite: 12, 13].
       </li>
       <li>
-        <strong>Aceptación Digital:</strong> La aceptación del presente contrato mediante el sistema de reservas online equivale a la firma manuscrita y constituye plena conformidad legal por parte de EL LOCATARIO.
+        <strong>Pagos y Cancelaciones:</strong> Se requiere el pago de la seña para confirmar la reserva. En caso de cancelación por parte del LOCATARIO, la seña no será reembolsada[cite: 14, 15].
       </li>
-       <li>
-        <strong>Firma y Conformidad:</strong> Ambas partes declaran haber leído y comprendido el presente contrato, aceptando las cláusulas aquí establecidas.
+      <li>
+        <strong>Aceptación Digital:</strong> La aceptación mediante el sistema online equivale a una firma manuscrita y constituye plena conformidad legal[cite: 18].
       </li>
     </ol>
 
     <div class="footer">
-        <p>Contrato aceptado digitalmente el {{ acceptance_date }} desde la IP {{ acceptance_ip }}.</p>
-        <p>Versión del Contrato: 1.0</p>
+        <p>Contrato aceptado digitalmente el {{ acceptance_date }} desde la IP {{ acceptance_ip }}[cite: 20].</p>
+        <p>Versión del Contrato: 1.2 (Privado)</p>
     </div>
 </body>
 </html>

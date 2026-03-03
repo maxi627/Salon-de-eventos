@@ -70,7 +70,7 @@ services:
       - red1
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`saloneventos.cloud`) || (Host(`saloneventos.cloud`) && PathPrefix(`/uploads`))"
+      - "traefik.http.routers.frontend.rule=Host(`saloneventos.cloud`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls.certresolver=leresolver"
       - "traefik.http.routers.frontend.priority=10" # Prioridad baja para el resto
