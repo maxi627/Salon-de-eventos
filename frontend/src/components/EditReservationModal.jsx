@@ -10,8 +10,10 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
     fecha_dia: reservation?.fecha?.dia || '',
     valor_alquiler: reservation?.valor_alquiler || 0,
     estado: reservation?.estado || 'confirmada',
-    // Nuevo campo: Iniciamos con 40 o el valor que ya tenga la reserva
     cantidad_personas: reservation?.cantidad_personas || 40,
+    // NUEVOS CAMPOS DE HORARIO
+    hora_inicio: reservation?.hora_inicio || '', 
+    hora_fin: reservation?.hora_fin || '',
   });
 
   const [localReservation, setLocalReservation] = useState(reservation);
@@ -156,7 +158,11 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
     setError('');
     setMessage('');
     const token = localStorage.getItem('authToken');
-    const { saldo_restante, ...dataToSend } = formData;
+    
+    // Limpiamos los datos de horarios si están vacíos para que el backend use el default
+    const dataToSend = { ...formData };
+    if (!dataToSend.hora_inicio) delete dataToSend.hora_inicio;
+    if (!dataToSend.hora_fin) delete dataToSend.hora_fin;
 
     const method = isCreating ? 'POST' : 'PUT';
     const url = isCreating ? '/api/v1/reserva/crear' : `/api/v1/reserva/${reservation.id}`;
@@ -175,7 +181,6 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
       
       setMessage(isCreating ? 'Reserva creada con éxito.' : 'Reserva actualizada con éxito.');
       
-      // Si el estado pasó a 'confirmada', el backend debería disparar el mail
       if (formData.estado === 'confirmada' && !isCreating) {
         setMessage('Reserva confirmada. El contrato definitivo ha sido enviado.');
       }
@@ -213,7 +218,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <h2>{isCreating ? 'Crear Nueva Reserva' : `Gestionar Reserva`}</h2>
 
-      {/* --- Sección de Comprobante de Pago --- */}
+      {/* --- Sección de Comprobante --- */}
       {!isCreating && localReservation?.comprobante_url && (
         <div className="receipt-view-section">
           <div className="receipt-header-row">
@@ -229,8 +234,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
             >
               <span className="icon">📄</span>
               <div className="text-content">
-                <span className="main-text">Abrir Comprobante de Transferencia</span>
-                <span className="sub-text">Se abrirá en una nueva pestaña (Imagen/PDF)</span>
+                <span className="main-text">Abrir Comprobante</span>
               </div>
               <span className="external-link-icon">↗</span>
             </a>
@@ -281,7 +285,6 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
               <input type="number" name="valor_alquiler" value={formData.valor_alquiler} onChange={handleChange} min="0" />
             </div>
 
-            {/* --- NUEVO CAMPO: CANTIDAD DE PERSONAS --- */}
             <div className="form-group">
               <label htmlFor="cantidad_personas">Cantidad de Personas</label>
               <input 
@@ -294,6 +297,31 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
               />
             </div>
           </div>
+
+          {/* --- NUEVA FILA: HORARIOS --- */}
+          <div className="form-group-row">
+            <div className="form-group">
+              <label htmlFor="hora_inicio">Hora Inicio</label>
+              <input 
+                type="time" 
+                name="hora_inicio" 
+                value={formData.hora_inicio} 
+                onChange={handleChange} 
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="hora_fin">Hora Fin</label>
+              <input 
+                type="time" 
+                name="hora_fin" 
+                value={formData.hora_fin} 
+                onChange={handleChange} 
+              />
+            </div>
+          </div>
+          <p className="status-help-text" style={{marginTop: '-10px', marginBottom: '15px'}}>
+            Si se dejan vacíos, el contrato usará el horario base (11:00 a 20:00).
+          </p>
           
           <div className="form-group">
             <label htmlFor="estado">Estado de la Reserva</label>
@@ -302,9 +330,6 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
               <option value="confirmada">Confirmada (Envía contrato definitivo)</option>
               <option value="cancelada">Cancelada</option>
             </select>
-            {formData.estado === 'confirmada' && !isCreating && (
-              <p className="status-help-text">Al guardar en "Confirmada", se generará y enviará el PDF legal.</p>
-            )}
           </div>
 
           <div className="modal-actions">
@@ -315,6 +340,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
           </div>
         </form>
 
+        {/* --- Sección de Pagos y Archivar --- */}
         {!isCreating && (
           <div className="payments-section">
             <h4>Pagos Registrados</h4>
@@ -340,7 +366,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
             <div className="add-payment-form">
               <input
                 type="number"
-                placeholder="Monto del nuevo pago"
+                placeholder="Monto nuevo pago"
                 value={newPayment.monto}
                 onChange={handlePaymentChange}
                 min="0"
