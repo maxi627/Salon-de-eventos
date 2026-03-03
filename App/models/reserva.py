@@ -20,6 +20,8 @@ class Reserva(db.Model):
     cantidad_personas = db.Column(db.Integer, nullable=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     fecha_id = db.Column(db.Integer, db.ForeignKey('fecha.id'), nullable=False)
+    hora_inicio = db.Column(db.Time, nullable=True)
+    hora_fin = db.Column(db.Time, nullable=True)
 
     usuario = db.relationship('Usuario', back_populates='reservas', lazy='joined')
     fecha = db.relationship('Fecha', back_populates='reserva', lazy='joined')
