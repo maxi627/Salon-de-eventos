@@ -105,7 +105,7 @@ function Home() {
           <div className="service-item">
             <FaUtensils className="service-icon" />
             <h3>Salón Totalmente Equipado</h3>
-            <p>Incluye sillas, mesones, cocina completa con heladera, freezer, pava eléctrica y 4 baños.</p>
+            <p>Incluye 25 sillas, 4 mesones, cocina con heladera, freezer, pava eléctrica y 4 baños.</p>
           </div>
           <div className="service-item">
             <FaGamepad className="service-icon" />
