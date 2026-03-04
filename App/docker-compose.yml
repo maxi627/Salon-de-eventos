@@ -34,21 +34,6 @@ services:
       - red1
     restart: always
 
-  # --- NUEVO SERVICIO: EVOLUTION API (WhatsApp Gratis) ---
-  whatsapp_api:
-    image: wppconnect/wa-hub:latest
-    container_name: whatsapp_api
-    environment:
-      - WAHUB_SECRET_KEY=tu_clave_secreta_bolivar
-    networks:
-      - red1
-    restart: always
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.waapi.rule=Host(`saloneventos.cloud`) && PathPrefix(`/waapi`)"
-      - "traefik.http.routers.waapi.entrypoints=websecure"
-      - "traefik.http.routers.waapi.tls.certresolver=leresolver"
-      - "traefik.http.services.waapi.loadbalancer.server.port=8080"
   app:
     container_name: salon_app
     build:
