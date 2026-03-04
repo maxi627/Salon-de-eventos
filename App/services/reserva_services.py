@@ -143,7 +143,8 @@ class ReservaService:
 
             cache.set(f'reserva_{reserva_id}', reserva_fresca, timeout=self.CACHE_TIMEOUT)
             cache.delete('reservas')
-            
+            cache.clear()
+
             # Invalidamos la caché de la fecha usando la reserva fresca
             if reserva_fresca and reserva_fresca.fecha_id:
                 cache.delete(f'fecha_{reserva_fresca.fecha_id}')
@@ -152,7 +153,8 @@ class ReservaService:
             cache.delete('fechas')
             cache.delete('fechas_disponibles')
             cache.delete('todas_las_fechas')
-
+            cache.clear()
+            
             return reserva_fresca
     def delete(self, reserva_id: int) -> bool:
         """
