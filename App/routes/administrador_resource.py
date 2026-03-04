@@ -47,7 +47,7 @@ def one(id):
 
 @Administrador.route('/administrador', methods=['POST'])
 @limiter.limit("50 per minute")
-# @admin_required()
+@admin_required()
 def add():
     response_builder = ResponseBuilder()
     try:
