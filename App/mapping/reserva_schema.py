@@ -14,7 +14,7 @@ class ReservaSchema(Schema):
     fecha_aceptacion = fields.DateTime(dump_only=True)
     version_contrato = fields.Str(dump_only=True)
     cantidad_personas = fields.Int()
-    usuario = fields.Nested('UsuarioSchema', only=("id", "nombre", "apellido", "correo"), dump_only=True)
+    usuario = fields.Nested('UsuarioSchema', only=("id", "nombre", "apellido", "correo", "telefono"), dump_only=True)
     fecha = fields.Nested('FechaSchema', only=("id", "dia"), dump_only=True)
     hora_inicio = fields.Time(format='%H:%M', allow_none=True) 
     hora_fin = fields.Time(format='%H:%M', allow_none=True)
