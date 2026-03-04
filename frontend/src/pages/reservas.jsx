@@ -12,7 +12,7 @@ function Reservas() {
   useEffect(() => {
     const fetchFechas = async () => {
       try {
-        const response = await fetch('/api/v1/fecha');
+        const response = await fetch(`/api/v1/fecha?t=${new Date().getTime()}`);
         if (!response.ok) throw new Error('Error al cargar datos');
         const result = await response.json();
         
