@@ -6,6 +6,7 @@ from app.models import Fecha, Reserva
 from app.repositories import ReservaRepository
 from app.services.fecha_services import \
     FechaService  # Importamos el servicio de Fecha
+from app.services.push_notification_service import PushNotificationService
 
 
 class ReservaService:
@@ -66,18 +67,37 @@ class ReservaService:
                 # Ahora el estado de la fecha depende del estado de la reserva
                 if reserva.estado == 'confirmada':
                     fecha_a_reservar.estado = 'reservada'
-                else: # Si es 'pendiente' o cualquier otro estado inicial
+                else:
                     fecha_a_reservar.estado = 'pendiente'
                 
                 db.session.add(reserva)
                 db.session.commit()
 
+                # --- INICIO DE NOTIFICACIÓN TELEGRAM ---
+                try:
+                    # Traemos al usuario para tener el nombre en el mensaje
+                    # Asumiendo que reserva.usuario ya está cargado o se puede acceder
+                    u = reserva.usuario 
+                    nombre_cliente = f"{u.nombre} {u.apellido}" if u else "Nuevo Cliente"
+                    
+                    telegram = PushNotificationService()
+                    mensaje_alerta = (
+                        f"👤 *Cliente:* {nombre_cliente}\n"
+                        f"📅 *Fecha:* {fecha_a_reservar.dia}\n"
+                        f"👥 *Personas:* {reserva.cantidad_personas}\n"
+                        f"💰 *Seña/Valor:* ${reserva.valor_alquiler}\n"
+                        f"📋 *Estado:* {reserva.estado.capitalize()}"
+                    )
+                    telegram.send_notification(mensaje_alerta, title="🆕 ¡Nueva Solicitud de Reserva!")
+                except Exception as e:
+                    # Solo printeamos para no romper el flujo del cliente si falla Telegram
+                    print(f"Error al enviar notificación push: {e}")
+                # --- FIN DE NOTIFICACIÓN ---
+
+                # Lógica de caché existente...
                 cache.set(f'reserva_{reserva.id}', reserva, timeout=self.CACHE_TIMEOUT)
                 cache.delete('reservas')
-
                 cache.set(f'fecha_{fecha_a_reservar.id}', fecha_a_reservar, timeout=self.CACHE_TIMEOUT)
-                
-                # --- MEJORA: Limpieza profunda de caché de fechas ---
                 cache.delete('fechas')
                 cache.delete('fechas_disponibles')
                 cache.delete('todas_las_fechas')
@@ -87,7 +107,6 @@ class ReservaService:
             except Exception as e:
                 db.session.rollback()
                 raise e
-
     def update(self, reserva_id: int, updated_data: dict) -> Reserva:
         """
         Actualiza una reserva existente con nuevos datos.
