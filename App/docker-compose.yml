@@ -34,6 +34,29 @@ services:
       - red1
     restart: always
 
+  # --- NUEVO SERVICIO: EVOLUTION API (WhatsApp Gratis) ---
+  whatsapp_api:
+    image: atendare/evolution-api:latest
+    container_name: whatsapp_api
+    command: ["node", "dist/src/main.js"]
+    environment:
+      - SERVER_URL=https://saloneventos.cloud/waapi
+      - AUTH_TYPE=apikey
+      - AUTH_API_KEY=tu_clave_secreta_aqui # Cambiá esto por algo seguro
+    volumes:
+      - evolution_instances:/evolution/instances
+    networks:
+      - red1
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.waapi.rule=Host(`saloneventos.cloud`) && PathPrefix(`/waapi`)"
+      - "traefik.http.routers.waapi.entrypoints=websecure"
+      - "traefik.http.routers.waapi.tls.certresolver=leresolver"
+      - "traefik.http.routers.waapi.middlewares=waapi-stripprefix"
+      - "traefik.http.middlewares.waapi-stripprefix.stripprefix.prefixes=/waapi"
+      - "traefik.http.services.waapi.loadbalancer.server.port=8080"
+
   app:
     container_name: salon_app
     build:
@@ -43,7 +66,7 @@ services:
       - ../App/.env
     volumes:
       - ../App/uploads:/home/flaskapp/app/uploads
-      - ../App/uploads:/home/flaskapp/uploads       # Ruta relativa al home
+      - ../App/uploads:/home/flaskapp/uploads 
     networks:
       - red1
     depends_on:
@@ -56,7 +79,7 @@ services:
       - "traefik.http.routers.salonapp.rule=Host(`saloneventos.cloud`) && PathPrefix(`/api`)"
       - "traefik.http.routers.salonapp.entrypoints=websecure"
       - "traefik.http.routers.salonapp.tls.certresolver=leresolver"
-      - "traefik.http.routers.salonapp.priority=100" # Prioridad alta para la API
+      - "traefik.http.routers.salonapp.priority=100"
       - "traefik.http.services.salonapp.loadbalancer.server.port=5000"
 
   frontend:
@@ -73,7 +96,7 @@ services:
       - "traefik.http.routers.frontend.rule=Host(`saloneventos.cloud`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls.certresolver=leresolver"
-      - "traefik.http.routers.frontend.priority=10" # Prioridad baja para el resto
+      - "traefik.http.routers.frontend.priority=10"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
 
   traefik:
@@ -99,6 +122,7 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - traefik_certs:/letsencrypt
+      - ../letsencrypt:/letsencrypt # Mapeo físico para persistencia tras borrar volúmenes
     networks:
       - red1
     restart: always
@@ -110,3 +134,4 @@ networks:
 volumes:
   postgres_data:
   traefik_certs:
+  evolution_instances: # Volumen para que no pierdas la sesión de WhatsApp al reiniciar
