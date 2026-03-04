@@ -70,13 +70,13 @@ class ReservaService:
                 else:
                     fecha_a_reservar.estado = 'pendiente'
                 
+                # PERSISTENCIA: Agregamos ambos a la sesión
                 db.session.add(reserva)
+                db.session.add(fecha_a_reservar) # <--- CORRECCIÓN 1: Asegura que la FECHA se guarde
                 db.session.commit()
 
                 # --- INICIO DE NOTIFICACIÓN TELEGRAM ---
                 try:
-                    # Traemos al usuario para tener el nombre en el mensaje
-                    # Asumiendo que reserva.usuario ya está cargado o se puede acceder
                     u = reserva.usuario 
                     nombre_cliente = f"{u.nombre} {u.apellido}" if u else "Nuevo Cliente"
                     
@@ -88,23 +88,22 @@ class ReservaService:
                     )
                     telegram.send_notification(mensaje_alerta, title="🆕 ¡Nueva Solicitud de Reserva!")
                 except Exception as e:
-                    # Solo printeamos para no romper el flujo del cliente si falla Telegram
                     print(f"Error al enviar notificación push: {e}")
                 # --- FIN DE NOTIFICACIÓN ---
 
-                # Lógica de caché existente...
+                # Lógica de caché: Limpiamos todo para asegurar que el calendario se refresque
+                cache.clear() # <--- CORRECCIÓN 2: Limpieza total de Redis
+                
+                # Mantenemos las líneas por si querés conservar lógica específica
                 cache.set(f'reserva_{reserva.id}', reserva, timeout=self.CACHE_TIMEOUT)
-                cache.delete('reservas')
                 cache.set(f'fecha_{fecha_a_reservar.id}', fecha_a_reservar, timeout=self.CACHE_TIMEOUT)
-                cache.delete('fechas')
-                cache.delete('fechas_disponibles')
-                cache.delete('todas_las_fechas')
 
                 return reserva
 
             except Exception as e:
                 db.session.rollback()
                 raise e
+
     def update(self, reserva_id: int, updated_data: dict) -> Reserva:
         """
         Actualiza una reserva existente con nuevos datos.
@@ -134,33 +133,19 @@ class ReservaService:
             if reserva_a_actualizar.fecha:
                 db.session.add(reserva_a_actualizar.fecha)
 
-            # Confirmamos los cambios en la BD. Aquí el objeto 'reserva_a_actualizar' expira.
             db.session.commit()
 
-            # 🟢 SOLUCIÓN: Volvemos a traer la reserva "fresca" y completa desde la BD
-            # Esto evita el error de "not bound to a Session" y asegura que la caché guarde el objeto sano.
+            # Volvemos a traer la reserva "fresca"
             reserva_fresca = self.repository.get_by_id(reserva_id)
 
-            cache.set(f'reserva_{reserva_id}', reserva_fresca, timeout=self.CACHE_TIMEOUT)
-            cache.delete('reservas')
-            cache.clear()
+            # Limpieza total de caché
+            cache.clear() 
 
-            # Invalidamos la caché de la fecha usando la reserva fresca
-            if reserva_fresca and reserva_fresca.fecha_id:
-                cache.delete(f'fecha_{reserva_fresca.fecha_id}')
-            
-            # Limpieza profunda de caché de fechas
-            cache.delete('fechas')
-            cache.delete('fechas_disponibles')
-            cache.delete('todas_las_fechas')
-            cache.clear()
-            
             return reserva_fresca
+
     def delete(self, reserva_id: int) -> bool:
         """
         Archiva una reserva en lugar de eliminarla permanentemente (soft delete).
-        Esto preserva el historial de pagos y la integridad de los datos.
-        La fecha asociada a la reserva se libera para que esté disponible nuevamente.
         """
         with self.redis_lock(reserva_id):
             reserva_a_archivar = self.repository.get_by_id(reserva_id)
@@ -169,25 +154,16 @@ class ReservaService:
                 return False
 
             try:
-                # Cambiamos el estado a 'archivada' en lugar de eliminar
                 reserva_a_archivar.estado = 'archivada'
 
                 # Liberamos la fecha para que vuelva a estar disponible
                 fecha_asociada = reserva_a_archivar.fecha
                 if fecha_asociada:
                     fecha_asociada.estado = 'disponible'
-                    cache.delete(f'fecha_{fecha_asociada.id}')
-                    
-                    # --- MEJORA: Limpieza profunda de caché de fechas ---
-                    cache.delete('fechas')
-                    cache.delete('fechas_disponibles')
-                    cache.delete('todas_las_fechas')
+                    db.session.add(fecha_asociada)
 
                 db.session.commit()
-
-                # Invalidamos las cachés de la reserva
-                cache.delete(f'reserva_{reserva_id}')
-                cache.delete('reservas')
+                cache.clear() # Limpieza total
 
                 return True
 
@@ -221,10 +197,9 @@ class ReservaService:
 
     def recalcular_saldo(self, reserva_id: int):
         """
-        Invalida la caché para forzar el recálculo del saldo_restante (propiedad dinámica).
+        Invalida la caché para forzar el recálculo del saldo_restante.
         """
-        cache.delete(f'reserva_{reserva_id}')
-        cache.delete('reservas')
+        cache.clear()
         
     def get_by_user_id(self, user_id: int) -> list[Reserva]:
         """
