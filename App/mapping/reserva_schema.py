@@ -16,8 +16,8 @@ class ReservaSchema(Schema):
     cantidad_personas = fields.Int()
     usuario = fields.Nested('UsuarioSchema', only=("id", "nombre", "apellido", "correo"), dump_only=True)
     fecha = fields.Nested('FechaSchema', only=("id", "dia"), dump_only=True)
-    hora_inicio = fields.Time(format='%H:%M') # Lee "21:00" y lo hace objeto Time
-    hora_fin = fields.Time(format='%H:%M')    # Lee "05:00" y lo hace objeto Time
+    hora_inicio = fields.Time(format='%H:%M', allow_none=True) 
+    hora_fin = fields.Time(format='%H:%M', allow_none=True)
     # --- INICIO DE LA MODIFICACIÓN ---
     # Le decimos al schema que incluya una lista de pagos
     pagos = fields.Nested('PagoSchema', many=True, dump_only=True)
