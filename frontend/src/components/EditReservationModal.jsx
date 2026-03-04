@@ -11,7 +11,6 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
     valor_alquiler: reservation?.valor_alquiler || 0,
     estado: reservation?.estado || 'confirmada',
     cantidad_personas: reservation?.cantidad_personas || 40,
-    // NUEVOS CAMPOS DE HORARIO
     hora_inicio: reservation?.hora_inicio || '', 
     hora_fin: reservation?.hora_fin || '',
   });
@@ -25,6 +24,23 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // --- NUEVA FUNCIÓN: CONTACTAR POR WHATSAPP ---
+  const handleContactWhatsApp = () => {
+    const telefono = localReservation?.usuario?.telefono;
+    if (!telefono) {
+      alert("El usuario no tiene un teléfono registrado.");
+      return;
+    }
+
+    // Limpiar el teléfono para la URL (sacar espacios/guiones)
+    const cleanPhone = telefono.replace(/\s+/g, '').replace(/-/g, '');
+    
+    const texto = `Hola ${localReservation.usuario.nombre}, te contacto desde el Salón de Eventos por tu reserva del día ${formData.fecha_dia}. Queríamos coordinar los detalles: capacidad para ${formData.cantidad_personas} personas y horario de ${formData.hora_inicio || '11:00'} a ${formData.hora_fin || '20:00'} hs.`;
+    
+    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(texto)}`;
+    window.open(url, '_blank');
+  };
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -159,7 +175,6 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
     setMessage('');
     const token = localStorage.getItem('authToken');
     
-    // Limpiamos los datos de horarios si están vacíos para que el backend use el default
     const dataToSend = { ...formData };
     if (!dataToSend.hora_inicio) delete dataToSend.hora_inicio;
     if (!dataToSend.hora_fin) delete dataToSend.hora_fin;
@@ -216,9 +231,22 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h2>{isCreating ? 'Crear Nueva Reserva' : `Gestionar Reserva`}</h2>
+        <div className="modal-header-with-action">
+          <h2>{isCreating ? 'Crear Nueva Reserva' : `Gestionar Reserva`}</h2>
+          
+          {/* --- BOTÓN DE WHATSAPP --- */}
+          {!isCreating && localReservation?.usuario?.telefono && (
+            <button 
+              type="button" 
+              className="btn-whatsapp-contact" 
+              onClick={handleContactWhatsApp}
+              title="Contactar por WhatsApp antes de confirmar"
+            >
+              <span className="wa-icon">💬</span> Contactar Cliente
+            </button>
+          )}
+        </div>
 
-      {/* --- Sección de Comprobante --- */}
       {!isCreating && localReservation?.comprobante_url && (
         <div className="receipt-view-section">
           <div className="receipt-header-row">
@@ -298,7 +326,6 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
             </div>
           </div>
 
-          {/* --- NUEVA FILA: HORARIOS --- */}
           <div className="form-group-row">
             <div className="form-group">
               <label htmlFor="hora_inicio">Hora Inicio</label>
@@ -340,7 +367,6 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
           </div>
         </form>
 
-        {/* --- Sección de Pagos y Archivar --- */}
         {!isCreating && (
           <div className="payments-section">
             <h4>Pagos Registrados</h4>
