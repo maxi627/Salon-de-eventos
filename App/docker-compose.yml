@@ -36,15 +36,10 @@ services:
 
   # --- NUEVO SERVICIO: EVOLUTION API (WhatsApp Gratis) ---
   whatsapp_api:
-    image: atendare/evolution-api:latest
+    image: wppconnect/wa-hub:latest
     container_name: whatsapp_api
-    command: ["node", "dist/src/main.js"]
     environment:
-      - SERVER_URL=https://saloneventos.cloud/waapi
-      - AUTH_TYPE=apikey
-      - AUTH_API_KEY=tu_clave_secreta_aqui # Cambiá esto por algo seguro
-    volumes:
-      - evolution_instances:/evolution/instances
+      - WAHUB_SECRET_KEY=tu_clave_secreta_bolivar
     networks:
       - red1
     restart: always
@@ -53,10 +48,7 @@ services:
       - "traefik.http.routers.waapi.rule=Host(`saloneventos.cloud`) && PathPrefix(`/waapi`)"
       - "traefik.http.routers.waapi.entrypoints=websecure"
       - "traefik.http.routers.waapi.tls.certresolver=leresolver"
-      - "traefik.http.routers.waapi.middlewares=waapi-stripprefix"
-      - "traefik.http.middlewares.waapi-stripprefix.stripprefix.prefixes=/waapi"
       - "traefik.http.services.waapi.loadbalancer.server.port=8080"
-
   app:
     container_name: salon_app
     build:
