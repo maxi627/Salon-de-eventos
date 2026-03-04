@@ -171,7 +171,7 @@ function Reservas() {
         <div className="calendar-info-bottom">
           <div className="info-card-integrated">
             <h4>Información de Tarifas</h4>
-            <p>Los precios mostrados son estimaciones base para el salón Bolívar 1425. El valor final se ajustará según servicios extra.</p>
+            <p>Los precios mostrados son estimaciones base para una capacidad de 40 personas aproximadamente. Los precios pueden variar según el tipo de evento y horarios que se requieran.</p>
             <div className="disclaimer-mini">
               <span className="icon">⚠️</span>
               <span>Solo se permiten reservas con hasta 90 días de anticipación. Los domingos no están disponibles para eventos privados.</span>

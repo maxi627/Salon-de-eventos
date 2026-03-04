@@ -86,8 +86,7 @@ function Home() {
           <div className="location-map">
             {/* URL corregida para mostrar la ubicación real en San Rafael */}
             <iframe
-              src="https://maps.app.goo.gl/qfw4FJPQSDaBwaNs9"
-              width="100%"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3282.653457813076!2d-68.313890123447!3d-34.63821707294406!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9679a9bdbd71ebbd%3A0xf07b4cc0a177c032!2sSal%C3%B3n%20de%20eventos!5e0!3m2!1ses-419!2sar!4v1709584000000!5m2!1ses-419!2sar"              width="100%"
               height="100%"
               style={{ border: 0 }}
               allowFullScreen=""
