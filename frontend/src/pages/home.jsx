@@ -86,7 +86,7 @@ function Home() {
           <div className="location-map">
             {/* URL corregida para mostrar la ubicación real en San Rafael */}
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3283.6528731737786!2d-68.3283!3d-34.6148!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x967907e86e587985%3A0x8f7d97c7f9999999!2sBolivar%201425%2C%20San%20Rafael%2C%20Mendoza!5e0!3m2!1ses!2sar!4v1700000000000"
+              src="https://maps.app.goo.gl/qfw4FJPQSDaBwaNs9"
               width="100%"
               height="100%"
               style={{ border: 0 }}
