@@ -1,32 +1,41 @@
 import os
 
-# La importación de 'Client' se elimina de aquí
-from pushover import Client
+import requests
 
 
 class PushNotificationService:
     def __init__(self):
-        self.user_key = os.getenv('PUSHOVER_USER_KEY')
-        self.api_token = os.getenv('PUSHOVER_API_TOKEN')
+        # Configuralas en tu .env de la KVM
+        self.bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
+        self.chat_id = os.getenv('TELEGRAM_CHAT_ID')
         
-        if not self.user_key or not self.api_token:
-            print("ADVERTENCIA: Las claves de Pushover no están configuradas. Las notificaciones push están deshabilitadas.")
-            self.client = None
-        else:
-            # Así se inicializa correctamente el cliente en esta versión
-            self.client = Client(self.user_key, api_token=self.api_token)
+        self.is_configured = all([self.bot_token, self.chat_id])
+        if not self.is_configured:
+            print("ADVERTENCIA: Telegram no configurado. Alertas deshabilitadas.")
 
-    def send_notification(self, message, title="Alerta de Salón de Eventos"):
-        """
-        Envía una notificación push si el servicio está configurado.
-        """
-        if self.client:
-            try:
-                # El método para enviar el mensaje se mantiene igual
-                self.client.send_message(message, title=title)
-                print(f"Notificación push enviada: '{title}'")
+    def send_notification(self, message, title="🔔 Alerta de Salón"):
+        """Envía una notificación gratuita vía Telegram Bot"""
+        if not self.is_configured:
+            return False
+
+        # Formateamos el mensaje para que quede prolijo
+        texto_final = f"*{title}*\n\n{message}"
+        
+        url = f"https://api.telegram.org/bot{self.bot_token}/sendMessage"
+        payload = {
+            "chat_id": self.chat_id,
+            "text": texto_final,
+            "parse_mode": "Markdown" # Para que el título salga en negrita
+        }
+
+        try:
+            response = requests.post(url, json=payload)
+            if response.status_code == 200:
+                print(f"Notificación Telegram enviada")
                 return True
-            except Exception as e:
-                print(f"ERROR al enviar notificación push: {e}")
+            else:
+                print(f"Error Telegram: {response.text}")
                 return False
-        return False
+        except Exception as e:
+            print(f"ERROR en Telegram Service: {e}")
+            return False
