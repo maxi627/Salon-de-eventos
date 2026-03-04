@@ -84,8 +84,6 @@ class ReservaService:
                     mensaje_alerta = (
                         f"👤 *Cliente:* {nombre_cliente}\n"
                         f"📅 *Fecha:* {fecha_a_reservar.dia}\n"
-                        f"👥 *Personas:* {reserva.cantidad_personas}\n"
-                        f"💰 *Seña/Valor:* ${reserva.valor_alquiler}\n"
                         f"📋 *Estado:* {reserva.estado.capitalize()}"
                     )
                     telegram.send_notification(mensaje_alerta, title="🆕 ¡Nueva Solicitud de Reserva!")
