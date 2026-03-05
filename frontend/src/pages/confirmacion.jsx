@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import './confirmacion.css';
 
-// Componente con el flujo de "Capacidad Base" para que el admin ajuste luego
+// Componente con los términos legales actualizados para Bolívar y Bombal
 const ContractTerms = () => (
   <>
     <h3>Términos y Condiciones</h3>
@@ -11,60 +11,27 @@ const ContractTerms = () => (
     </p>
     <p>
       El presente contrato se celebra entre EL LOCADOR (propietario del salón) y EL LOCATARIO 
-      (usuario que realiza la reserva a través de la página web, cuyos datos personales se 
-      registran en el formulario de reserva), sujeto a las siguientes cláusulas:
+      (usuario que realiza la reserva), sujeto a las siguientes cláusulas:
     </p>
     
     <ol>
       <li>
-        <strong>Objeto:</strong> EL LOCADOR alquila a EL LOCATARIO el salón de eventos 
-        ubicado en Bolivar 1425, para uso exclusivo en la fecha y horario acordados en la reserva.
+        <strong>Objeto:</strong> Alquiler del salón ubicado en Bolivar 1425, San Rafael, Mendoza.
       </li>
       <li>
-        <strong>Uso y Responsabilidad:</strong> EL LOCADOR no se responsabiliza por el tipo 
-        de actividad o evento que se realice, siempre que sea lícito. Queda prohibida la venta 
-        de entradas, la venta o suministro de alcohol a menores de edad, el consumo de 
-        sustancias ilegales y cualquier actividad contraria a la ley. EL LOCATARIO es único 
-        responsable por cualquier daño material, accidente o hecho ocurrido durante el evento, 
-        así como de las acciones de los invitados y terceros que ingresen al salón.
+        <strong>Responsabilidad:</strong> EL LOCATARIO es único responsable por daños materiales o accidentes durante el evento.
       </li>
       <li>
-        <strong>Cumplimiento Legal:</strong> EL LOCATARIO asume toda responsabilidad por cumplir 
-        con las disposiciones legales vigentes en materia de seguridad, salubridad y control de 
-        menores. En caso de incumplimiento, EL LOCADOR queda totalmente exento de toda 
-        responsabilidad civil, penal o administrativa.
+        <strong>Cumplimiento:</strong> Se prohíbe la venta de alcohol a menores y actividades ilícitas.
       </li>
       <li>
-        <strong>Daños y Limpieza:</strong> EL LOCATARIO deberá restituir el salón en las mismas 
-        condiciones en que lo recibió, siendo responsable por cualquier daño ocasionado a las 
-        instalaciones, mobiliario o equipamiento. Los gastos de reparación o reposición correrán 
-        por cuenta del LOCATARIO.
+        <strong>Pagos y Cancelaciones:</strong> La seña no es reembolsable en caso de cancelación por parte del cliente.
       </li>
       <li>
-        <strong>Pagos y Cancelaciones:</strong> EL LOCATARIO deberá abonar la seña establecida 
-        al momento de la reserva. En caso de cancelación, no 
-        habrá devolución de la seña. En caso de cancelación por parte del LOCADOR por causas de 
-        fuerza mayor, se reintegrará el monto abonado sin derecho a reclamos adicionales.
+        <strong>Capacidad:</strong> Estimación inicial de 40 personas. Ajustes finales coordinados con el admin.
       </li>
       <li>
-        <strong>Penalidades:</strong> En caso de incumplimiento de alguna cláusula, EL LOCADOR 
-        podrá suspender el evento sin derecho a reclamo o reembolso, además de iniciar las 
-        acciones legales correspondientes.
-      </li>
-      <li>
-        <strong>Capacidad Base y Ajustes:</strong> El presente contrato se emite inicialmente bajo una estimación de <strong>40 personas</strong>. En caso de requerir una capacidad superior, EL LOCATARIO deberá coordinar con EL LOCADOR el ajuste de capacidad y precio final. El contrato definitivo con el valor legal final será enviado por correo electrónico una vez que EL LOCADOR confirme la reserva desde el panel de administración.
-      </li>
-      <li>
-        <strong>Jurisdicción:</strong> Para cualquier conflicto legal derivado del presente, las partes se someten a la jurisdicción de los Tribunales Ordinarios de la Segunda Circunscripción Judicial de la Provincia de Mendoza, con asiento en la ciudad de San Rafael.
-      </li>
-      <li>
-        <strong>Aceptación Digital:</strong> La aceptación del presente contrato mediante el 
-        sistema de reservas online equivale a la firma manuscrita y constituye plena conformidad 
-        legal por parte de EL LOCATARIO.
-      </li>
-      <li>
-        <strong>Firma y Conformidad:</strong> Ambas partes declaran haber leído y comprendido 
-        el presente contrato, aceptando las cláusulas aquí establecidas.
+        <strong>Firma Digital:</strong> La aceptación online equivale a una firma manuscrita y constituye plena conformidad legal.
       </li>
     </ol>
   </>
@@ -82,7 +49,21 @@ function Confirmacion() {
   const [contractAccepted, setContractAccepted] = useState(false);
   const [receiptFile, setReceiptFile] = useState(null);
 
-  const [paymentAlias, setPaymentAlias] = useState(null);
+  // Estados para CVU y feedback de copiado
+  const [paymentCVU, setPaymentCVU] = useState(null);
+  const [copied, setCopied] = useState(false);
+
+  // --- FUNCIÓN PARA COPIAR AL PORTAPAPELES ---
+  const handleCopyCVU = () => {
+    if (paymentCVU) {
+      navigator.clipboard.writeText(paymentCVU)
+        .then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000); // Feedback visual de 2 segundos
+        })
+        .catch(err => console.error("Error al copiar: ", err));
+    }
+  };
 
   const formatDisplayDate = (isoDate) => {
     if (!isoDate) return '';
@@ -117,6 +98,7 @@ function Confirmacion() {
 
         const fechaResult = await fechaResponse.json();
         if (!fechaResponse.ok) throw new Error(fechaResult.message);
+        
         if (fechaResult.data.estado !== 'disponible') {
           throw new Error('Esta fecha ya no está disponible.');
         }
@@ -124,7 +106,9 @@ function Confirmacion() {
 
         const paymentResult = await paymentResponse.json();
         if (!paymentResponse.ok) throw new Error(paymentResult.message);
-        setPaymentAlias(paymentResult.data.alias);
+        
+        // Asignamos el CVU (o alias como fallback)
+        setPaymentCVU(paymentResult.data.cvu || paymentResult.data.alias);
 
       } catch (err) {
         setError(err.message);
@@ -149,22 +133,19 @@ function Confirmacion() {
     const formData = new FormData();
     formData.append('fecha_id', fechaInfo.id);
     formData.append('comprobante', receiptFile);
-    // Enviamos el valor base inicial (40)
     formData.append('capacidad_declarada', 40);
 
     try {
       const response = await fetch('/api/v1/reserva/solicitar', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Authorization': `Bearer ${token}` },
         body: formData
       });
 
       const result = await response.json();
       if (!response.ok) throw new Error(result.message);
 
-      setMessage('¡Solicitud enviada con éxito! El administrador revisará tu comprobante y confirmará la capacidad final.');
+      setMessage('¡Solicitud enviada! Revisaremos tu pago y confirmaremos la reserva pronto.');
       setTimeout(() => navigate('/'), 4000);
     } catch (err) {
       setError(err.message);
@@ -183,17 +164,28 @@ function Confirmacion() {
         {fechaInfo ? (
           <>
             <h2>Solicitud de Reserva</h2>
-            <p className="confirm-text">Fecha a solicitar:</p>
+            <p className="confirm-text">Fecha seleccionada:</p>
             <p className="confirm-date">{displayDate}</p>
 
             <div className="payment-info">
-              <p>Realiza la transferencia al siguiente alias y adjunta el comprobante para iniciar el proceso.</p>
-              <p>SEÑA: 30% del valor estimado...</p>
-              {paymentAlias ? (
-                <p className="payment-alias">{paymentAlias}</p>
+              <p>Realizá la transferencia al siguiente <strong>CVU</strong> y adjuntá el comprobante:</p>
+              
+              {paymentCVU ? (
+                <div className="cvu-copy-box">
+                  <span className="cvu-number">{paymentCVU}</span>
+                  <button 
+                    type="button" 
+                    className={`copy-button ${copied ? 'copied' : ''}`}
+                    onClick={handleCopyCVU}
+                  >
+                    {copied ? '¡Copiado!' : 'Copiar CVU'}
+                  </button>
+                </div>
               ) : (
                 <p>Cargando datos de pago...</p>
               )}
+              
+              <p className="payment-seña">SEÑA: 30% del valor total para confirmar.</p>
             </div>
 
             <div className="contract-box">
@@ -207,7 +199,7 @@ function Confirmacion() {
                 checked={contractAccepted}
                 onChange={() => setContractAccepted(!contractAccepted)}
               />
-              <label htmlFor="accept">He leído y acepto los términos base del contrato.</label>
+              <label htmlFor="accept">He leído y acepto los términos del contrato.</label>
             </div>
 
             <div className="form-group">
@@ -232,7 +224,7 @@ function Confirmacion() {
           <h2>{error || 'Fecha no disponible'}</h2>
         )}
 
-        {message && <p className="message-area">{message}</p>}
+        {message && <p className="message-area success">{message}</p>}
         {error && <p className="error-message">{error}</p>}
       </div>
     </div>
