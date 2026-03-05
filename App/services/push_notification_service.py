@@ -1,41 +1,49 @@
 import os
-
 import requests
-
 
 class PushNotificationService:
     def __init__(self):
-        # Configuralas en tu .env de la KVM
+        # Configura estas variables en tu archivo .env de la KVM
         self.bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
-        self.chat_id = os.getenv('TELEGRAM_CHAT_ID')
         
-        self.is_configured = all([self.bot_token, self.chat_id])
+        # Obtenemos los IDs y los convertimos en una lista (separados por coma en el .env)
+        # Ejemplo en .env: TELEGRAM_CHAT_IDS=123456,789012
+        chat_ids_raw = os.getenv('TELEGRAM_CHAT_IDS')
+        
+        if chat_ids_raw:
+            self.chat_ids = [id.strip() for id in chat_ids_raw.split(',')]
+        else:
+            self.chat_ids = []
+        
+        self.is_configured = all([self.bot_token, self.chat_ids])
         if not self.is_configured:
-            print("ADVERTENCIA: Telegram no configurado. Alertas deshabilitadas.")
+            print("ADVERTENCIA: Telegram no configurado correctamente. Alertas deshabilitadas.")
 
     def send_notification(self, message, title="🔔 Alerta de Salón"):
-        """Envía una notificación gratuita vía Telegram Bot"""
+        """Envía la notificación a todos los administradores configurados"""
         if not self.is_configured:
             return False
 
-        # Formateamos el mensaje para que quede prolijo
         texto_final = f"*{title}*\n\n{message}"
-        
         url = f"https://api.telegram.org/bot{self.bot_token}/sendMessage"
-        payload = {
-            "chat_id": self.chat_id,
-            "text": texto_final,
-            "parse_mode": "Markdown" # Para que el título salga en negrita
-        }
+        
+        success = True
+        for chat_id in self.chat_ids:
+            payload = {
+                "chat_id": chat_id,
+                "text": texto_final,
+                "parse_mode": "Markdown"
+            }
 
-        try:
-            response = requests.post(url, json=payload)
-            if response.status_code == 200:
-                print(f"Notificación Telegram enviada")
-                return True
-            else:
-                print(f"Error Telegram: {response.text}")
-                return False
-        except Exception as e:
-            print(f"ERROR en Telegram Service: {e}")
-            return False
+            try:
+                response = requests.post(url, json=payload)
+                if response.status_code == 200:
+                    print(f"Notificación enviada al admin {chat_id}")
+                else:
+                    print(f"Error Telegram (ID {chat_id}): {response.text}")
+                    success = False
+            except Exception as e:
+                print(f"ERROR en Telegram Service para ID {chat_id}: {e}")
+                success = False
+        
+        return success
