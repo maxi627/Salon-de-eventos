@@ -188,6 +188,7 @@ function Confirmacion() {
 
             <div className="payment-info">
               <p>Realiza la transferencia al siguiente alias y adjunta el comprobante para iniciar el proceso.</p>
+              <p>SEÑA: 30% del valor estimado...</p>
               {paymentAlias ? (
                 <p className="payment-alias">{paymentAlias}</p>
               ) : (
