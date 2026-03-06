@@ -61,6 +61,8 @@ services:
     build:
       context: ../frontend
       dockerfile: Dockerfile
+    volumes:
+      - ./uploads:/usr/share/nginx/html/uploads:ro
     networks:
       - red1
     labels:
