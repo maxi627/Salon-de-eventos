@@ -40,8 +40,8 @@ services:
     env_file:
       - .env
     volumes:
-      # Mapeo directo a la raíz del proceso Flask para que coincida con os.getcwd()
       - ./uploads:/home/flaskapp/uploads
+      - ./uploads:/home/flaskapp/app/uploads
     networks:
       - red1
     depends_on:
@@ -63,7 +63,7 @@ services:
       context: ../frontend
       dockerfile: Dockerfile
     volumes:
-      # Corregido: Ahora usa ./uploads para coincidir con la ubicación real en la KVM
+      # Mapeo coherente con tu config de Nginx
       - ./uploads:/usr/share/nginx/html/uploads:ro
     networks:
       - red1
