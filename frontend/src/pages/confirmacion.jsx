@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import './confirmacion.css';
 
-// Componente con el flujo de "Capacidad Base" para que el admin ajuste luego
+// Componente con TU contrato original sin tocar ni una coma
 const ContractTerms = () => (
   <>
     <h3>Términos y Condiciones</h3>
@@ -82,17 +82,28 @@ function Confirmacion() {
   const [contractAccepted, setContractAccepted] = useState(false);
   const [receiptFile, setReceiptFile] = useState(null);
 
-  const [paymentAlias, setPaymentAlias] = useState(null);
+  // Estados para CVU y feedback de copiado
+  const [paymentCVU, setPaymentCVU] = useState(null);
+  const [copied, setCopied] = useState(false);
+
+  // --- FUNCIÓN PARA COPIAR AL PORTAPAPELES ---
+  const handleCopyCVU = () => {
+    if (paymentCVU) {
+      navigator.clipboard.writeText(paymentCVU)
+        .then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        })
+        .catch(err => console.error("Error al copiar CVU: ", err));
+    }
+  };
 
   const formatDisplayDate = (isoDate) => {
     if (!isoDate) return '';
     const dateParts = isoDate.split('-');
     const date = new Date(Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2]));
     return date.toLocaleDateString('es-ES', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      timeZone: 'UTC'
+      day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC'
     });
   };
 
@@ -102,10 +113,7 @@ function Confirmacion() {
     const getPageData = async () => {
       setIsLoading(true);
       const token = localStorage.getItem('authToken');
-      if (!token) {
-        navigate('/login');
-        return;
-      }
+      if (!token) { navigate('/login'); return; }
 
       try {
         const [fechaResponse, paymentResponse] = await Promise.all([
@@ -117,6 +125,7 @@ function Confirmacion() {
 
         const fechaResult = await fechaResponse.json();
         if (!fechaResponse.ok) throw new Error(fechaResult.message);
+        
         if (fechaResult.data.estado !== 'disponible') {
           throw new Error('Esta fecha ya no está disponible.');
         }
@@ -124,7 +133,9 @@ function Confirmacion() {
 
         const paymentResult = await paymentResponse.json();
         if (!paymentResponse.ok) throw new Error(paymentResult.message);
-        setPaymentAlias(paymentResult.data.alias);
+        
+        // Seteamos el CVU (o alias si la API aún no cambió el campo)
+        setPaymentCVU(paymentResult.data.cvu || paymentResult.data.alias);
 
       } catch (err) {
         setError(err.message);
@@ -133,7 +144,6 @@ function Confirmacion() {
         setIsLoading(false);
       }
     };
-    
     getPageData();
   }, [dateString, navigate]);
 
@@ -142,25 +152,20 @@ function Confirmacion() {
       setError('Debes aceptar los términos y subir el comprobante.');
       return;
     }
-
     const token = localStorage.getItem('authToken');
     setIsLoading(true);
 
     const formData = new FormData();
     formData.append('fecha_id', fechaInfo.id);
     formData.append('comprobante', receiptFile);
-    // Enviamos el valor base inicial (40)
     formData.append('capacidad_declarada', 40);
 
     try {
       const response = await fetch('/api/v1/reserva/solicitar', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Authorization': `Bearer ${token}` },
         body: formData
       });
-
       const result = await response.json();
       if (!response.ok) throw new Error(result.message);
 
@@ -173,9 +178,7 @@ function Confirmacion() {
     }
   };
 
-  if (isLoading) {
-    return <div className="confirm-container"><p>Cargando información de la reserva...</p></div>;
-  }
+  if (isLoading) return <div className="confirm-container"><p>Cargando información de la reserva...</p></div>;
   
   return (
     <div className="confirm-container">
@@ -187,13 +190,24 @@ function Confirmacion() {
             <p className="confirm-date">{displayDate}</p>
 
             <div className="payment-info">
-              <p>Realiza la transferencia al siguiente alias y adjunta el comprobante para iniciar el proceso.</p>
-              <p>SEÑA: 30% del valor estimado...</p>
-              {paymentAlias ? (
-                <p className="payment-alias">{paymentAlias}</p>
+              <p>Realiza la transferencia al siguiente <strong>CVU</strong> y adjunta el comprobante:</p>
+              
+              {paymentCVU ? (
+                <div className="cvu-copy-box">
+                  <span className="cvu-number">{paymentCVU}</span>
+                  <button 
+                    type="button" 
+                    className={`copy-button ${copied ? 'copied' : ''}`}
+                    onClick={handleCopyCVU}
+                  >
+                    {copied ? '¡Copiado!' : 'Copiar CVU'}
+                  </button>
+                </div>
               ) : (
                 <p>Cargando datos de pago...</p>
               )}
+              
+              <p className="payment-seña">SEÑA: 30% del valor estimado para iniciar el proceso.</p>
             </div>
 
             <div className="contract-box">
@@ -202,8 +216,7 @@ function Confirmacion() {
             
             <div className="form-check">
               <input 
-                type="checkbox" 
-                id="accept"
+                type="checkbox" id="accept"
                 checked={contractAccepted}
                 onChange={() => setContractAccepted(!contractAccepted)}
               />
@@ -213,8 +226,7 @@ function Confirmacion() {
             <div className="form-group">
               <label htmlFor="receipt">Subir Comprobante de Pago</label>
               <input 
-                type="file" 
-                id="receipt"
+                type="file" id="receipt"
                 onChange={(e) => setReceiptFile(e.target.files[0])}
                 accept="image/png, image/jpeg, application/pdf"
               />
@@ -232,7 +244,7 @@ function Confirmacion() {
           <h2>{error || 'Fecha no disponible'}</h2>
         )}
 
-        {message && <p className="message-area">{message}</p>}
+        {message && <p className="message-area success">{message}</p>}
         {error && <p className="error-message">{error}</p>}
       </div>
     </div>
