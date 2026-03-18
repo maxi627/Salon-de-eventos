@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from app.extensions import db
 
-from .persona import Persona  # Importación relativa
+from .persona import Persona
 
 
 @dataclass

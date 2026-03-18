@@ -34,7 +34,7 @@ class Persona(db.Model):
         """Verifica la contraseña contra el hash almacenado."""
         return sha256.verify(password, self.password_hash)
 
-    # --- NUEVOS MÉTODOS PARA RESETEO DE CONTRASEÑA ---
+  
     def get_reset_token(self, expires_in=600):
         """Genera un token de reseteo con tiempo de expiración (600s = 10 min)."""
         return jwt.encode(

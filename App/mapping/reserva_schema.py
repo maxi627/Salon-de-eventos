@@ -9,21 +9,17 @@ class ReservaSchema(Schema):
     estado = fields.Str()
     comprobante_url = fields.Str()
     valor_alquiler = fields.Float()
-    # SALDO RESTANTE SE QUITA DE AQUÍ PORQUE AHORA ES UNA PROPIEDAD CALCULADA
     ip_aceptacion = fields.Str(dump_only=True)
     fecha_aceptacion = fields.DateTime(dump_only=True)
     version_contrato = fields.Str(dump_only=True)
     cantidad_personas = fields.Int()
     usuario = fields.Nested('UsuarioSchema', only=("id", "nombre", "apellido", "correo", "telefono"), dump_only=True)
     fecha = fields.Nested('FechaSchema', only=("id", "dia"), dump_only=True)
-    hora_inicio = fields.Time(format='%H:%M', allow_none=True) 
+    hora_inicio = fields.Time(format='%H:%M', allow_none=True)
     hora_fin = fields.Time(format='%H:%M', allow_none=True)
-    # --- INICIO DE LA MODIFICACIÓN ---
-    # Le decimos al schema que incluya una lista de pagos
+    
     pagos = fields.Nested('PagoSchema', many=True, dump_only=True)
-    # Añadimos el campo de solo lectura para el saldo restante
     saldo_restante = fields.Float(dump_only=True)
-    # --- FIN DE LA MODIFICACIÓN ---
 
     usuario_id = fields.Int(required=True, load_only=True)
     fecha_id = fields.Int(required=True, load_only=True)
