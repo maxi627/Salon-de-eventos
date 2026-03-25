@@ -6,10 +6,8 @@ from app.extensions import limiter
 from app.mapping import PersonaSchema, ResponseSchema
 from app.services import PersonaService
 
-# Definición del Blueprint
 Persona = Blueprint('Persona', __name__)
 
-# Aplicar limitadores específicos en las rutas
 @Persona.route('/persona', methods=['GET'])
 @limiter.limit("50 per minute")
 def all():

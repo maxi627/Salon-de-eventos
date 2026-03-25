@@ -50,10 +50,8 @@ class FechaService:
         Agrega una nueva fecha, asegura el commit y actualiza la caché.
         """
         new_fecha = self.repository.add(fecha)
-        # IMPORTANTE: Asegurar que se guarde en la BD antes de cachear
         db.session.commit()
         
-        # 🟢 SOLUCIÓN: Recargar la entidad fresca tras el commit
         fecha_fresca = self.repository.get_by_id(new_fecha.id)
         
         if fecha_fresca:
@@ -73,7 +71,7 @@ class FechaService:
         """
         with self.redis_lock(fecha_id):
             # Buscamos en la BD, no en la caché, para que el objeto sea "trackeable"
-            existing_fecha = self.repository.get_by_id(fecha_id) 
+            existing_fecha = self.repository.get_by_id(fecha_id)
 
             if not existing_fecha:
                 raise Exception(f"Fecha con ID {fecha_id} no encontrada.")
@@ -90,11 +88,8 @@ class FechaService:
                 existing_fecha.estado = updated_data['estado']
 
             db.session.add(existing_fecha)
-            
-            # Guardar los cambios físicamente. Aquí la entidad expira.
             db.session.commit()
 
-            # 🟢 SOLUCIÓN: Recargar la entidad fresca tras el commit
             fecha_fresca = self.repository.get_by_id(fecha_id)
 
             # Sincronizar caché

@@ -10,7 +10,6 @@ from app.mapping import GastoSchema, ResponseSchema
 from app.services.gasto_service import GastoService
 from app.utils.decorators import admin_required
 
-# Definición del Blueprint
 GastoBP = Blueprint('Gasto', __name__)
 
 @GastoBP.route('/gasto', methods=['GET'])

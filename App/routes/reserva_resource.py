@@ -14,7 +14,7 @@ from app.services import NotificationService, ReservaService
 from app.utils.decorators import admin_required
 
 UPLOAD_FOLDER = 'uploads/comprobantes'
-# Definición del Blueprint
+
 Reserva = Blueprint('Reserva', __name__)
 
 @Reserva.route('/reserva', methods=['GET'])
@@ -30,7 +30,7 @@ def all():
         response_builder.add_message("Reservas encontradas").add_status_code(200).add_data(data)
         return response_builder.build(), 200
     except Exception as e:
-        db.session.rollback() # <--- LIBERA LA CONEXIÓN VITAL
+        db.session.rollback()
         sentry_sdk.capture_exception(e)
         return response_builder.add_message(f"Error al obtener reservas: {str(e)}").add_status_code(500).build(), 500
 

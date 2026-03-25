@@ -8,7 +8,6 @@ from app.mapping import ResponseSchema, UsuarioSchema
 from app.services import UsuarioService
 from app.utils.decorators import admin_required
 
-# Definición del Blueprint
 Usuario = Blueprint('Usuario', __name__)
 
 @Usuario.route('/usuario', methods=['GET'])
@@ -98,7 +97,6 @@ def update(id):
         if not json_data:
             raise ValidationError("No se proporcionaron datos")
 
-        # El esquema carga los datos y los valida
         usuario_data = usuario_schema.load(json_data)
         updated_usuario = service.update(id, usuario_data)
         
@@ -136,13 +134,11 @@ def delete(id):
             return response_schema.dump(response_builder.build()), 404
             
     except ValueError as ve:
-        # 🟢 ATRAPAMOS EL ERROR DE NEGOCIO Y DEVOLVEMOS 400
         db.session.rollback()
         response_builder.add_message(str(ve)).add_status_code(400)
         return response_schema.dump(response_builder.build()), 400
         
     except Exception as e:
-        # Los errores 500 reales se quedan aquí
         db.session.rollback()
         response_builder.add_message("Error al eliminar usuario").add_status_code(500).add_data(str(e))
         return response_schema.dump(response_builder.build()), 500

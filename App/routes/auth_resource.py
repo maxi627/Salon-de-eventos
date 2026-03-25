@@ -5,12 +5,11 @@ from flask import Blueprint, request
 from flask_jwt_extended import create_access_token
 
 from app.config.response_builder import ResponseBuilder
-from app.extensions import db  # <--- IMPORTANTE para el rollback
+from app.extensions import db
 from app.models import Persona
 from app.repositories import PersonaRepository
 from app.services import NotificationService
 
-# Definición del Blueprint
 Auth = Blueprint('Auth', __name__)
 
 @Auth.route('/login', methods=['POST'])
@@ -32,7 +31,7 @@ def login():
 
         user = repo.get_by_email(correo)
 
-        # 🟢 NUEVA VALIDACIÓN: Revisar si el usuario existe pero está inactivo (Soft Delete)
+        #VALIDACIÓN: Revisar si el usuario existe pero está inactivo (Soft Delete)
         if user and hasattr(user, 'activo') and not user.activo:
             return response_builder.add_message("Tu cuenta ha sido desactivada. Por favor, regístrate de nuevo para reactivarla.").add_status_code(403).build(), 403
 
@@ -116,7 +115,7 @@ def reset_password():
 
         # Actualizamos y confirmamos cambios
         user.set_password(new_password)
-        repo.commit() # Esto suele llamar internamente a db.session.commit()
+        repo.commit() # Guardamos los cambios en la base de datos
 
         return response_builder.add_message("Tu contraseña ha sido actualizada con éxito.").add_status_code(200).build(), 200
         

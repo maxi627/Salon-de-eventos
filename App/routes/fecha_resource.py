@@ -6,16 +6,15 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 from marshmallow import ValidationError
 
 from app.config.response_builder import ResponseBuilder
-from app.extensions import db, limiter  # Importamos db para los rollbacks
+from app.extensions import db, limiter
 from app.mapping import FechaSchema, ResponseSchema
 from app.services import FechaService
 from app.utils.decorators import admin_required
 
-# Definición del Blueprint
 Fecha = Blueprint('Fecha', __name__)
 
 @Fecha.route('/fecha', methods=['GET'])
-@limiter.limit("100 per minute") # Límite ampliado para mejorar la fluidez
+@limiter.limit("100 per minute") 
 def all():
     # Instanciación interna para evitar errores de contexto
     service = FechaService()

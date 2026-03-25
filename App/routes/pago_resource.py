@@ -11,7 +11,6 @@ from app.models import Pago, Reserva
 from app.services.pago_service import PagoService
 from app.utils.decorators import admin_required
 
-# Definición del Blueprint
 PagoBP = Blueprint('Pago', __name__)
 
 @PagoBP.route('/reserva/<int:reserva_id>/pagos', methods=['POST'])

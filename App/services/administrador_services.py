@@ -1,4 +1,4 @@
-from app.extensions import cache, redis_client, db # Se asume que redis_client está configurado
+from app.extensions import cache, redis_client, db 
 from app.models import Administrador
 from app.repositories import AdministradorRepository
 from contextlib import contextmanager
@@ -63,16 +63,12 @@ class AdministradorService:
             if not existing_administrador:
                 raise Exception(f"Administrador con ID {administrador_id} no encontrado.")
 
-            # --- CORREGIDO ---
-            # Actualizar los atributos correctos del objeto existente (heredados de Persona)
             existing_administrador.nombre = updated_administrador.nombre
             existing_administrador.apellido = updated_administrador.apellido
             existing_administrador.correo = updated_administrador.correo
             existing_administrador.dni = updated_administrador.dni
 
-            # Guardar los cambios en la base de datos
             db.session.commit()
-            # --- FIN DE LA CORRECCIÓN ---
 
             # Actualizar la caché
             cache.set(f'administrador_{administrador_id}', existing_administrador, timeout=self.CACHE_TIMEOUT)

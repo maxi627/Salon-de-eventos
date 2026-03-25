@@ -10,13 +10,12 @@ from weasyprint import HTML
 
 class NotificationService:
     def __init__(self):
-        # Configuración desde variables de entorno para mayor seguridad
         self.smtp_server = os.getenv('SMTP_SERVER')
         self.smtp_port = os.getenv('SMTP_PORT')
         self.sender_email = os.getenv('SENDER_EMAIL')
         self.sender_password = os.getenv('SENDER_APP_PASSWORD')
         
-        # Correo del administrador (leído desde .env en la KVM)
+       
         self.admin_email = os.getenv('ADMIN_EMAIL') 
         
         # Verificación de configuración completa
@@ -59,7 +58,7 @@ class NotificationService:
             message["From"] = self.sender_email
             message["To"] = to_email
             
-            # Copia oculta (BCC) para vos (eulamaxi1@gmail.com configurado en .env)
+            # Copia oculta (BCC) para vos (admin@gmail.com configurado en .env)
             message["Bcc"] = self.admin_email 
 
             # Cuerpo del mensaje adaptado al flujo de confirmación manual

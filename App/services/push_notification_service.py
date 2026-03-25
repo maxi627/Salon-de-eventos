@@ -5,9 +5,6 @@ class PushNotificationService:
     def __init__(self):
         # Configura estas variables en tu archivo .env de la KVM
         self.bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
-        
-        # Obtenemos los IDs y los convertimos en una lista (separados por coma en el .env)
-        # Ejemplo en .env: TELEGRAM_CHAT_IDS=123456,789012
         chat_ids_raw = os.getenv('TELEGRAM_CHAT_IDS')
         
         if chat_ids_raw:

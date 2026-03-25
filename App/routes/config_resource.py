@@ -6,12 +6,11 @@ from flask_jwt_extended import jwt_required
 from app.config import ResponseBuilder
 from app.mapping import ResponseSchema
 
-# Blueprint para endpoints de configuración/datos sensibles
 Config = Blueprint('Config', __name__)
 response_schema = ResponseSchema()
 
 @Config.route('/payment-info', methods=['GET'])
-@jwt_required() # ¡Importante! Solo usuarios con un token válido pueden acceder
+@jwt_required()
 def get_payment_info():
     """
     Endpoint seguro que devuelve información de pago desde las variables de entorno.

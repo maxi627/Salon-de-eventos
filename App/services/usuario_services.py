@@ -54,14 +54,12 @@ class UsuarioService:
         
         if usuario_existente:
             if not usuario_existente.activo:
-                # ¡MAGIA! El usuario estaba "eliminado", lo reactivamos y actualizamos sus datos
+                # El usuario estaba "eliminado", lo reactivamos y actualizamos sus datos
                 usuario_existente.activo = True
                 usuario_existente.nombre = usuario.nombre
                 usuario_existente.apellido = usuario.apellido
                 usuario_existente.dni = usuario.dni
-                
-                # Si manejas contraseña en el modelo de registro, asegúrate de actualizarla.
-                # (Ajusta 'contrasena' por el nombre de tu campo si es diferente, ej: 'password')
+              
                 if hasattr(usuario, 'contrasena') and usuario.contrasena:
                     usuario_existente.contrasena = usuario.contrasena 
                 

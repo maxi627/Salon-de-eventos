@@ -4,8 +4,7 @@ from contextlib import contextmanager
 from app.extensions import cache, db, redis_client
 from app.models import Fecha, Reserva
 from app.repositories import ReservaRepository
-from app.services.fecha_services import \
-    FechaService  # Importamos el servicio de Fecha
+from app.services.fecha_services import FechaService
 from app.services.push_notification_service import PushNotificationService
 
 
@@ -18,7 +17,7 @@ class ReservaService:
 
     def __init__(self, repository=None):
         self.repository = repository or ReservaRepository()
-        self.fecha_service = FechaService() # Instanciamos el servicio de fecha
+        self.fecha_service = FechaService() 
 
     @contextmanager
     def redis_lock(self, reserva_id: int):
@@ -70,14 +69,13 @@ class ReservaService:
                 else:
                     fecha_a_reservar.estado = 'pendiente'
                 
-                # PERSISTENCIA: Agregamos ambos a la sesión
                 db.session.add(reserva)
-                db.session.add(fecha_a_reservar) # <--- CORRECCIÓN 1: Asegura que la FECHA se guarde
+                db.session.add(fecha_a_reservar)
                 db.session.commit()
 
                 # --- INICIO DE NOTIFICACIÓN TELEGRAM ---
                 try:
-                    u = reserva.usuario 
+                    u = reserva.usuario
                     nombre_cliente = f"{u.nombre} {u.apellido}" if u else "Nuevo Cliente"
                     
                     telegram = PushNotificationService()
@@ -91,10 +89,8 @@ class ReservaService:
                     print(f"Error al enviar notificación push: {e}")
                 # --- FIN DE NOTIFICACIÓN ---
 
-                # Lógica de caché: Limpiamos todo para asegurar que el calendario se refresque
-                cache.clear() # <--- CORRECCIÓN 2: Limpieza total de Redis
+                cache.clear() 
                 
-                # Mantenemos las líneas por si querés conservar lógica específica
                 cache.set(f'reserva_{reserva.id}', reserva, timeout=self.CACHE_TIMEOUT)
                 cache.set(f'fecha_{fecha_a_reservar.id}', fecha_a_reservar, timeout=self.CACHE_TIMEOUT)
 
@@ -134,8 +130,6 @@ class ReservaService:
                 db.session.add(reserva_a_actualizar.fecha)
 
             db.session.commit()
-
-            # Volvemos a traer la reserva "fresca"
             reserva_fresca = self.repository.get_by_id(reserva_id)
 
             # Limpieza total de caché
