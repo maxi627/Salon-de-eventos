@@ -4,7 +4,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # 2. Cargar las variables de entorno (apunta a la carpeta App de tu proyecto)
-ENV_FILE="$DIR/App/.env"
+ENV_FILE="$DIR/../App/.env"
 
 if [ -f "$ENV_FILE" ]; then
     set -a
