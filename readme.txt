@@ -10,7 +10,7 @@ Este repositorio contiene el código fuente para el sistema de gestión del sal�
 Para trabajar en tu propia máquina y probar cambios, sigue estas instrucciones.
 
 ### 1. Frontend (React)
-El servidor de desarrollo de Vite/React es ideal para ver cambios en tiempo real, pero **ojo: consume bastante RAM**. 
+El servidor de desarrollo de Vite/React es ideal para ver cambios en tiempo real, pero **ojo: consume bastante RAM**.
 
 Para levantarlo:
 ```bash
@@ -57,6 +57,8 @@ Te vas a tu notebook con Windows, descargas Rclone localmente, ejecutas el coman
 Se abre Google, concedes permisos, copias el token inmenso que te devuelve la terminal de Windows y lo pegas en la KVM. Listo.
 
 
+##El tema de los certificados y eso... configuralos 
+
 -------------
 
 
@@ -68,5 +70,5 @@ ssh root@"La ip de la kvm"
 # 1. Traer los cambios de GitHub
 git pull origin main
 
-# 2. Reconstruir la imagen del frontend con el nuevo código
+# 2. Reconstruir la imagen del frontend con el nuevo código (cuando sean sólo cambios del frontend)
 docker compose -f App/docker-compose.yml build frontend
