@@ -1,16 +1,63 @@
 
-#Hacer correr el servidor de react (esto sólo para desarrollo, xq consume mucha ram)
+
+
+# Sistema de Gestión - Salón de Eventos
+
+Este repositorio contiene el código fuente para el sistema de gestión del salón de eventos, incluyendo el frontend en React, el backend y la configuración de infraestructura con Docker y Traefik.
+
+##  Entorno de Desarrollo (Local)
+
+Para trabajar en tu propia máquina y probar cambios, sigue estas instrucciones.
+
+### 1. Frontend (React)
+El servidor de desarrollo de Vite/React es ideal para ver cambios en tiempo real, pero **ojo: consume bastante RAM**. 
+
+Para levantarlo:
+```bash
 cd frontend
+npm install
 npm run dev
 
-# para producción, correr el servidor de react, construyendo archivos estáticos
+Si necesitas probar cómo quedaría la versión final optimizada (archivos estáticos):
+
 npm run build
 
-# borrar volumenes de docker
-docker-compose -f App/docker-compose.yml down -v
+Backend y Base de Datos (Docker)
+Todo el ecosistema (PostgreSQL, Redis, Traefik y la App) está orquestado con Docker Compose.
 
-#levantar contenedores
-docker-compose -f App/docker-compose.yml up --build
+Asegúrate de tener tu archivo .env configurado dentro de la carpeta App/ antes de ejecutar esto.
+
+Para levantar todos los contenedores y construir las imágenes:
+
+docker compose -f App/docker-compose.yml up --build
+
+Si necesitas reiniciar la base de datos desde cero o limpiar el entorno, este comando baja los contenedores y destruye los volúmenes de datos:
+
+docker compose -f App/docker-compose.yml down -v
+
+
+Sistema de Backups
+
+El servidor cuenta con un script de copias de seguridad automáticas de la base de datos (backup.sh), cifradas con AES-256 y enviadas a Google Drive todas las madrugadas mediante Rclone.
+
+Instalar Rclone en Linux:
+sudo -v ; curl [https://rclone.org/install.sh](https://rclone.org/install.sh) | sudo bash
+
+Iniciar la configuración:
+rclone config
+
+Acá es donde le pides instrucciones a Dios... en resumen:
+
+Creas un "New remote" llamado gdrive.
+
+Le dices que no tienes navegador web (porque es una KVM).
+
+Te vas a tu notebook con Windows, descargas Rclone localmente, ejecutas el comando rclone authorize "drive" que te da la KVM.
+
+Se abre Google, concedes permisos, copias el token inmenso que te devuelve la terminal de Windows y lo pegas en la KVM. Listo.
+
+
+-------------
 
 
 
@@ -23,15 +70,3 @@ git pull origin main
 
 # 2. Reconstruir la imagen del frontend con el nuevo código
 docker compose -f App/docker-compose.yml build frontend
-
-
-
-#para los backups... (linux) en la kvm
-#instalamos rclone
-sudo -v ; curl https://rclone.org/install.sh | sudo bash
-
-#Una vez que termine de instalarse, entra al menú de configuración ejecutando:
-
-rclone config
-
-y pedile instrucciones a dios, generas el token descargando rclone de forma local en la netbook, concedes permisos y así.
