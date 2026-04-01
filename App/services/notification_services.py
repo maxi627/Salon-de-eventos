@@ -7,6 +7,8 @@ from email.mime.text import MIMEText
 
 from weasyprint import HTML
 
+from app.utils.storage import upload_bytes_to_r2
+
 
 class NotificationService:
     def __init__(self):
@@ -16,13 +18,13 @@ class NotificationService:
         self.sender_password = os.getenv('SENDER_APP_PASSWORD')
         
        
-        self.admin_email = os.getenv('ADMIN_EMAIL') 
+        self.admin_email = os.getenv('ADMIN_EMAIL')
         
         # Verificación de configuración completa
         self.is_configured = all([
-            self.smtp_server, 
-            self.smtp_port, 
-            self.sender_email, 
+            self.smtp_server,
+            self.smtp_port,
+            self.sender_email,
             self.sender_password,
             self.admin_email
         ])
@@ -37,31 +39,29 @@ class NotificationService:
             return False
 
         try:
-            # 1. Generar el PDF a partir del contenido HTML definitivo (confirmado por admin)
+            # 1. Generar el PDF en memoria RAM (Bytes)
             pdf_bytes = HTML(string=html_contract).write_pdf()
 
-            # 2. Guardar copia física en el servidor (KVM) para respaldo legal
+            # 2. Respaldo legal en LA NUBE (Adiós KVM local)
             safe_user_name = user_name.replace(" ", "_")
-            # Usamos un prefijo 'definitivo' para diferenciarlo de cualquier borrador previo
             file_name = f"contrato_confirmado_{safe_user_name}_{event_date.replace('/', '-')}.pdf"
-            file_path = os.path.join("uploads/contratos", file_name)
             
-            # Asegurar que la ruta de destino exista en la KVM
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            # Mandamos los bytes a Cloudflare R2
+            contrato_url = upload_bytes_to_r2(pdf_bytes, file_name, folder="contratos_definitivos")
             
-            with open(file_path, "wb") as f:
-                f.write(pdf_bytes)
+            if contrato_url:
+                print(f"Respaldo legal guardado exitosamente en la nube: {contrato_url}")
+            else:
+                print("Advertencia: No se pudo subir el respaldo del contrato a la nube.")
 
             # 3. Preparar el correo electrónico
             message = MIMEMultipart("mixed")
             message["Subject"] = f"Reserva Confirmada - Contrato Definitivo - {event_date}"
             message["From"] = self.sender_email
             message["To"] = to_email
-            
-            # Copia oculta (BCC) para vos (admin@gmail.com configurado en .env)
             message["Bcc"] = self.admin_email 
 
-            # Cuerpo del mensaje adaptado al flujo de confirmación manual
+            # Cuerpo del mensaje
             email_body_html = f"""
             <html>
                 <body style="font-family: sans-serif; color: #333; line-height: 1.5;">
@@ -69,7 +69,7 @@ class NotificationService:
                     <p>Hola, <strong>{user_name}</strong>,</p>
                     <p>Nos complace informarte que tu reserva para el día <strong>{event_date}</strong> ha sido confirmada por la administración.</p>
                     <p>Adjuntamos el <strong>Contrato de Alquiler Definitivo</strong>, el cual incluye la capacidad acordada y las cláusulas legales aceptadas. Este documento sirve como comprobante legal de tu evento.</p>
-                    <p>Recordá que podés contactarnos por WhatsApp 24 o 48 horas antes para coordinar los detalles finales del ingreso al salón.</p>
+                    <p>Recordá que podés contactarnos por WhatsApp 24 o 48 horas antes para coordinar el ingreso al salón.</p>
                     <br>
                     <p>¡Gracias por elegirnos para tu evento!</p>
                     <hr style="border: none; border-top: 1px solid #eee;">
@@ -79,7 +79,7 @@ class NotificationService:
             """
             message.attach(MIMEText(email_body_html, "html"))
             
-            # Adjuntar el contrato PDF definitivo
+            # Adjuntar el contrato PDF (directamente desde la memoria RAM, sin leer el disco)
             adjunto = MIMEApplication(pdf_bytes, _subtype="pdf")
             adjunto.add_header('Content-Disposition', 'attachment', filename=file_name)
             message.attach(adjunto)
@@ -88,18 +88,15 @@ class NotificationService:
             context = ssl.create_default_context()
             with smtplib.SMTP_SSL(self.smtp_server, int(self.smtp_port), context=context) as server:
                 server.login(self.sender_email, self.sender_password)
-                
-                # Lista de destinatarios: usuario + administrador (BCC)
                 recipients = [to_email, self.admin_email]
                 server.sendmail(self.sender_email, recipients, message.as_string())
             
-            print(f"ÉXITO: Contrato definitivo guardado en {file_path} y enviado a {to_email} (BCC a admin).")
+            print(f"ÉXITO: Contrato enviado a {to_email} (BCC a admin).")
             return True
 
         except Exception as e:
             print(f"ERROR en send_email_confirmation: {e}")
             return False
-
     def send_password_reset_email(self, to_email: str, user_name: str, reset_link: str):
         if not self.is_configured:
             print("ERROR: El servicio de email no está configurado.")

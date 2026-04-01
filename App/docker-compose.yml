@@ -39,9 +39,6 @@ services:
       dockerfile: Dockerfile
     env_file:
       - .env
-    volumes:
-      - ./uploads:/home/flaskapp/uploads
-      - ./uploads:/home/flaskapp/app/uploads
     networks:
       - red1
     depends_on:
@@ -62,9 +59,6 @@ services:
     build:
       context: ../frontend
       dockerfile: Dockerfile
-    volumes:
-      # Mapeo coherente con tu config de Nginx
-      - ./uploads:/usr/share/nginx/html/uploads:ro
     networks:
       - red1
     labels:

@@ -255,7 +255,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
           </div>
           <div className="receipt-action-container">
             <a
-              href={`/uploads/comprobantes/${localReservation.comprobante_url}`}
+              href={localReservation.comprobante_url}
               target="_blank"
               rel="noopener noreferrer"
               className="receipt-action-btn"
