@@ -142,18 +142,32 @@ def delete(id):
         db.session.rollback()
         response_builder.add_message("Error al eliminar usuario").add_status_code(500).add_data(str(e))
         return response_schema.dump(response_builder.build()), 500
+
+    
+@Usuario.route('/usuario/buscar', methods=['GET'])
+@jwt_required()
+@admin_required()
+@limiter.limit("120 per minute") # Límite más alto porque el tipeo en vivo genera más peticiones
+def search_live():
     service = UsuarioService()
+    usuario_schema = UsuarioSchema()
     response_schema = ResponseSchema()
     response_builder = ResponseBuilder()
     
     try:
-        if service.delete(id):
-            response_builder.add_message("Usuario eliminado").add_status_code(200).add_data({'id': id})
-            return response_schema.dump(response_builder.build()), 200
+        
+        termino = request.args.get('q', '').strip()
+        
+        if not termino:
+            data = []
         else:
-            response_builder.add_message("Usuario no encontrado").add_status_code(404).add_data({'id': id})
-            return response_schema.dump(response_builder.build()), 404
+            usuarios_encontrados = service.search(termino)
+            data = usuario_schema.dump(usuarios_encontrados, many=True)
+            
+        response_builder.add_message("Búsqueda exitosa").add_status_code(200).add_data(data)
+        return response_schema.dump(response_builder.build()), 200
+        
     except Exception as e:
         db.session.rollback()
-        response_builder.add_message("Error al eliminar usuario").add_status_code(500).add_data(str(e))
+        response_builder.add_message("Error en búsqueda en vivo").add_status_code(500).add_data(str(e))
         return response_schema.dump(response_builder.build()), 500

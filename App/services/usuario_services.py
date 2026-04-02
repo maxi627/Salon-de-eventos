@@ -144,3 +144,12 @@ class UsuarioService:
                 return usuario
             return None
         return cached_usuario
+    def search(self, term: str) -> list[Usuario]:
+        """
+        Busca usuarios activos por coincidencia de texto.
+        No utiliza caché para evitar saturar Redis con cada pulsación de tecla.
+        """
+        if not term:
+            return []
+        
+        return self.repository.search(term)

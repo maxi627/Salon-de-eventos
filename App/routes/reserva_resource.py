@@ -6,13 +6,13 @@ from flask import Blueprint, render_template, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from marshmallow import ValidationError
 from werkzeug.utils import secure_filename
+
 from app.config.response_builder import ResponseBuilder
 from app.extensions import db, limiter
 from app.mapping import ReservaSchema, ResponseSchema
 from app.services import NotificationService, ReservaService
 from app.utils.decorators import admin_required
 from app.utils.storage import upload_file_to_r2
-
 
 Reserva = Blueprint('Reserva', __name__)
 
@@ -253,3 +253,29 @@ def get_user_reservations():
     except Exception as e:
         db.session.rollback()
         return response_builder.add_message(str(e)).add_status_code(500).build(), 500
+
+@Reserva.route('/reserva/buscar', methods=['GET'])
+@jwt_required()
+@admin_required()
+@limiter.limit("120 per minute")
+def search_live():
+    service = ReservaService()
+    reserva_schema = ReservaSchema()
+    response_builder = ResponseBuilder()
+    
+    try:
+        termino = request.args.get('q', '').strip()
+        
+        if not termino:
+            data = []
+        else:
+            reservas_encontradas = service.search(termino)
+            data = reserva_schema.dump(reservas_encontradas, many=True)
+            
+        response_builder.add_message("Búsqueda exitosa").add_status_code(200).add_data(data)
+        return response_builder.build(), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        sentry_sdk.capture_exception(e) 
+        return response_builder.add_message(f"Error en búsqueda en vivo: {str(e)}").add_status_code(500).build(), 500

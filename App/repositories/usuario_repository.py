@@ -33,3 +33,15 @@ class UsuarioRepository(Repository_add, Repository_get, Repository_delete):
         except Exception as e:
             db.session.rollback()  # Deshace la transacción si hay un error
             raise e  # Propaga la excepción para manejo externo
+    def search(self, term: str, limit: int = 10) -> List[Usuario]:
+        """Busca usuarios por nombre, apellido o DNI."""
+        search_pattern = f"%{term}%"
+        
+        return Usuario.query.filter(
+            Usuario.activo == True,
+            db.or_(
+                Usuario.nombre.ilike(search_pattern),
+                Usuario.apellido.ilike(search_pattern),
+                db.cast(Usuario.dni, db.String).ilike(search_pattern)
+            )
+        ).limit(limit).all()

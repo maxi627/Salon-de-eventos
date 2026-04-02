@@ -16,16 +16,26 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
   });
 
   const [localReservation, setLocalReservation] = useState(reservation);
-  const [users, setUsers] = useState([]);
+  
+  // Estados para el buscador en vivo
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [showUserList, setShowUserList] = useState(false);
+  const [searchTimeout, setSearchTimeout] = useState(null);
+  
   const [newPayment, setNewPayment] = useState({ monto: '' });
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // --- NUEVA FUNCIÓN: CONTACTAR POR WHATSAPP ---
+  // --- EFECTO: Inicializar el nombre si estamos editando ---
+  useEffect(() => {
+    if (!isCreating && reservation?.usuario) {
+      setUserSearchTerm(`${reservation.usuario.nombre} ${reservation.usuario.apellido}`);
+    }
+  }, [isCreating, reservation]);
+
+  // --- FUNCIÓN: Contactar por WhatsApp ---
   const handleContactWhatsApp = () => {
     const telefono = localReservation?.usuario?.telefono;
     if (!telefono) {
@@ -42,41 +52,38 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
     window.open(url, '_blank');
   };
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      const token = localStorage.getItem('authToken');
-      try {
-        const response = await fetch('/api/v1/usuario', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await response.json();
-        if (response.ok) {
-          setUsers(data.data);
-          if (!isCreating && reservation?.usuario) {
-            setUserSearchTerm(`${reservation.usuario.nombre} ${reservation.usuario.apellido}`);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to fetch users:", err);
-      }
-    };
-    fetchUsers();
-  }, [isCreating, reservation]);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // --- NUEVA FUNCIÓN: Buscador en vivo con Debounce ---
   const handleUserSearch = (e) => {
     const term = e.target.value;
     setUserSearchTerm(term);
-    if (term) {
-      const filtered = users.filter(user =>
-        `${user.nombre} ${user.apellido} ${user.dni}`.toLowerCase().includes(term.toLowerCase())
-      );
-      setFilteredUsers(filtered);
-      setShowUserList(true);
+
+    // Limpiamos el temporizador anterior si el usuario sigue escribiendo
+    if (searchTimeout) clearTimeout(searchTimeout);
+
+    if (term.trim().length >= 2) {
+      // Esperamos 300ms antes de llamar al backend
+      const timeoutId = setTimeout(async () => {
+        const token = localStorage.getItem('authToken');
+        try {
+          const response = await fetch(`/api/v1/usuario/buscar?q=${encodeURIComponent(term)}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const result = await response.json();
+          
+          if (response.ok) {
+            setFilteredUsers(result.data || []);
+            setShowUserList(true);
+          }
+        } catch (err) {
+          console.error("Error en búsqueda en vivo:", err);
+        }
+      }, 300);
+      setSearchTimeout(timeoutId);
     } else {
       setFilteredUsers([]);
       setShowUserList(false);
@@ -85,7 +92,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
 
   const handleUserSelect = (user) => {
     setFormData(prev => ({ ...prev, usuario_id: user.id }));
-    setUserSearchTerm(`${user.nombre} ${user.apellido} (ID: ${user.id})`);
+    setUserSearchTerm(`${user.nombre} ${user.apellido} (DNI: ${user.dni})`);
     setShowUserList(false);
   };
 
@@ -234,7 +241,6 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
         <div className="modal-header-with-action">
           <h2>{isCreating ? 'Crear Nueva Reserva' : `Gestionar Reserva`}</h2>
           
-          {/* --- BOTÓN DE WHATSAPP --- */}
           {!isCreating && localReservation?.usuario?.telefono && (
             <button 
               type="button" 
@@ -287,16 +293,22 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
                   placeholder="Buscar por nombre o DNI..."
                   autoComplete="off"
                   className="user-search-input"
-                  onBlur={() => setTimeout(() => setShowUserList(false), 200)}
+                  onBlur={() => setTimeout(() => setShowUserList(false), 300)}
                 />
                 {showUserList && filteredUsers.length > 0 && (
                   <ul className="user-search-results">
                     {filteredUsers.map(user => (
                       <li key={user.id} onClick={() => handleUserSelect(user)}>
-                        {user.nombre} {user.apellido} (DNI: {user.dni})
+                        <strong>{user.apellido}, {user.nombre}</strong> <br/>
+                        <small>DNI: {user.dni} | {user.correo}</small>
                       </li>
                     ))}
                   </ul>
+                )}
+                {showUserList && userSearchTerm.length >= 2 && filteredUsers.length === 0 && (
+                   <ul className="user-search-results">
+                     <li className="no-results" style={{ padding: '10px', color: '#666' }}>No se encontraron usuarios...</li>
+                   </ul>
                 )}
               </div>
             </div>

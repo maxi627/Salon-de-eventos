@@ -200,3 +200,12 @@ class ReservaService:
         Obtiene todas las reservas de un usuario.
         """
         return self.repository.get_by_user_id(user_id)
+    def search(self, term: str) -> list[Reserva]:
+        """
+        Busca reservas activas por coincidencia de texto en el cliente o estado.
+        No utiliza caché para la búsqueda en vivo.
+        """
+        if not term:
+            return []
+        
+        return self.repository.search(term)
