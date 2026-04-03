@@ -72,3 +72,6 @@ git pull origin main
 
 # 2. Reconstruir la imagen del frontend con el nuevo código (cuando sean sólo cambios del frontend)
 docker compose -f App/docker-compose.yml build frontend
+
+#ver los logs de docker...
+docker logs salon_app --tail 50

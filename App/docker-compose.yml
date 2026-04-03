@@ -39,6 +39,9 @@ services:
       dockerfile: Dockerfile
     env_file:
       - .env
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_IDS=${TELEGRAM_CHAT_IDS}
     networks:
       - red1
     depends_on:
