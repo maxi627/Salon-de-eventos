@@ -215,7 +215,7 @@ function UserList() {
                   <td>{user.dni}</td>
                   <td>{user.correo}</td>
                   <td>{user.telefono || 'N/A'}</td>
-                  <td>
+                  <td> 
                     <div className="action-buttons">
                         {/* BOTÓN WHATSAPP: Solo si tiene teléfono */}
                         {user.telefono && (
