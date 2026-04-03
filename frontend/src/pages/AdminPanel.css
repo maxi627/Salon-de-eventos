@@ -270,3 +270,35 @@
   .sidebar-nav { flex-direction: row; }
   .admin-main-content { height: auto; overflow: visible; }
 }
+
+
+/* --- NUEVA BARRA DE HERRAMIENTAS (RESERVAS) --- */
+.filters-toolbar {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 1.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.toolbar-input {
+  flex: 2; /* El buscador toma más espacio */
+  min-width: 250px;
+}
+
+.toolbar-select {
+  flex: 1; /* Los dropdowns son más chicos */
+  padding: 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: #fff;
+  cursor: pointer;
+  min-width: 180px;
+}
+
+.toolbar-select:disabled {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+  color: #999;
+}

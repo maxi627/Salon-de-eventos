@@ -9,14 +9,49 @@ import UserList from '../components/UserList';
 import { useReservas } from '../hooks/useAdminData';
 import './AdminPanel.css';
 
-// --- SUB-COMPONENTE: GESTIÓN DE RESERVAS CON BOTÓN REFRESCAR ---
+// --- SUB-COMPONENTE: PAGINACIÓN ---
+const Pagination = ({ itemsPerPage, totalItems, paginate, currentPage }) => {
+  const pageNumbers = [];
+  for (let i = 1; i <= Math.ceil(totalItems / itemsPerPage); i++) {
+    pageNumbers.push(i);
+  }
+  if (pageNumbers.length <= 1) return null;
+
+  return (
+    <nav className="pagination-container">
+      <ul className="pagination">
+        {pageNumbers.map(number => (
+          <li key={number} className={`page-item ${currentPage === number ? 'active' : ''}`}>
+            <a onClick={() => paginate(number)} href="#!" className="page-link">
+              {number}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+};
+
+// --- SUB-COMPONENTE: GESTIÓN DE RESERVAS UNIFICADA ---
 const ReservasManager = () => {
-  const { data: reservas = {}, isLoading, error, refetch, isFetching } = useReservas();
+  const { data: reservas = {}, isLoading, error, refetch } = useReservas();
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [expandedMonths, setExpandedMonths] = useState({});
   const [showArchived, setShowArchived] = useState(false);
+
+  // --- ESTADOS DE BÚSQUEDA Y FILTROS ---
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTimeout, setSearchTimeout] = useState(null);
+  const [searchResults, setSearchResults] = useState(null); // null = no hay búsqueda activa
+  const [isSearching, setIsSearching] = useState(false);
+  
+  const [statusFilter, setStatusFilter] = useState('todas');
+  const [monthFilter, setMonthFilter] = useState('todos');
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const formatDisplayDate = (isoDate) => {
     if (!isoDate) return 'N/A';
@@ -27,9 +62,63 @@ const ReservasManager = () => {
     }).format(date);
   };
 
-  const toggleMonth = (month) => {
-    setExpandedMonths(prev => ({ ...prev, [month]: !prev[month] }));
+  // --- LÓGICA DEL BUSCADOR EN VIVO ---
+  const handleSearchChange = (e) => {
+    const term = e.target.value;
+    setSearchTerm(term);
+    setCurrentPage(1);
+
+    if (searchTimeout) clearTimeout(searchTimeout);
+
+    if (term.trim().length >= 2) {
+      setIsSearching(true);
+      const timeoutId = setTimeout(async () => {
+        const token = localStorage.getItem('authToken');
+        try {
+          const response = await fetch(`/api/v1/reserva/buscar?q=${encodeURIComponent(term)}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const result = await response.json();
+          if (response.ok) setSearchResults(result.data || []);
+        } catch (err) {
+          console.error("Error en búsqueda:", err);
+        } finally {
+          setIsSearching(false);
+        }
+      }, 300);
+      setSearchTimeout(timeoutId);
+    } else {
+      setSearchResults(null);
+    }
   };
+
+  // --- LÓGICA DE FILTRADO Y APLANADO DE DATOS ---
+  const availableMonths = Object.keys(reservas || {});
+  
+  let listToRender = [];
+  
+  // 1. Decidir la fuente de datos base
+  if (searchResults !== null) {
+    listToRender = searchResults; // Si busca algo, priorizamos lo que trajo el backend
+  } else if (monthFilter !== 'todos') {
+    listToRender = reservas[monthFilter] || []; // Si filtró por mes
+  } else {
+    // Si no busca nada ni filtra por mes, juntamos todos los meses en una sola lista
+    listToRender = availableMonths.reduce((acc, month) => [...acc, ...reservas[month]], []);
+  }
+
+  // 2. Aplicar el filtro de estado (Pendiente, Confirmada, etc.)
+  if (statusFilter !== 'todas') {
+    listToRender = listToRender.filter(r => r.estado === statusFilter);
+  }
+
+  // 3. Ordenar cronológicamente (las más cercanas primero)
+  listToRender.sort((a, b) => new Date(a.fecha?.dia || 0) - new Date(b.fecha?.dia || 0));
+
+  // --- PAGINACIÓN ---
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = listToRender.slice(indexOfFirstItem, indexOfLastItem);
 
   if (isLoading) return <p className="admin-loading">Cargando reservas...</p>;
   if (error) return <p className="error-message">{error.message}</p>;
@@ -52,49 +141,94 @@ const ReservasManager = () => {
 
       {showArchived && <ArchivedReservations />}
 
-      {Object.keys(reservas).length > 0 ? (
-        Object.keys(reservas).map(month => (
-          <div key={month} className="month-section">
-            <h3 className="month-header" onClick={() => toggleMonth(month)}>
+      {/* --- NUEVA BARRA DE HERRAMIENTAS (FILTROS) --- */}
+      <div className="filters-toolbar">
+        <input
+          type="text"
+          placeholder="Buscar por cliente, DNI o fecha..."
+          className="search-input toolbar-input"
+          value={searchTerm}
+          onChange={handleSearchChange}
+        />
+        
+        <select 
+          className="toolbar-select"
+          value={monthFilter} 
+          onChange={(e) => { setMonthFilter(e.target.value); setCurrentPage(1); }}
+          disabled={searchResults !== null} // Deshabilita el mes si está buscando una persona específica
+          title={searchResults !== null ? "Borra la búsqueda para filtrar por mes" : ""}
+        >
+          <option value="todos">Todos los meses</option>
+          {availableMonths.map(month => (
+            <option key={month} value={month}>
               {month.charAt(0).toUpperCase() + month.slice(1)}
-              <span className={`collapse-icon ${expandedMonths[month] ? '' : 'collapsed'}`}>▼</span>
-            </h3>
-            {expandedMonths[month] && (
-              <div className="table-container">
-                <table className="reservas-table">
-                  <thead>
-                    <tr>
-                      <th>Fecha</th>
-                      <th>Usuario</th>
-                      <th>Estado</th>
-                      <th>Alquiler</th>
-                      <th>Saldo</th>
-                      <th>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {reservas[month].map(reserva => (
-                      <tr key={reserva.id}>
-                        <td>{formatDisplayDate(reserva.fecha?.dia)}</td>
-                        <td>{`${reserva.usuario?.nombre || ''} ${reserva.usuario?.apellido || ''}`}</td>
-                        <td><span className={`status ${reserva.estado}`}>{reserva.estado}</span></td>
-                        <td>${(reserva.valor_alquiler || 0).toLocaleString('es-AR')}</td>
-                        <td>${(reserva.saldo_restante || 0).toLocaleString('es-AR')}</td>
-                        <td>
-                          <button className="btn-edit" onClick={() => { setSelectedReservation(reserva); setIsCreating(false); setIsModalOpen(true); }}>
-                            Gestionar
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        ))
-      ) : <p>No hay reservas activas.</p>}
+            </option>
+          ))}
+        </select>
 
+        <select 
+          className="toolbar-select"
+          value={statusFilter} 
+          onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+        >
+          <option value="todas">Todos los estados</option>
+          <option value="confirmada">Confirmadas</option>
+          <option value="pendiente">Pendientes</option>
+          <option value="cancelada">Canceladas</option>
+        </select>
+      </div>
+
+      {/* --- TABLA UNIFICADA --- */}
+      <div className="table-container">
+        <table className="reservas-table user-table">
+          <thead>
+            <tr>
+              <th>Fecha del Evento</th>
+              <th>Cliente</th>
+              <th>Estado</th>
+              <th>Alquiler</th>
+              <th>Saldo Pendiente</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {isSearching ? (
+              <tr><td colSpan="6" style={{textAlign: 'center', padding: '2rem'}}>Buscando...</td></tr>
+            ) : currentItems.length > 0 ? (
+              currentItems.map(reserva => (
+                <tr key={reserva.id}>
+                  <td><strong>{formatDisplayDate(reserva.fecha?.dia)}</strong></td>
+                  <td>{`${reserva.usuario?.nombre || ''} ${reserva.usuario?.apellido || ''}`}</td>
+                  <td><span className={`status ${reserva.estado}`}>{reserva.estado}</span></td>
+                  <td>${(reserva.valor_alquiler || 0).toLocaleString('es-AR')}</td>
+                  <td style={{ fontWeight: reserva.saldo_restante > 0 ? 'bold' : 'normal', color: reserva.saldo_restante > 0 ? '#e74c3c' : '#27ae60' }}>
+                    ${(reserva.saldo_restante || 0).toLocaleString('es-AR')}
+                  </td>
+                  <td>
+                    <button className="btn-view-reserva" onClick={() => { setSelectedReservation(reserva); setIsCreating(false); setIsModalOpen(true); }}>
+                      Gestionar
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr><td colSpan="6" style={{textAlign: 'center'}}>No se encontraron reservas con esos filtros.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* PAGINACIÓN */}
+      {!isSearching && (
+        <Pagination 
+          itemsPerPage={itemsPerPage} 
+          totalItems={listToRender.length} 
+          paginate={setCurrentPage} 
+          currentPage={currentPage} 
+        />
+      )}
+
+      {/* MODAL EXISTENTE (Intacto) */}
       {isModalOpen && (
         <EditReservationModal 
           isCreating={isCreating}
@@ -107,16 +241,14 @@ const ReservasManager = () => {
   );
 };
 
-// --- COMPONENTE PRINCIPAL: ADMIN PANEL CON PERSISTENCIA ---
+// --- COMPONENTE PRINCIPAL: ADMIN PANEL (Intacto) ---
 function AdminPanel() {
-  // Leemos del localStorage al iniciar, si no existe usamos 'accounting'
   const [activeTab, setActiveTab] = useState(() => {
     return localStorage.getItem('adminActiveTab') || 'accounting';
   });
   
   const navigate = useNavigate();
 
-  // Guardamos en localStorage cada vez que activeTab cambie
   useEffect(() => {
     localStorage.setItem('adminActiveTab', activeTab);
   }, [activeTab]);
@@ -124,66 +256,26 @@ function AdminPanel() {
   const handleLogout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userRole');
-    localStorage.removeItem('adminActiveTab'); // Limpiar al salir
+    localStorage.removeItem('adminActiveTab'); 
     navigate('/login');
   };
 
   return (
     <div className="admin-wrapper">
-      <aside 
-      className="admin-sidebar"
-      style={{ backgroundColor: '#bc9e74', color: '#f1f5f9' }}
-      >
+      <aside className="admin-sidebar" style={{ backgroundColor: '#bc9e74', color: '#f1f5f9' }}>
         <div className="sidebar-logo">
           <h3>SALÓN ADMIN</h3>
         </div>
-        
         <nav className="sidebar-nav">
-          <button className="nav-btn" onClick={() => navigate('/')}>
-            🏠 Inicio
-          </button>
-          
+          <button className="nav-btn" onClick={() => navigate('/')}>🏠 Inicio</button>
           <div className="nav-divider">Gestión</div>
-          
-          <button 
-            className={`nav-btn ${activeTab === 'accounting' ? 'active' : ''}`}
-            onClick={() => setActiveTab('accounting')}
-          >
-            📊 Contabilidad
-          </button>
-          
-          <button 
-            className={`nav-btn ${activeTab === 'prices' ? 'active' : ''}`}
-            onClick={() => setActiveTab('prices')}
-          >
-            💰 Precios
-          </button>
-          
-          <button 
-            className={`nav-btn ${activeTab === 'expenses' ? 'active' : ''}`}
-            onClick={() => setActiveTab('expenses')}
-          >
-            📉 Gastos
-          </button>
-          
-          <button 
-            className={`nav-btn ${activeTab === 'reservations' ? 'active' : ''}`}
-            onClick={() => setActiveTab('reservations')}
-          >
-            📅 Reservas
-          </button>
-          
-          <button 
-            className={`nav-btn ${activeTab === 'users' ? 'active' : ''}`}
-            onClick={() => setActiveTab('users')}
-          >
-            👤 Usuarios
-          </button>
-
+          <button className={`nav-btn ${activeTab === 'accounting' ? 'active' : ''}`} onClick={() => setActiveTab('accounting')}>📊 Contabilidad</button>
+          <button className={`nav-btn ${activeTab === 'prices' ? 'active' : ''}`} onClick={() => setActiveTab('prices')}>💰 Precios</button>
+          <button className={`nav-btn ${activeTab === 'expenses' ? 'active' : ''}`} onClick={() => setActiveTab('expenses')}>📉 Gastos</button>
+          <button className={`nav-btn ${activeTab === 'reservations' ? 'active' : ''}`} onClick={() => setActiveTab('reservations')}>📅 Reservas</button>
+          <button className={`nav-btn ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}>👤 Usuarios</button>
           <div className="sidebar-footer">
-            <button className="nav-btn logout-btn" onClick={handleLogout}>
-              🚪 Cerrar Sesión
-            </button>
+            <button className="nav-btn logout-btn" onClick={handleLogout}>🚪 Cerrar Sesión</button>
           </div>
         </nav>
       </aside>
