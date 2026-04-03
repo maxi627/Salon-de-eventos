@@ -41,17 +41,23 @@ const ReservasManager = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
 
-  // --- ESTADOS DE BÚSQUEDA Y FILTROS ---
+  // --- FILTROS ---
   const [searchTerm, setSearchTerm] = useState('');
   const [searchTimeout, setSearchTimeout] = useState(null);
-  const [searchResults, setSearchResults] = useState(null); // null = no hay búsqueda activa
+  const [searchResults, setSearchResults] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
   
   const [statusFilter, setStatusFilter] = useState('todas');
   const [monthFilter, setMonthFilter] = useState('todos');
   
+  // NUEVO: Estado para mostrar u ocultar reservas pasadas
+  const [showPastReservations, setShowPastReservations] = useState(false);
+  
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  // Obtener la fecha de hoy en formato YYYY-MM-DD para comparar strings
+  const today = new Date().toISOString().split('T')[0];
 
   const formatDisplayDate = (isoDate) => {
     if (!isoDate) return 'N/A';
@@ -62,12 +68,10 @@ const ReservasManager = () => {
     }).format(date);
   };
 
-  // --- LÓGICA DEL BUSCADOR EN VIVO ---
   const handleSearchChange = (e) => {
     const term = e.target.value;
     setSearchTerm(term);
     setCurrentPage(1);
-
     if (searchTimeout) clearTimeout(searchTimeout);
 
     if (term.trim().length >= 2) {
@@ -81,10 +85,8 @@ const ReservasManager = () => {
           const result = await response.json();
           if (response.ok) setSearchResults(result.data || []);
         } catch (err) {
-          console.error("Error en búsqueda:", err);
-        } finally {
-          setIsSearching(false);
-        }
+          console.error("Error:", err);
+        } finally { setIsSearching(false); }
       }, 300);
       setSearchTimeout(timeoutId);
     } else {
@@ -92,36 +94,32 @@ const ReservasManager = () => {
     }
   };
 
-  // --- LÓGICA DE FILTRADO Y APLANADO DE DATOS ---
   const availableMonths = Object.keys(reservas || {});
-  
   let listToRender = [];
   
-  // 1. Decidir la fuente de datos base
   if (searchResults !== null) {
-    listToRender = searchResults; // Si busca algo, priorizamos lo que trajo el backend
+    listToRender = searchResults;
   } else if (monthFilter !== 'todos') {
-    listToRender = reservas[monthFilter] || []; // Si filtró por mes
+    listToRender = reservas[monthFilter] || [];
   } else {
-    // Si no busca nada ni filtra por mes, juntamos todos los meses en una sola lista
     listToRender = availableMonths.reduce((acc, month) => [...acc, ...reservas[month]], []);
   }
 
-  // 2. Aplicar el filtro de estado (Pendiente, Confirmada, etc.)
+  // --- FILTRO CRUCIAL: Solo próximas o incluir pasadas ---
+  if (!showPastReservations && searchResults === null) {
+    // Si NO queremos ver pasadas (y no estamos buscando a alguien específico), filtramos:
+    listToRender = listToRender.filter(r => r.fecha?.dia >= today);
+  }
+
   if (statusFilter !== 'todas') {
     listToRender = listToRender.filter(r => r.estado === statusFilter);
   }
 
-  // 3. Ordenar cronológicamente (las más cercanas primero)
   listToRender.sort((a, b) => new Date(a.fecha?.dia || 0) - new Date(b.fecha?.dia || 0));
 
-  // --- PAGINACIÓN ---
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = listToRender.slice(indexOfFirstItem, indexOfLastItem);
-
-  if (isLoading) return <p className="admin-loading">Cargando reservas...</p>;
-  if (error) return <p className="error-message">{error.message}</p>;
 
   return (
     <div className="admin-section-fade">
@@ -141,44 +139,39 @@ const ReservasManager = () => {
 
       {showArchived && <ArchivedReservations />}
 
-      {/* --- NUEVA BARRA DE HERRAMIENTAS (FILTROS) --- */}
       <div className="filters-toolbar">
         <input
           type="text"
-          placeholder="Buscar por cliente, DNI o fecha..."
+          placeholder="Buscar cliente, DNI o fecha..."
           className="search-input toolbar-input"
           value={searchTerm}
           onChange={handleSearchChange}
         />
         
-        <select 
-          className="toolbar-select"
-          value={monthFilter} 
-          onChange={(e) => { setMonthFilter(e.target.value); setCurrentPage(1); }}
-          disabled={searchResults !== null} // Deshabilita el mes si está buscando una persona específica
-          title={searchResults !== null ? "Borra la búsqueda para filtrar por mes" : ""}
-        >
+        <select className="toolbar-select" value={monthFilter} onChange={(e) => { setMonthFilter(e.target.value); setCurrentPage(1); }} disabled={searchResults !== null}>
           <option value="todos">Todos los meses</option>
           {availableMonths.map(month => (
-            <option key={month} value={month}>
-              {month.charAt(0).toUpperCase() + month.slice(1)}
-            </option>
+            <option key={month} value={month}>{month.charAt(0).toUpperCase() + month.slice(1)}</option>
           ))}
         </select>
 
-        <select 
-          className="toolbar-select"
-          value={statusFilter} 
-          onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-        >
+        <select className="toolbar-select" value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}>
           <option value="todas">Todos los estados</option>
           <option value="confirmada">Confirmadas</option>
           <option value="pendiente">Pendientes</option>
-          <option value="cancelada">Canceladas</option>
         </select>
+
+        {/* --- NUEVO TOGGLE PARA PASADAS --- */}
+        <label className="show-past-toggle">
+          <input 
+            type="checkbox" 
+            checked={showPastReservations} 
+            onChange={(e) => setShowPastReservations(e.target.checked)} 
+          />
+          Ver reservas pasadas
+        </label>
       </div>
 
-      {/* --- TABLA UNIFICADA --- */}
       <div className="table-container">
         <table className="reservas-table user-table">
           <thead>
@@ -196,7 +189,7 @@ const ReservasManager = () => {
               <tr><td colSpan="6" style={{textAlign: 'center', padding: '2rem'}}>Buscando...</td></tr>
             ) : currentItems.length > 0 ? (
               currentItems.map(reserva => (
-                <tr key={reserva.id}>
+                <tr key={reserva.id} className={reserva.fecha?.dia < today ? 'row-past-reservation' : ''}>
                   <td><strong>{formatDisplayDate(reserva.fecha?.dia)}</strong></td>
                   <td>{`${reserva.usuario?.nombre || ''} ${reserva.usuario?.apellido || ''}`}</td>
                   <td><span className={`status ${reserva.estado}`}>{reserva.estado}</span></td>
@@ -212,35 +205,18 @@ const ReservasManager = () => {
                 </tr>
               ))
             ) : (
-              <tr><td colSpan="6" style={{textAlign: 'center'}}>No se encontraron reservas con esos filtros.</td></tr>
+              <tr><td colSpan="6" style={{textAlign: 'center'}}>No hay reservas próximas que coincidan.</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
-      {/* PAGINACIÓN */}
-      {!isSearching && (
-        <Pagination 
-          itemsPerPage={itemsPerPage} 
-          totalItems={listToRender.length} 
-          paginate={setCurrentPage} 
-          currentPage={currentPage} 
-        />
-      )}
+      {!isSearching && <Pagination itemsPerPage={itemsPerPage} totalItems={listToRender.length} paginate={setCurrentPage} currentPage={currentPage} />}
 
-      {/* MODAL EXISTENTE (Intacto) */}
-      {isModalOpen && (
-        <EditReservationModal 
-          isCreating={isCreating}
-          reservation={selectedReservation}
-          onClose={() => setIsModalOpen(false)}
-          onUpdate={refetch}
-        />
-      )}
+      {isModalOpen && <EditReservationModal isCreating={isCreating} reservation={selectedReservation} onClose={() => setIsModalOpen(false)} onUpdate={refetch} />}
     </div>
   );
 };
-
 // --- COMPONENTE PRINCIPAL: ADMIN PANEL (Intacto) ---
 function AdminPanel() {
   const [activeTab, setActiveTab] = useState(() => {
