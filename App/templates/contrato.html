@@ -34,42 +34,44 @@
     <h2>Términos y Condiciones</h2>
     <p>
       El presente contrato se celebra entre EL LOCADOR (propietario del salón) y EL LOCATARIO 
-      (usuario que realiza la reserva a través de la página web), sujeto a las siguientes cláusulas:
+      (usuario que realiza la reserva a través de la página web, cuyos datos personales se registran en el formulario de reserva), sujeto a las siguientes cláusulas:
     </p>
     
     <ol>
-      <li>
-        <strong>Objeto:</strong> EL LOCADOR alquila a EL LOCATARIO el salón de eventos ubicado en Bolivar 1425, para uso exclusivo en la fecha acordada y en el horario establecido de 
-        <strong>
-            {% if hora_inicio and hora_fin %}
-                {{ hora_inicio }} a {{ hora_fin }} hs
-            {% else %}
-                11:00 a 20:00 hs
-            {% endif %}
-        </strong>, a menos que se acuerde con el LOCADOR un horario diferente por escrito.
-      </li>
-      <li>
-        <strong>Capacidad de Invitados:</strong> Se establece una asistencia máxima de <strong>{{ cantidad_personas }} personas</strong>. EL LOCATARIO se compromete a no exceder dicho número por razones de seguridad, comodidad y preservación de las instalaciones. El ingreso de personas adicionales no está permitido salvo autorización expresa del LOCADOR.
-      </li>
-      <li>
-        <strong>Uso y Responsabilidad:</strong> EL LOCADOR no se responsabiliza por el tipo de actividad que se realice, siempre que sea lícita. Queda estrictamente prohibida la venta de entradas, el suministro de alcohol a menores y cualquier actividad ilegal. EL LOCATARIO es el único responsable por cualquier daño, accidente o hecho ocurrido durante el evento.
-      </li>
-      <li>
-        <strong>Deslinde de Responsabilidad:</strong> EL LOCATARIO asume toda la responsabilidad civil y penal derivada del evento, dejando al LOCADOR totalmente exento de cualquier reclamo por parte de invitados o terceros.
-      </li>
-      <li>
-        <strong>Daños y Limpieza:</strong> EL LOCATARIO deberá restituir el salón en las mismas condiciones en que lo recibió, siendo responsable por roturas en las instalaciones o mobiliario.
-      </li>
-      <li>
-        <strong>Pagos y Cancelaciones:</strong> Se requiere el pago de la seña para confirmar la reserva. En caso de cancelación por parte del LOCATARIO, la seña no será reembolsada.
-      </li>
-      <li>
-        <strong>Aceptación Digital:</strong> La aceptación mediante el sistema online equivale a una firma manuscrita y constituye plena conformidad legal.
-      </li>
+        <li>
+            <strong>Objeto:</strong> EL LOCADOR alquila a EL LOCATARIO el salón de eventos ubicado en Bolivar 1425, para uso exclusivo en la fecha y horario acordados en la reserva.
+        </li>
+        <li>
+            <strong>Uso y Responsabilidad:</strong> EL LOCADOR no se responsabiliza por el tipo de actividad o evento que se realice, siempre que sea lícito. Queda prohibida la venta de entradas, la venta o suministro de alcohol a menores de edad, el consumo de sustancias ilegales y cualquier actividad contraria a la ley. EL LOCATARIO es único responsable por cualquier daño material, accidente o hecho ocurrido durante el evento, así como de las acciones de los invitados y terceros que ingresen al salón.
+        </li>
+        <li>
+            <strong>Cumplimiento Legal:</strong> EL LOCATARIO asume toda responsabilidad por cumplir con las disposiciones legales vigentes en materia de seguridad, salubridad y control de menores. En caso de incumplimiento, EL LOCADOR queda totalmente exento de toda responsabilidad civil, penal o administrativa.
+        </li>
+        <li>
+            <strong>Daños y Limpieza:</strong> EL LOCATARIO deberá restituir el salón en las mismas condiciones en que lo recibió, siendo responsable por cualquier daño ocasionado a las instalaciones, mobiliario o equipamiento. Los gastos de reparación o reposición correrán por cuenta del LOCATARIO.
+        </li>
+        <li>
+            <strong>Pagos y Cancelaciones:</strong> EL LOCATARIO deberá abonar la seña establecida al momento de la reserva. En caso de cancelación, no habrá devolución de la seña. En caso de cancelación por parte del LOCADOR por causas de fuerza mayor, se reintegrará el monto abonado sin derecho a reclamos adicionales.
+        </li>
+        <li>
+            <strong>Penalidades:</strong> En caso de incumplimiento de alguna cláusula, EL LOCADOR podrá suspender el evento sin derecho a reclamo o reembolso, además de iniciar las acciones legales correspondientes.
+        </li>
+        <li>
+            <strong>Capacidad Confirmada y Ajustes:</strong> El presente contrato definitivo establece una capacidad autorizada de <strong>{{ cantidad_personas }} personas</strong>. En caso de requerir una capacidad superior el día del evento, EL LOCATARIO deberá coordinar previamente con EL LOCADOR el ajuste de capacidad y el pago del excedente correspondiente.
+        </li>
+        <li>
+            <strong>Jurisdicción:</strong> Para cualquier conflicto legal derivado del presente, las partes se someten a la jurisdicción de los Tribunales Ordinarios de la Segunda Circunscripción Judicial de la Provincia de Mendoza, con asiento en la ciudad de San Rafael.
+        </li>
+        <li>
+            <strong>Aceptación Digital:</strong> La aceptación del presente contrato mediante el sistema de reservas online equivale a la firma manuscrita y constituye plena conformidad legal por parte de EL LOCATARIO.
+        </li>
+        <li>
+            <strong>Firma y Conformidad:</strong> Ambas partes declaran haber leído y comprendido el presente contrato, aceptando las cláusulas aquí establecidas.
+        </li>
     </ol>
 
     <div class="footer">
-        <p>Contrato aceptado digitalmente el {{ acceptance_date }} desde la IP {{ acceptance_ip }}.</p>
+        <p>Contrato emitido y aceptado digitalmente el {{ acceptance_date }} desde la IP {{ acceptance_ip }}.</p>
     </div>
 </body>
 </html>
