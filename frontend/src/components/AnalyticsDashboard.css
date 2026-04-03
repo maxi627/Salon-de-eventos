@@ -166,13 +166,60 @@
   to { transform: rotate(360deg); }
 }
 
-@media (max-width: 600px) {
+/* --- VISTA MÓVIL (Smartphones y pantallas estrechas) --- */
+@media (max-width: 650px) {
+  .analytics-dashboard {
+    padding: 1.2rem; /* Achicamos un poco el padding general para ganar espacio */
+  }
+
   .dashboard-header {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch; /* Obliga a los elementos a usar todo el ancho */
+    gap: 1.2rem;
+    padding-bottom: 0.5rem;
   }
+
+  .dashboard-title {
+    text-align: center; /* Queda mucho más simétrico en celulares */
+    font-size: 1.3rem;
+  }
+
   .dashboard-toolbar {
+    flex-direction: column; /* Apila las fechas ARRIBA de los botones */
     width: 100%;
+    gap: 1rem;
+  }
+
+  .date-controls {
+    width: 100%;
+    display: flex;
     justify-content: space-between;
+    gap: 10px;
+  }
+
+  .date-controls select {
+    flex: 1; /* Hace que el Mes y el Año midan exactamente 50% cada uno */
+    text-align: center;
+    padding: 10px; /* Un poco más alto para que el dedo acierte más fácil */
+  }
+
+  .action-group {
+    width: 100%;
+    display: flex;
+  }
+
+  .btn-download-pdf {
+    flex: 1; /* El botón PDF toma todo el espacio restante (se vuelve un botón ancho) */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1rem;
+    padding: 10px;
+  }
+  
+  /* Evita que las tarjetas se salgan de los bordes en celulares muy pequeños */
+  .stats-grid {
+    grid-template-columns: 1fr; /* Fuerza 1 sola columna en móviles */
+    gap: 1rem;
   }
 }
