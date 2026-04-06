@@ -7,10 +7,25 @@ import PhotoGallery from '../components/PhotoGallery';
 import { useMisReservas } from '../hooks/useAdminData';
 import './home.css';
 
+// Agrega aquí las rutas de tus 6 imágenes. 
+// Asumiendo que están en la carpeta 'public'.
+const heroImages = [
+  '/foto_salon.jpeg', //
+  '/img1.png',       //
+  '/img2.png',       //
+  '/img3.png',       //
+  '/img4.png',       //
+  '/img5.png',       //
+  '/img6.png'        //
+];
+
 function Home() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [showReservas, setShowReservas] = useState(false);
+  
+  // Estado para controlar qué imagen del carrusel se está mostrando
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -22,6 +37,18 @@ function Home() {
         console.error("Error al decodificar el token:", error);
       }
     }
+  }, []);
+
+  // Efecto para cambiar la imagen automáticamente cada 5 segundos
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => 
+        prevIndex === heroImages.length - 1 ? 0 : prevIndex + 1
+      );
+    }, 5000); // 5000 milisegundos = 5 segundos
+
+    // Limpiamos el intervalo cuando el componente se desmonta
+    return () => clearInterval(intervalId);
   }, []);
 
   // Obtenemos reservas con el hook de React Query para evitar errores de JSON
@@ -38,8 +65,20 @@ function Home() {
 
   return (
     <div className="home-container">
-      {/* --- SECCIÓN HERO --- */}
+      {/* --- SECCIÓN HERO (AHORA CON CARRUSEL) --- */}
       <section className="hero-section">
+        {/* Renderizamos las imágenes del carrusel */}
+        {heroImages.map((img, index) => (
+          <div
+            key={index}
+            className={`hero-slide ${index === currentImageIndex ? 'active' : ''}`}
+            style={{ backgroundImage: `url(${img})` }}
+          ></div>
+        ))}
+        
+        {/* Capa oscura superpuesta */}
+        <div className="hero-overlay"></div>
+
         <div className="hero-content">
           <h1>Tu Evento Soñado, Hecho Realidad</h1>
           <p>Calidad, elegancia y un servicio excepcional para tus momentos más especiales.</p>
@@ -86,7 +125,8 @@ function Home() {
           <div className="location-map">
             {/* URL corregida para mostrar la ubicación real en San Rafael */}
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3282.653457813076!2d-68.313890123447!3d-34.63821707294406!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9679a9bdbd71ebbd%3A0xf07b4cc0a177c032!2sSal%C3%B3n%20de%20eventos!5e0!3m2!1ses-419!2sar!4v1709584000000!5m2!1ses-419!2sar"              width="100%"
+              src="https://maps.google.com/maps?q=Bolivar%201425%2C%20San%20Rafael%2C%20Mendoza&t=&z=15&ie=UTF8&iwloc=&output=embed"
+              width="100%"
               height="100%"
               style={{ border: 0 }}
               allowFullScreen=""
