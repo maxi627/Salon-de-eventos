@@ -17,7 +17,7 @@ class UsuarioRepository(Repository_add, Repository_get, Repository_delete):
             raise e  # Propaga la excepción para manejo externo
 
     def get_all(self):
-        return Usuario.query.filter_by(activo=True).all()
+        return Usuario.query.filter_by(activo=True).order_by(Usuario.id.desc()).limit(100).all()
 
     def get_by_id(self, id: int) -> Usuario:
         return Usuario.query.get(id)
