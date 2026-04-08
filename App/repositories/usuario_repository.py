@@ -40,7 +40,7 @@ class UsuarioRepository(Repository_add, Repository_get, Repository_delete):
         term = term.strip()
         search_pattern = f"%{term}%"
         
-        # CAMINO 1: Si tipeó SOLO NÚMEROS (Está buscando un DNI)
+        # Si tipeó SOLO NÚMEROS (Está buscando un DNI)
         if term.isdigit():
             if len(term) >= 7:
                 # DNI completo: Búsqueda exacta directa al índice (Instantáneo)
@@ -55,7 +55,7 @@ class UsuarioRepository(Repository_add, Repository_get, Repository_delete):
                     db.cast(Usuario.dni, db.String).ilike(search_pattern)
                 ).limit(limit).all()
                 
-        # CAMINO 2: Si tipeó LETRAS (Está buscando Nombre/Apellido)
+        # Si tipeó LETRAS (Está buscando Nombre/Apellido)
         else:
             condiciones = [
                 Usuario.nombre.ilike(search_pattern),
