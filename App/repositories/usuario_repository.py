@@ -36,31 +36,34 @@ class UsuarioRepository(Repository_add, Repository_get, Repository_delete):
     
     
     def search(self, term: str, limit: int = 10) -> List[Usuario]:
-        """Busca usuarios inteligentemente usando índices cuando es posible."""
+        """Busca usuarios separando la lógica de texto y números para evitar escaneos completos."""
+        term = term.strip()
         search_pattern = f"%{term}%"
         
-        # 1. Condiciones base para texto (Nombres y Apellidos)
-        condiciones = [
-            Usuario.nombre.ilike(search_pattern),
-            Usuario.apellido.ilike(search_pattern),
-            db.func.concat(Usuario.nombre, ' ', Usuario.apellido).ilike(search_pattern),
-            db.func.concat(Usuario.apellido, ' ', Usuario.nombre).ilike(search_pattern)
-        ]
-
-        # 2. Lógica Inteligente para Números (DNI)
+        # CAMINO 1: Si tipeó SOLO NÚMEROS (Está buscando un DNI)
         if term.isdigit():
-            # Si escribió 7 o más números, asumimos que busca el DNI exacto
             if len(term) >= 7:
-                # ¡MAGIA! Búsqueda exacta matemática. Usa el índice de la DB al instante.
-                condiciones.append(Usuario.dni == int(term))
+                # DNI completo: Búsqueda exacta directa al índice (Instantáneo)
+                return Usuario.query.filter(
+                    Usuario.activo == True, 
+                    Usuario.dni == int(term)
+                ).limit(limit).all()
             else:
-                # Si está tipeando de a poco (ej: "442"), mantenemos la búsqueda parcial
-                condiciones.append(db.cast(Usuario.dni, db.String).ilike(search_pattern))
+                # DNI incompleto: Búsqueda parcial solo en la columna DNI
+                return Usuario.query.filter(
+                    Usuario.activo == True, 
+                    db.cast(Usuario.dni, db.String).ilike(search_pattern)
+                ).limit(limit).all()
+                
+        # CAMINO 2: Si tipeó LETRAS (Está buscando Nombre/Apellido)
         else:
-            # Si el término tiene letras, lo tratamos como búsqueda parcial normal
-            condiciones.append(db.cast(Usuario.dni, db.String).ilike(search_pattern))
-
-        return Usuario.query.filter(
-            Usuario.activo == True,
-            db.or_(*condiciones)
-        ).limit(limit).all()
+            condiciones = [
+                Usuario.nombre.ilike(search_pattern),
+                Usuario.apellido.ilike(search_pattern),
+                db.func.concat(Usuario.nombre, ' ', Usuario.apellido).ilike(search_pattern),
+                db.func.concat(Usuario.apellido, ' ', Usuario.nombre).ilike(search_pattern)
+            ]
+            return Usuario.query.filter(
+                Usuario.activo == True,
+                db.or_(*condiciones)
+            ).limit(limit).all()
