@@ -48,12 +48,7 @@ class ReservaService:
         return cached_reservas
 
     def add(self, reserva: Reserva) -> Reserva:
-        """
-        Agrega una nueva reserva, verificando la disponibilidad de la fecha
-        y actualizando su estado para que coincida con el de la reserva.
-        """
         with self.fecha_service.redis_lock(reserva.fecha_id):
-            
             fecha_a_reservar = self.fecha_service.find(reserva.fecha_id)
 
             if not fecha_a_reservar:
@@ -63,14 +58,16 @@ class ReservaService:
                 raise Exception(f"La fecha seleccionada ya no está disponible.")
 
             try:
-                # Ahora el estado de la fecha depende del estado de la reserva
+                # 1. Fusionamos la fecha que vino de la caché con la sesión actual
+                fecha_a_reservar = db.session.merge(fecha_a_reservar)
+                
                 if reserva.estado == 'confirmada':
                     fecha_a_reservar.estado = 'reservada'
                 else:
                     fecha_a_reservar.estado = 'pendiente'
                 
+                # 2. Agregamos SOLO la reserva (porque es nueva)
                 db.session.add(reserva)
-                db.session.add(fecha_a_reservar)
                 db.session.commit()
 
                 # --- INICIO DE NOTIFICACIÓN TELEGRAM ---
@@ -90,7 +87,6 @@ class ReservaService:
                 # --- FIN DE NOTIFICACIÓN ---
 
                 cache.clear() 
-                
                 cache.set(f'reserva_{reserva.id}', reserva, timeout=self.CACHE_TIMEOUT)
                 cache.set(f'fecha_{fecha_a_reservar.id}', fecha_a_reservar, timeout=self.CACHE_TIMEOUT)
 
@@ -101,9 +97,6 @@ class ReservaService:
                 raise e
 
     def update(self, reserva_id: int, updated_data: dict) -> Reserva:
-        """
-        Actualiza una reserva existente con nuevos datos.
-        """
         with self.redis_lock(reserva_id):
             reserva_a_actualizar = self.repository.get_by_id(reserva_id)
             
@@ -125,22 +118,15 @@ class ReservaService:
             elif nuevo_estado == 'pendiente' and estado_anterior != 'pendiente':
                 reserva_a_actualizar.fecha.estado = 'pendiente'
 
-            db.session.add(reserva_a_actualizar)
-            if reserva_a_actualizar.fecha:
-                db.session.add(reserva_a_actualizar.fecha)
-
+            # Eliminamos los db.session.add(). SQLAlchemy ya sabe que modificaste los objetos.
             db.session.commit()
+            
             reserva_fresca = self.repository.get_by_id(reserva_id)
-
-            # Limpieza total de caché
             cache.clear() 
 
             return reserva_fresca
 
     def delete(self, reserva_id: int) -> bool:
-        """
-        Archiva una reserva en lugar de eliminarla permanentemente (soft delete).
-        """
         with self.redis_lock(reserva_id):
             reserva_a_archivar = self.repository.get_by_id(reserva_id)
 
@@ -150,21 +136,19 @@ class ReservaService:
             try:
                 reserva_a_archivar.estado = 'archivada'
 
-                # Liberamos la fecha para que vuelva a estar disponible
                 fecha_asociada = reserva_a_archivar.fecha
                 if fecha_asociada:
                     fecha_asociada.estado = 'disponible'
-                    db.session.add(fecha_asociada)
 
+                # Eliminamos el db.session.add(). Solo hacemos commit.
                 db.session.commit()
-                cache.clear() # Limpieza total
+                cache.clear() 
 
                 return True
 
             except Exception as e:
                 db.session.rollback()
                 raise e
-
     def get_all_archived(self) -> list[Reserva]:
         """
         Obtiene la lista de todas las reservas archivadas, con caché.
