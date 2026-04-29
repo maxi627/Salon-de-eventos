@@ -3,7 +3,6 @@ import requests
 
 class PushNotificationService:
     def __init__(self):
-        # Configura estas variables en tu archivo .env de la KVM
         self.bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
         chat_ids_raw = os.getenv('TELEGRAM_CHAT_IDS')
         

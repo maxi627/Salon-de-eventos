@@ -10,8 +10,8 @@ from .repository import (Repository_add, Repository_delete, Repository_get,
 class AdministradorRepository(Repository_add, Repository_get, Repository_delete):
     def add(self, entity: Administrador) -> Administrador:
         try:
-            db.session.add(entity)  
-            db.session.commit()  
+            db.session.add(entity)
+            db.session.commit()
             return entity
         except Exception as e:
             db.session.rollback()  # Deshace la transacción si hay un error

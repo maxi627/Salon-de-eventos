@@ -11,8 +11,8 @@ class UsuarioService:
     """
     Servicio para gestionar usuarios con soporte de caché y bloqueos en Redis para concurrencia.
     """
-    CACHE_TIMEOUT = 300  # Tiempo de expiración de caché en segundos
-    REDIS_LOCK_TIMEOUT = 10  # Tiempo de bloqueo en Redis en segundos
+    CACHE_TIMEOUT = 300
+    REDIS_LOCK_TIMEOUT = 10
 
     def __init__(self, repository=None):
         self.repository = repository or UsuarioRepository()
@@ -27,7 +27,7 @@ class UsuarioService:
 
         if redis_client.set(lock_key, lock_value, ex=self.REDIS_LOCK_TIMEOUT, nx=True):
             try:
-                yield  # Permite la ejecución del bloque protegido
+                yield
             finally:
                 redis_client.delete(lock_key)
         else:
@@ -102,8 +102,7 @@ class UsuarioService:
             existing_usuario.correo = updated_usuario.correo
 
             db.session.commit()
-            
-            # Recargar fresco después del commit
+        
             usuario_fresco = self.repository.get_by_id(usuario_id)
             
             cache.set(f'usuario_{usuario_id}', usuario_fresco, timeout=self.CACHE_TIMEOUT)
@@ -121,11 +120,8 @@ class UsuarioService:
             if not usuario_a_eliminar:
                 return False
 
-            # En lugar de lanzar error o usar db.session.delete(), simplemente lo desactivamos
             usuario_a_eliminar.activo = False
             db.session.commit()
-
-            # Limpiamos las cachés para que desaparezca al instante del frontend
             cache.delete(f'usuario_{usuario_id}')
             cache.delete('usuarios')
             

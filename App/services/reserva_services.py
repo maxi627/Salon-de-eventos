@@ -58,7 +58,7 @@ class ReservaService:
                 raise Exception(f"La fecha seleccionada ya no está disponible.")
 
             try:
-                # 1. Fusionamos la fecha que vino de la caché con la sesión actual
+    
                 fecha_a_reservar = db.session.merge(fecha_a_reservar)
                 
                 if reserva.estado == 'confirmada':
@@ -66,7 +66,7 @@ class ReservaService:
                 else:
                     fecha_a_reservar.estado = 'pendiente'
                 
-                # 2. Agregamos SOLO la reserva (porque es nueva)
+               
                 db.session.add(reserva)
                 db.session.commit()
 
@@ -118,7 +118,6 @@ class ReservaService:
             elif nuevo_estado == 'pendiente' and estado_anterior != 'pendiente':
                 reserva_a_actualizar.fecha.estado = 'pendiente'
 
-            # Eliminamos los db.session.add(). SQLAlchemy ya sabe que modificaste los objetos.
             db.session.commit()
             
             reserva_fresca = self.repository.get_by_id(reserva_id)
@@ -140,7 +139,6 @@ class ReservaService:
                 if fecha_asociada:
                     fecha_asociada.estado = 'disponible'
 
-                # Eliminamos el db.session.add(). Solo hacemos commit.
                 db.session.commit()
                 cache.clear() 
 

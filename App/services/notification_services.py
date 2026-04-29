@@ -20,7 +20,6 @@ class NotificationService:
        
         self.admin_email = os.getenv('ADMIN_EMAIL')
         
-        # Verificación de configuración completa
         self.is_configured = all([
             self.smtp_server,
             self.smtp_port,

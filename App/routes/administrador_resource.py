@@ -47,7 +47,7 @@ def one(id):
 
 @Administrador.route('/administrador', methods=['POST'])
 @limiter.limit("50 per minute")
-@admin_required()
+#@admin_required() comentado para poder agregar admin por primera vez
 def add():
     response_builder = ResponseBuilder()
     try:
