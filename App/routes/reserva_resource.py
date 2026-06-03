@@ -43,6 +43,7 @@ def _enviar_contrato_confirmacion(reserva_obj):
     except Exception as mail_err:
         sentry_sdk.capture_exception(mail_err)  
 @Reserva.route('/reserva', methods=['GET'])
+@admin_required()
 @limiter.limit("100 per minute") # Límite aumentado para el panel admin
 def all():
     # Instanciamos todo dentro para asegurar el contexto de Flask
@@ -61,6 +62,7 @@ def all():
 
 @Reserva.route('/reserva/<int:id>', methods=['GET'])
 @limiter.limit("100 per minute")
+@admin_required()
 def one(id):
     service = ReservaService()
     reserva_schema = ReservaSchema()
