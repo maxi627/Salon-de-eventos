@@ -1,15 +1,18 @@
 from flask import Blueprint, request
+from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
 
 from app.config.response_builder import ResponseBuilder
 from app.extensions import limiter
 from app.mapping import PersonaSchema, ResponseSchema
 from app.services import PersonaService
+from app.utils.decorators import admin_required
 
 Persona = Blueprint('Persona', __name__)
 
 @Persona.route('/persona', methods=['GET'])
 @limiter.limit("50 per minute")
+@admin_required()
 def all():
     # Instanciación interna para evitar RuntimeError fuera del contexto
     service = PersonaService()
@@ -27,6 +30,7 @@ def all():
 
 @Persona.route('/persona/<int:id>', methods=['GET'])
 @limiter.limit("50 per minute")
+@admin_required()
 def one(id):
     service = PersonaService()
     persona_schema = PersonaSchema()
@@ -72,6 +76,7 @@ def add():
 
 @Persona.route('/persona/<int:id>', methods=['PUT'])
 @limiter.limit("50 per minute")
+@jwt_required()
 def update(id):
     service = PersonaService()
     persona_schema = PersonaSchema()
@@ -101,6 +106,7 @@ def update(id):
 
 @Persona.route('/persona/<int:id>', methods=['DELETE'])
 @limiter.limit("50 per minute")
+@admin_required()
 def delete(id):
     service = PersonaService()
     response_schema = ResponseSchema()
