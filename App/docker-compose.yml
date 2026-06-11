@@ -68,7 +68,7 @@ services:
     environment:
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - TELEGRAM_CHAT_IDS=${TELEGRAM_CHAT_IDS}
-    command: celery -A app.celery_app.celery worker --loglevel=info
+    command: celery -A app.celery_app.celery worker -B --loglevel=info
     networks:
       - red1
     depends_on:
