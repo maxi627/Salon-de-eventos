@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-
+from app.tasks import procesar_reserva_background
 import sentry_sdk
 from flask import Blueprint, render_template, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
@@ -95,8 +95,6 @@ def request_by_user():
             return response_builder.add_message("No se subió ningún comprobante").add_status_code(400).build(), 400
 
         archivo = request.files['comprobante']
-        
-        # 2. Obtener los datos del formulario
         fecha_id = request.form.get('fecha_id')
         user_id = int(get_jwt_identity())
 
@@ -107,10 +105,8 @@ def request_by_user():
             return response_builder.add_message("Archivo sin nombre").add_status_code(400).build(), 400
 
         # 3. MÁGIA EN LA NUBE: Subimos a Cloudflare R2
-        # Le pasamos una carpeta dinámica para tenerlo súper ordenado en el bucket
         archivo_url = upload_file_to_r2(archivo, folder=f"comprobantes/fecha_{fecha_id}")
 
-        # Si falló la conexión con Cloudflare, frenamos el proceso
         if not archivo_url:
             return response_builder.add_message("Error del servidor al asegurar el comprobante").add_status_code(500).build(), 500
 
@@ -118,7 +114,7 @@ def request_by_user():
         reserva_data = {
             'fecha_id': int(fecha_id),
             'usuario_id': user_id,
-            'comprobante_url': archivo_url, # ¡Ahora guardamos la URL pública (https://...) directamente!
+            'comprobante_url': archivo_url, 
             'estado': 'pendiente',
             'cantidad_personas': request.form.get('cantidad_personas', 40),
             'hora_inicio': request.form.get('hora_inicio'), 
@@ -130,9 +126,15 @@ def request_by_user():
         reserva.fecha_aceptacion = datetime.utcnow()
 
         # 5. Guardar en DB mediante el servicio
-        data = reserva_schema.dump(service.add(reserva))
+        reserva_creada = service.add(reserva)
         
-        response_builder.add_message("Reserva solicitada con éxito").add_status_code(201).add_data(data)
+        # 🚀 6. ¡AQUÍ ENTRA CELERY EN ACCIÓN! 🚀
+        # Despachamos el trabajo pesado a Redis y no esperamos a que termine
+        procesar_reserva_background.delay(reserva_creada.id)
+        
+        # 7. Respuesta inmediata al frontend
+        data = reserva_schema.dump(reserva_creada)
+        response_builder.add_message("Reserva solicitada con éxito. ¡Te notificaremos en breve!").add_status_code(201).add_data(data)
         return response_builder.build(), 201
         
     except ValidationError as err:
@@ -142,7 +144,6 @@ def request_by_user():
         db.session.rollback()
         sentry_sdk.capture_exception(e)
         return response_builder.add_message(f"Error al procesar reserva: {str(e)}").add_status_code(500).build(), 500
-    
  
 @Reserva.route('/reserva/crear', methods=['POST'])
 @limiter.limit("50 per minute")
