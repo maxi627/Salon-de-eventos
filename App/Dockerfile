@@ -29,4 +29,4 @@ USER flaskapp
 
 EXPOSE 5000
 
-ENTRYPOINT [ "python", "app/main.py" ]
+CMD [ "python", "app/main.py" ]
