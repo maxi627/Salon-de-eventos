@@ -1,6 +1,5 @@
 import os
 from datetime import datetime
-from time import time
 from app.tasks import procesar_reserva_background
 import sentry_sdk
 from flask import Blueprint, render_template, request
@@ -107,7 +106,7 @@ def request_by_user():
 
         # limpiamos el nombre y añadimos un timestamp para evitar colisiones entre usuarios
         filename = secure_filename(archivo.filename)
-        nombre_seguro = f"{int(time.time())}_{filename}"
+        nombre_seguro = f"{int(datetime.utcnow().timestamp())}_{filename}"
         
         # Guardamos en la raíz del volumen compartido configurado en Docker
         ruta_local = os.path.join('/home/flaskapp/app/uploads', nombre_seguro)
