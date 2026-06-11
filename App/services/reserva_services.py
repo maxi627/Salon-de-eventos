@@ -5,7 +5,6 @@ from app.extensions import cache, db, redis_client
 from app.models import Fecha, Reserva
 from app.repositories import ReservaRepository
 from app.services.fecha_services import FechaService
-from app.services.push_notification_service import PushNotificationService
 from app.utils.decorators import transactional
 
 class ReservaService:
@@ -69,26 +68,9 @@ class ReservaService:
             
             db.session.add(reserva)
             
-            # NUEVO: Generamos el ID en la BD sin cerrar la transacción
+            # Generamos el ID en la BD sin cerrar la transacción
             db.session.flush()
             
-            # --- INICIO DE NOTIFICACIÓN TELEGRAM ---
-            try:
-                u = reserva.usuario
-                nombre_cliente = f"{u.nombre} {u.apellido}" if u else "Nuevo Cliente"
-                
-                telegram = PushNotificationService()
-                mensaje_alerta = (
-                    f"👤 *Cliente:* {nombre_cliente}\n"
-                    f"📅 *Fecha:* {fecha_a_reservar.dia}\n"
-                    f"📋 *Estado:* {reserva.estado.capitalize()}"
-                )
-                telegram.send_notification(mensaje_alerta, title="🆕 ¡Nueva Solicitud de Reserva!")
-            except Exception as e:
-                # Si falla Telegram, no queremos que se cancele la reserva
-                print(f"Error al enviar notificación push: {e}")
-            # --- FIN DE NOTIFICACIÓN ---
-
             # 4. Limpieza y actualización de caché
             cache.clear() 
             # Ahora reserva.id sí tiene el número autoincremental de PostgreSQL
@@ -96,6 +78,7 @@ class ReservaService:
             cache.set(f'fecha_{fecha_a_reservar.id}', fecha_a_reservar, timeout=self.CACHE_TIMEOUT)
 
             return reserva    
+
     @transactional
     def update(self, reserva_id: int, updated_data: dict) -> Reserva:
         with self.redis_lock(reserva_id):
@@ -142,6 +125,7 @@ class ReservaService:
             cache.clear() 
 
             return True
+
     def get_all_archived(self) -> list[Reserva]:
         """
         Obtiene la lista de todas las reservas archivadas, con caché.
@@ -177,6 +161,7 @@ class ReservaService:
         Obtiene todas las reservas de un usuario.
         """
         return self.repository.get_by_user_id(user_id)
+
     def search(self, term: str) -> list[Reserva]:
         """
         Busca reservas activas por coincidencia de texto en el cliente o estado.
