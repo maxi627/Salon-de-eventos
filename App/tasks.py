@@ -2,7 +2,7 @@ import os
 import sentry_sdk
 from datetime import datetime, timedelta
 from celery import shared_task
-
+from werkzeug.datastructures import FileStorage
 from app.extensions import db, cache
 from app.models import Reserva, Fecha
 from app.services.push_notification_service import PushNotificationService
@@ -63,13 +63,17 @@ def procesar_reserva_background(reserva_id: int, ruta_archivo_local: str = None)
         # 2. PROCESAMIENTO ASÍNCRONO DEL COMPROBANTE (R2)
         if ruta_archivo_local and os.path.exists(ruta_archivo_local):
             try:
-                # Abrimos el archivo local en modo binario para simular el objeto de request
+                # Abrimos el archivo local en modo binario
                 with open(ruta_archivo_local, 'rb') as archivo_binario:
-                    # Le asignamos un nombre al stream para que boto3/r2 no pierdan la extensión
-                    archivo_binario.filename = os.path.basename(ruta_archivo_local)
                     
-                    # Ejecutamos tu función original de subida
-                    archivo_url = upload_file_to_r2(archivo_binario, folder=f"comprobantes/fecha_{reserva.fecha_id}")
+                    # 🌟 ENVOLVEMOS EL ARCHIVO PARA QUE SEA UN FILESTORAGE DE FLASK 🌟
+                    archivo_flask = FileStorage(
+                        stream=archivo_binario,
+                        filename=os.path.basename(ruta_archivo_local)
+                    )
+                    
+                    # Ejecutamos tu función original pasándole el objeto correcto
+                    archivo_url = upload_file_to_r2(archivo_flask, folder=f"comprobantes/fecha_{reserva.fecha_id}")
                     
                     if archivo_url:
                         reserva.comprobante_url = archivo_url
@@ -80,10 +84,9 @@ def procesar_reserva_background(reserva_id: int, ruta_archivo_local: str = None)
                 print(f"Error al subir comprobante a R2 en background: {r2_err}")
                 sentry_sdk.capture_exception(r2_err)
             finally:
-                # PASO CRÍTICO: Borramos el archivo local del volumen compartido pase lo que pase
+                # PASO CRÍTICO: Borramos el archivo local del volumen compartido
                 if os.path.exists(ruta_archivo_local):
                     os.remove(ruta_archivo_local)
-
         # 3. Actualizamos el estado de la fecha en el calendario a 'pendiente'
         fecha = db.session.get(Fecha, reserva.fecha_id)
         if fecha:
