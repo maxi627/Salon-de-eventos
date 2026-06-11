@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import './confirmacion.css';
 
 // Componente con TU contrato original sin tocar ni una coma
@@ -77,7 +78,6 @@ function Confirmacion() {
   const [fechaInfo, setFechaInfo] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
   
   const [contractAccepted, setContractAccepted] = useState(false);
   const [receiptFile, setReceiptFile] = useState(null);
@@ -169,8 +169,19 @@ function Confirmacion() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.message);
 
-      setMessage('¡Solicitud enviada con éxito! El administrador revisará tu comprobante y confirmará la capacidad final.');
-      setTimeout(() => navigate('/'), 4000);
+      // --- ANIMACIÓN DE ÉXITO CON SWEETALERT2 ---
+      Swal.fire({
+        title: '¡Solicitud Enviada!',
+        text: 'Tu fecha ya está pre-reservada. Vamos a revisar tu comprobante y te notificaremos en breve.',
+        icon: 'success',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Genial',
+        allowOutsideClick: false // Evita que se cierre si tocan afuera por accidente
+      }).then(() => {
+        // Redirige recién cuando el usuario le da click a "Genial"
+        navigate('/');
+      });
+
     } catch (err) {
       setError(err.message);
     } finally {
@@ -244,7 +255,6 @@ function Confirmacion() {
           <h2>{error || 'Fecha no disponible'}</h2>
         )}
 
-        {message && <p className="message-area success">{message}</p>}
         {error && <p className="error-message">{error}</p>}
       </div>
     </div>
