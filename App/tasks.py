@@ -1,4 +1,5 @@
 import os
+import mimetypes
 import sentry_sdk
 from datetime import datetime, timedelta
 from celery import shared_task
@@ -65,14 +66,21 @@ def procesar_reserva_background(reserva_id: int, ruta_archivo_local: str = None)
             try:
                 # Abrimos el archivo local en modo binario
                 with open(ruta_archivo_local, 'rb') as archivo_binario:
+                    nombre_archivo = os.path.basename(ruta_archivo_local)
                     
-                    # 🌟 ENVOLVEMOS EL ARCHIVO PARA QUE SEA UN FILESTORAGE DE FLASK 🌟
+                    # Adivinamos el ContentType a partir del nombre para evitar errores en boto3/R2
+                    tipo_mime, _ = mimetypes.guess_type(nombre_archivo)
+                    if not tipo_mime:
+                        tipo_mime = 'application/octet-stream' # Valor por defecto seguro
+                    
+                    # Envolvemos el archivo en un FileStorage simulando el comportamiento de Flask
                     archivo_flask = FileStorage(
                         stream=archivo_binario,
-                        filename=os.path.basename(ruta_archivo_local)
+                        filename=nombre_archivo,
+                        content_type=tipo_mime
                     )
                     
-                    # Ejecutamos tu función original pasándole el objeto correcto
+                    # Ejecutamos la función de subida pasándole el objeto correcto
                     archivo_url = upload_file_to_r2(archivo_flask, folder=f"comprobantes/fecha_{reserva.fecha_id}")
                     
                     if archivo_url:
@@ -87,6 +95,7 @@ def procesar_reserva_background(reserva_id: int, ruta_archivo_local: str = None)
                 # PASO CRÍTICO: Borramos el archivo local del volumen compartido
                 if os.path.exists(ruta_archivo_local):
                     os.remove(ruta_archivo_local)
+
         # 3. Actualizamos el estado de la fecha en el calendario a 'pendiente'
         fecha = db.session.get(Fecha, reserva.fecha_id)
         if fecha:
