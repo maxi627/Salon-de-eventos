@@ -56,6 +56,8 @@ services:
       - "traefik.http.routers.salonapp.tls.certresolver=leresolver"
       - "traefik.http.routers.salonapp.priority=100"
       - "traefik.http.services.salonapp.loadbalancer.server.port=5000"
+    volumes:
+      - shared_uploads:/home/flaskapp/app/uploads
     restart: unless-stopped
 
   worker:
@@ -76,6 +78,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+    volumes:
+      - shared_uploads:/home/flaskapp/app/uploads
     restart: unless-stopped
 
   frontend:
@@ -128,3 +132,4 @@ networks:
 volumes:
   postgres_data:
   traefik_certs:
+  shared_uploads:

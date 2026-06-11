@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from time import time
 from app.tasks import procesar_reserva_background
 import sentry_sdk
 from flask import Blueprint, render_template, request
@@ -12,7 +13,7 @@ from app.extensions import db, limiter
 from app.mapping import ReservaSchema, ResponseSchema
 from app.services import NotificationService, ReservaService
 from app.utils.decorators import admin_required
-from app.utils.storage import upload_file_to_r2
+
 
 Reserva = Blueprint('Reserva', __name__)
 def _enviar_contrato_confirmacion(reserva_obj):
@@ -104,17 +105,20 @@ def request_by_user():
         if archivo.filename == '':
             return response_builder.add_message("Archivo sin nombre").add_status_code(400).build(), 400
 
-        # 3. MÁGIA EN LA NUBE: Subimos a Cloudflare R2
-        archivo_url = upload_file_to_r2(archivo, folder=f"comprobantes/fecha_{fecha_id}")
+        # 3. MÁGIA LOCAL INSTANTÁNEA: Guardar en el disco compartido en milisegundos
+        # Sanitizamos el nombre y añadimos un timestamp para evitar colisiones entre usuarios
+        filename = secure_filename(archivo.filename)
+        nombre_seguro = f"{int(time.time())}_{filename}"
+        
+        # Guardamos en la raíz del volumen compartido configurado en Docker
+        ruta_local = os.path.join('/home/flaskapp/app/uploads', nombre_seguro)
+        archivo.save(ruta_local)
 
-        if not archivo_url:
-            return response_builder.add_message("Error del servidor al asegurar el comprobante").add_status_code(500).build(), 500
-
-        # 4. Preparar el objeto para la base de datos
+        # 4. Preparar el objeto para la base de datos con un placeholder temporal
         reserva_data = {
             'fecha_id': int(fecha_id),
             'usuario_id': user_id,
-            'comprobante_url': archivo_url, 
+            'comprobante_url': 'procesando...', # Esto evitará celdas vacías y se actualizará en Celery
             'estado': 'pendiente',
             'cantidad_personas': request.form.get('cantidad_personas', 40),
             'hora_inicio': request.form.get('hora_inicio'), 
@@ -125,12 +129,11 @@ def request_by_user():
         reserva.ip_aceptacion = request.remote_addr
         reserva.fecha_aceptacion = datetime.utcnow()
 
-        # 5. Guardar en DB mediante el servicio
+        # 5. Guardar en DB mediante el servicio (pone la fecha en 'pendiente')
         reserva_creada = service.add(reserva)
         
-        # 🚀 6. ¡AQUÍ ENTRA CELERY EN ACCIÓN! 🚀
-        # Despachamos el trabajo pesado a Redis y no esperamos a que termine
-        procesar_reserva_background.delay(reserva_creada.id)
+        # 6. Despachamos el ID de la reserva y la RUTA del archivo local a Celery
+        procesar_reserva_background.delay(reserva_creada.id, ruta_local)
         
         # 7. Respuesta inmediata al frontend
         data = reserva_schema.dump(reserva_creada)
@@ -143,8 +146,16 @@ def request_by_user():
     except Exception as e:
         db.session.rollback()
         sentry_sdk.capture_exception(e)
+        
+        # Limpieza de seguridad: si algo falló antes del .delay(), borramos el archivo local si existe
+        if 'ruta_local' in locals() and os.path.exists(ruta_local):
+            try:
+                os.remove(ruta_local)
+            except Exception:
+                pass
+                
         return response_builder.add_message(f"Error al procesar reserva: {str(e)}").add_status_code(500).build(), 500
- 
+
 @Reserva.route('/reserva/crear', methods=['POST'])
 @limiter.limit("50 per minute")
 @jwt_required()
