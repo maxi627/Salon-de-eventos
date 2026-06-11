@@ -55,10 +55,10 @@ def procesar_reserva_background(reserva_id: int):
         if not reserva:
             return
 
-        # 2. Actualizamos el estado de la fecha en el calendario a 'reservada'
+        # 2. Actualizamos el estado de la fecha en el calendario a 'pendiente'
         fecha = db.session.get(Fecha, reserva.fecha_id)
         if fecha:
-            fecha.estado = 'reservada'
+            fecha.estado = 'pendiente'
             db.session.add(fecha)
 
         # 3. Guardamos los cambios
