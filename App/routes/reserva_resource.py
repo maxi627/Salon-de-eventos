@@ -105,8 +105,7 @@ def request_by_user():
         if archivo.filename == '':
             return response_builder.add_message("Archivo sin nombre").add_status_code(400).build(), 400
 
-        # 3. MÁGIA LOCAL INSTANTÁNEA: Guardar en el disco compartido en milisegundos
-        # Sanitizamos el nombre y añadimos un timestamp para evitar colisiones entre usuarios
+        # limpiamos el nombre y añadimos un timestamp para evitar colisiones entre usuarios
         filename = secure_filename(archivo.filename)
         nombre_seguro = f"{int(time.time())}_{filename}"
         
