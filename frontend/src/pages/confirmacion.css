@@ -222,3 +222,41 @@
   margin-top: 20px;
   text-align: center;
 }
+/* --- MEJORAS VISUALES PARA EL INPUT DE ARCHIVO --- */
+
+.form-group input[type="file"] {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  background-color: #fafafa;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.form-group input[type="file"]:hover {
+  border-color: #3085d6; /* Combina con el azul de tu botón de SweetAlert */
+  background-color: #f0f8ff;
+}
+
+/* Opcional: Un pequeño efecto para que el texto de error "tiemble" y llame la atención */
+.error-message {
+  color: #d32f2f;
+  background-color: #fdeaea;
+  padding: 10px 15px;
+  border-radius: 6px;
+  font-weight: 500;
+  margin-top: 15px;
+  text-align: center;
+  border: 1px solid #f5c2c7;
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}

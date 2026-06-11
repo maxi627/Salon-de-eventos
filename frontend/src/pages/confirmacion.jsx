@@ -147,6 +147,24 @@ function Confirmacion() {
     getPageData();
   }, [dateString, navigate]);
 
+  // --- FUNCIÓN PARA VALIDAR LA IMAGEN ---
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Verificamos que el tipo de archivo empiece con "image/"
+      if (!file.type.startsWith('image/')) {
+        setError('Por favor, sube únicamente una imagen (JPG, PNG, WEBP, etc).');
+        setReceiptFile(null);
+        e.target.value = ''; // Resetea el input para que quede vacío
+        return;
+      }
+      
+      // Si es una imagen válida, limpiamos errores y guardamos
+      setError('');
+      setReceiptFile(file);
+    }
+  };
+
   const handleRequestReservation = async () => {
     if (!contractAccepted || !receiptFile) {
       setError('Debes aceptar los términos y subir el comprobante.');
@@ -235,11 +253,11 @@ function Confirmacion() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="receipt">Subir Comprobante de Pago</label>
+              <label htmlFor="receipt">Subir Comprobante de Pago (Solo imágenes)</label>
               <input 
                 type="file" id="receipt"
-                onChange={(e) => setReceiptFile(e.target.files[0])}
-                accept="image/png, image/jpeg, application/pdf"
+                onChange={handleFileChange}
+                accept="image/jpeg, image/png, image/webp"
               />
             </div>
 
