@@ -6,7 +6,7 @@ from flask import Blueprint, render_template, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from marshmallow import ValidationError
 from werkzeug.utils import secure_filename
-
+from app.tasks import enviar_contrato_background
 from app.config.response_builder import ResponseBuilder
 from app.extensions import db, limiter
 from app.mapping import ReservaSchema, ResponseSchema
@@ -184,15 +184,21 @@ def create_for_admin():
         # Guardamos en la base de datos y atrapamos el objeto creado
         reserva_creada = service.add(reserva)
 
-        # Disparamos el contrato si el administrador la creó como 'confirmada'
+        # 🌟 NUEVO: Disparamos la tarea a Celery en lugar de bloquear el servidor
         if reserva_creada.estado == 'confirmada':
-            _enviar_contrato_confirmacion(reserva_creada)
+            enviar_contrato_background.delay(reserva_creada.id)
 
         data = reserva_schema.dump(reserva_creada)
         response_builder.add_message("Reserva creada por admin").add_status_code(201).add_data(data)
         return response_builder.build(), 201
+        
+    except ValidationError as err:
+        db.session.rollback()
+        return response_builder.add_message("Error de validación").add_status_code(422).add_data(err.messages).build(), 422
     except Exception as e:
         db.session.rollback()
+        sentry_sdk.capture_exception(e)
+        
         return response_builder.add_message(f"Error en creación admin: {str(e)}").add_status_code(500).build(), 500
     
 @Reserva.route('/reserva/<int:id>', methods=['PUT'])
@@ -230,6 +236,7 @@ def update(id):
         db.session.rollback()
         return response_builder.add_message(f"Error al actualizar: {str(e)}").add_status_code(500).build(), 500
     
+
 @Reserva.route('/reserva/<int:id>', methods=['DELETE'])
 @limiter.limit("20 per minute")
 @jwt_required()

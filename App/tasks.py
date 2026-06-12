@@ -1,5 +1,6 @@
 import os
 import mimetypes
+from app.routes.reserva_resource import _enviar_contrato_confirmacion
 import sentry_sdk
 from datetime import datetime, timedelta
 from celery import shared_task
@@ -131,3 +132,26 @@ def procesar_reserva_background(reserva_id: int, ruta_archivo_local: str = None)
                 os.remove(ruta_archivo_local)
             except Exception:
                 pass
+            
+@shared_task
+def enviar_contrato_background(reserva_id: int):
+    """
+    Tarea en segundo plano: Genera el PDF y envía el correo 
+    cuando un admin confirma o crea una reserva.
+    """
+    try:
+        # Recuperamos la reserva fresca de la base de datos
+        reserva = db.session.get(Reserva, reserva_id)
+        
+        if not reserva:
+            return
+
+        # Verificamos de nuevo por seguridad
+        if reserva.estado == 'confirmada':
+            # Llamamos a tu función original pasándole el objeto
+            _enviar_contrato_confirmacion(reserva)
+            print(f"Contrato enviado en background para reserva {reserva_id}")
+
+    except Exception as e:
+        sentry_sdk.capture_exception(e)
+        print(f"Error al enviar contrato en background: {e}")
