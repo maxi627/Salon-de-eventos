@@ -49,11 +49,11 @@ class ReservaService:
 
     @transactional
     def add(self, reserva: Reserva) -> Reserva:
-        # 1. Bloqueo Distribuido (Redis): Evita que múltiples hilos saturen la BD
+        # 1. Bloqueo Distribuido (Redis)
         with self.fecha_service.redis_lock(reserva.fecha_id):
             
-            # 2. Bloqueo Pesimista (PostgreSQL): Asegura la fila a nivel de motor ACID
-            fecha_a_reservar = self.fecha_service.find(reserva.fecha_id)
+            # 2. Bloqueo Pesimista directo en la BD para asegurar persistencia
+            fecha_a_reservar = db.session.query(Fecha).filter_by(id=reserva.fecha_id).with_for_update().first()
 
             if not fecha_a_reservar:
                 raise Exception(f"La fecha con ID {reserva.fecha_id} no existe.")
@@ -61,6 +61,7 @@ class ReservaService:
             if fecha_a_reservar.estado != 'disponible':
                 raise Exception("La fecha seleccionada ya no está disponible.")
 
+            # 3. Sincronización exacta de estados ('reservada' o 'pendiente')
             if reserva.estado == 'confirmada':
                 fecha_a_reservar.estado = 'reservada'
             else:
@@ -73,12 +74,10 @@ class ReservaService:
             
             # 4. Limpieza y actualización de caché
             cache.clear() 
-            # Ahora reserva.id sí tiene el número autoincremental de PostgreSQL
             cache.set(f'reserva_{reserva.id}', reserva, timeout=self.CACHE_TIMEOUT)
             cache.set(f'fecha_{fecha_a_reservar.id}', fecha_a_reservar, timeout=self.CACHE_TIMEOUT)
 
-            return reserva    
-
+            return reserva
     @transactional
     def update(self, reserva_id: int, updated_data: dict) -> Reserva:
         with self.redis_lock(reserva_id):

@@ -3,18 +3,17 @@ from celery import Celery
 from celery.schedules import crontab
 from flask import has_app_context
 
-# 1. Creamos la instancia principal de Celery apuntando a tu Docker
+# 1. Creamos la instancia principal de Celery apuntando a Docker
 celery = Celery(
     "app",
     broker=os.getenv("CELERY_BROKER_URL", "redis://:1234@redis:6379/0"),
     backend=os.getenv("CELERY_RESULT_BACKEND", "redis://:1234@redis:6379/0"),
-    include=['app.tasks'] # Le decimos dónde buscar tus tareas
+    include=['app.tasks'] # Le decimos dónde buscar las tareas
 )
 
 # Configuramos la zona horaria para que el cron se ejecute a tu hora local real
 celery.conf.timezone = 'America/Argentina/Buenos_Aires'
 
-# 2. Magia Negra: Inyectar el contexto de Flask
 # Celery corre en un proceso paralelo. Si no hacemos esto, cuando intente 
 # usar db.session.get() para actualizar el calendario, crasheará.
 class FlaskTask(celery.Task):
