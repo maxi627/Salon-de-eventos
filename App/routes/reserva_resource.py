@@ -184,7 +184,6 @@ def create_for_admin():
         # Guardamos en la base de datos y atrapamos el objeto creado
         reserva_creada = service.add(reserva)
 
-        # 🌟 NUEVO: Disparamos la tarea a Celery en lugar de bloquear el servidor
         if reserva_creada.estado == 'confirmada':
             enviar_contrato_background.delay(reserva_creada.id)
 
@@ -224,9 +223,8 @@ def update(id):
 
         updated_reserva = service.update(id, json_data)
         
-        # Disparamos el contrato si el estado cambió a 'confirmada'
         if nuevo_estado == 'confirmada' and estado_anterior != 'confirmada':
-            _enviar_contrato_confirmacion(updated_reserva)
+            enviar_contrato_background.delay(updated_reserva.id)
         
         data = reserva_schema.dump(updated_reserva)
         response_builder.add_message("Reserva actualizada").add_status_code(200).add_data(data)
@@ -236,7 +234,6 @@ def update(id):
         db.session.rollback()
         return response_builder.add_message(f"Error al actualizar: {str(e)}").add_status_code(500).build(), 500
     
-
 @Reserva.route('/reserva/<int:id>', methods=['DELETE'])
 @limiter.limit("20 per minute")
 @jwt_required()
