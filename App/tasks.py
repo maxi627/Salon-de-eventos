@@ -1,14 +1,16 @@
-import os
 import mimetypes
-from app.routes.reserva_resource import _enviar_contrato_confirmacion
-import sentry_sdk
+import os
 from datetime import datetime, timedelta
+
+import sentry_sdk
 from celery import shared_task
 from werkzeug.datastructures import FileStorage
-from app.extensions import db, cache
-from app.models import Reserva, Fecha
+
+from app.extensions import cache, db
+from app.models import Fecha, Reserva
 from app.services.push_notification_service import PushNotificationService
 from app.utils.storage import upload_file_to_r2
+
 
 @shared_task
 def check_pending_reservations():
@@ -135,6 +137,9 @@ def procesar_reserva_background(reserva_id: int, ruta_archivo_local: str = None)
             
 @shared_task
 def enviar_contrato_background(reserva_id: int):
+
+    from app.routes.reserva_resource import _enviar_contrato_confirmacion
+
     """
     Tarea en segundo plano: Genera el PDF y envía el correo 
     cuando un admin confirma o crea una reserva.
