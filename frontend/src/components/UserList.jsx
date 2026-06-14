@@ -251,7 +251,7 @@ function UserList() {
                           onClick={() => handleDelete(user.id)}
                           title="Eliminar Usuario"
                         >
-                          🗑️
+                          Borrar
                         </button>
                     </div>
                   </td>

@@ -2,6 +2,7 @@
   "dependencies": {
     "@tanstack/react-query": "^5.90.17",
     "axios": "^1.13.2",
+    "recharts": "^3.8.1",
     "sweetalert2": "^11.26.25"
   }
 }
