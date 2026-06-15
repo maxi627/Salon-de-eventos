@@ -129,12 +129,17 @@ def get_analytics():
         art_tz = pytz.timezone('America/Argentina/Buenos_Aires')
         movimientos_crudos = []
         
-        # Función auxiliar para normalizar (convierte date puro a datetime)
+        # Función auxiliar para normalizar y evitar que las fechas puras (00:00) resten 3 horas
         def normalizar_fecha(d):
             if not d:
-                return datetime.utcnow()
+                return datetime.now(art_tz)
             if isinstance(d, date) and not isinstance(d, datetime):
-                return datetime.combine(d, datetime.min.time())
+                # Si es un Date puro (ej. Gastos), lo atamos directamente a la hora local a las 00:00
+                return art_tz.localize(datetime.combine(d, datetime.min.time()))
+            
+            # Si es un Datetime (ej. Reservas), asumimos que viene en UTC de la BD
+            if d.tzinfo is None:
+                return pytz.utc.localize(d)
             return d
         
         # 1. Buscamos los 10 gastos más recientes
@@ -175,25 +180,27 @@ def get_analytics():
                 "raw_date": normalizar_fecha(r.fecha_aceptacion)
             })
 
-        # 3. Ordenamos usando el objeto datetime real para evitar errores de mes
+        # 3. Ordenamos usando el objeto datetime real
         movimientos_crudos.sort(key=lambda x: x['raw_date'], reverse=True)
         
-        # 4. Formateamos a la hora local y nos quedamos con los 7 más recientes
+        # 4. Formateamos a la hora local
         ultimos_movimientos = []
         for m in movimientos_crudos[:7]:
-            dt_utc = m['raw_date']
-            if dt_utc.tzinfo is None:
-                dt_utc = pytz.utc.localize(dt_utc)
-            dt_local = dt_utc.astimezone(art_tz)
+            dt_local = m['raw_date'].astimezone(art_tz)
+            
+            # Si el registro no tiene hora exacta (es 00:00), mostramos solo la fecha
+            if dt_local.hour == 0 and dt_local.minute == 0:
+                str_date = dt_local.strftime('%d/%m')
+            else:
+                str_date = dt_local.strftime('%d/%m %H:%M')
             
             ultimos_movimientos.append({
                 "id": m["id"],
                 "type": m["type"],
                 "text": m["text"],
                 "amount": m["amount"],
-                "date": dt_local.strftime('%d/%m %H:%M')
+                "date": str_date
             })
-
 
         # --- EMPAQUETADO FINAL DEL JSON ---
         data = {
