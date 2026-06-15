@@ -129,6 +129,14 @@ def get_analytics():
         art_tz = pytz.timezone('America/Argentina/Buenos_Aires')
         movimientos_crudos = []
         
+        # Función auxiliar para normalizar (convierte date puro a datetime)
+        def normalizar_fecha(d):
+            if not d:
+                return datetime.utcnow()
+            if isinstance(d, date) and not isinstance(d, datetime):
+                return datetime.combine(d, datetime.min.time())
+            return d
+        
         # 1. Buscamos los 10 gastos más recientes
         gastos_recientes = db.session.query(Gasto).filter(
             extract('year', Gasto.fecha) == anio_seleccionado,
@@ -142,7 +150,7 @@ def get_analytics():
                 "type": "gasto",
                 "text": f"Gasto registrado: {cat}",
                 "amount": -float(g.monto),
-                "raw_date": g.fecha or datetime.utcnow()
+                "raw_date": normalizar_fecha(g.fecha)
             })
 
         # 2. Buscamos las 10 reservas más recientes
@@ -164,7 +172,7 @@ def get_analytics():
                 "type": tipo_mov,
                 "text": texto,
                 "amount": monto_mov,
-                "raw_date": r.fecha_aceptacion or datetime.utcnow()
+                "raw_date": normalizar_fecha(r.fecha_aceptacion)
             })
 
         # 3. Ordenamos usando el objeto datetime real para evitar errores de mes
