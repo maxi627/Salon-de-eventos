@@ -3,10 +3,9 @@ import api from '../api/client';
 import { useAnalytics } from '../hooks/useAdminData';
 import './AnalyticsDashboard.css';
 import IncomeChart from './IncomeChart';
-// Importamos Recharts para el gráfico de Dona (si no lo tienes: npm install recharts)
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
-// --- SUB-COMPONENTE: TARJETA DE ESTADÍSTICA (Actualizado con íconos) ---
+// --- SUB-COMPONENTE: TARJETA DE ESTADÍSTICA ---
 const StatCard = ({ title, value, trend, note, type = 'default', icon }) => (
   <div className={`stat-card ${type}`}>
     <div className="stat-header">
@@ -23,82 +22,79 @@ const StatCard = ({ title, value, trend, note, type = 'default', icon }) => (
   </div>
 );
 
-// --- SUB-COMPONENTE: GRÁFICO DE DESGLOSE DE GASTOS ---
-const ExpensePieChart = ({ total }) => {
-  // Datos simulados (En el futuro los traerás de tu endpoint stats.desglose_gastos)
-  const data = [
-    { name: 'Servicios (Luz/Agua)', value: 8000, color: '#10B981' }, 
-    { name: 'Limpieza', value: 5000, color: '#3B82F6' },
-    { name: 'Mantenimiento', value: 4000, color: '#F59E0B' },
-    { name: 'Publicidad/Otros', value: 3000, color: '#EF4444' },
-  ];
+// --- SUB-COMPONENTE: GRÁFICO DE DESGLOSE DE GASTOS (Con datos reales) ---
+const ExpensePieChart = ({ desgloseData }) => {
+  const data = desgloseData || [];
 
   return (
     <div className="side-panel-card">
       <h4 className="panel-title">Distribución de Gastos</h4>
-      <div className="pie-chart-wrapper">
-        <ResponsiveContainer width="100%" height={200}>
-          <PieChart>
-            <Pie
-              data={data}
-              innerRadius={60}
-              outerRadius={80}
-              paddingAngle={5}
-              dataKey="value"
-            >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip formatter={(value) => `$${value.toLocaleString('es-AR')}`} />
-          </PieChart>
-        </ResponsiveContainer>
-        {/* Total centrado superpuesto (opcional, requiere CSS absoluto) */}
-      </div>
-      <div className="custom-legend">
-        {data.map((item, i) => (
-          <div key={i} className="legend-item">
-            <span className="legend-color" style={{ backgroundColor: item.color }}></span>
-            <span className="legend-label">{item.name}</span>
-            <span className="legend-value">${item.value.toLocaleString('es-AR')}</span>
+      {data.length > 0 ? (
+        <>
+          <div className="pie-chart-wrapper">
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart>
+                <Pie
+                  data={data}
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {data.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value) => `$${value.toLocaleString('es-AR')}`} />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
-        ))}
-      </div>
+          <div className="custom-legend">
+            {data.map((item, i) => (
+              <div key={i} className="legend-item">
+                <span className="legend-color" style={{ backgroundColor: item.color }}></span>
+                <span className="legend-label">{item.name}</span>
+                <span className="legend-value">${item.value.toLocaleString('es-AR')}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        <p style={{ textAlign: 'center', color: '#94a3b8', marginTop: '2rem' }}>No hay gastos registrados este mes.</p>
+      )}
     </div>
   );
 };
 
-// --- SUB-COMPONENTE: ÚLTIMOS MOVIMIENTOS ---
-const RecentActivityFeed = () => {
-  // Datos simulados (En el futuro vendrán de stats.ultimos_movimientos)
-  const activities = [
-    { id: 1, type: 'ingreso', text: 'Seña Recibida: Cumpleaños Lucía', amount: 15000, date: 'Hoy, 10:30' },
-    { id: 2, type: 'gasto', text: 'Pago Proveedor: Insumos de limpieza', amount: -5000, date: 'Ayer, 16:45' },
-    { id: 3, type: 'info', text: 'Reserva Confirmada: Boda Juan y María', amount: null, date: 'Hace 2 días' },
-    { id: 4, type: 'ingreso', text: 'Saldo Liquidado: Fiesta de Egresados', amount: 85000, date: 'Hace 3 días' },
-  ];
+// --- SUB-COMPONENTE: ÚLTIMOS MOVIMIENTOS (Con datos reales) ---
+const RecentActivityFeed = ({ actividadesData }) => {
+  const activities = actividadesData || [];
 
   return (
     <div className="side-panel-card activity-feed-card">
       <h4 className="panel-title">Últimos Movimientos</h4>
-      <ul className="activity-list">
-        {activities.map(activity => (
-          <li key={activity.id} className="activity-item">
-            <div className={`activity-icon-container ${activity.type}`}>
-              {activity.type === 'ingreso' ? '💰' : activity.type === 'gasto' ? '🧾' : '📅'}
-            </div>
-            <div className="activity-details">
-              <p className="activity-text">{activity.text}</p>
-              <small className="activity-date">{activity.date}</small>
-            </div>
-            {activity.amount !== null && (
-              <div className={`activity-amount ${activity.type}`}>
-                {activity.amount > 0 ? '+' : ''}{activity.amount.toLocaleString('es-AR')}
+      {activities.length > 0 ? (
+        <ul className="activity-list">
+          {activities.map((activity, index) => (
+            <li key={activity.id || index} className="activity-item">
+              <div className={`activity-icon-container ${activity.type}`}>
+                {activity.type === 'ingreso' ? '💰' : activity.type === 'gasto' ? '🧾' : '📅'}
               </div>
-            )}
-          </li>
-        ))}
-      </ul>
+              <div className="activity-details">
+                <p className="activity-text">{activity.text}</p>
+                <small className="activity-date">{activity.date}</small>
+              </div>
+              {activity.amount !== null && activity.amount !== undefined && (
+                <div className={`activity-amount ${activity.type}`}>
+                  {activity.amount > 0 ? '+' : ''}{activity.amount.toLocaleString('es-AR')}
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p style={{ textAlign: 'center', color: '#94a3b8', padding: '1rem 0' }}>No hay movimientos recientes.</p>
+      )}
     </div>
   );
 };
@@ -113,8 +109,26 @@ function AnalyticsDashboard() {
   
   const { data, isLoading, error, refetch, isFetching } = useAnalytics(reportDate.mes, reportDate.anio);
 
+  // Tu lógica original intacta
   const handleDownloadReport = async () => {
-    // ... (Tu lógica de descarga intacta)
+    setIsDownloading(true);
+    try {
+      const response = await api.get(`/analytics/reporte-pdf?mes=${reportDate.mes}&anio=${reportDate.anio}`, {
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([response]));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `reporte_contable_${reportDate.mes}_${reportDate.anio}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('Error al generar el reporte.');
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const stats = data?.data;
@@ -125,7 +139,37 @@ function AnalyticsDashboard() {
 
   return (
     <div className="analytics-dashboard admin-section-fade">
-      {/* ... (Tu header intacto) ... */}
+      
+      {/* HEADER Y TOOLBAR */}
+      <div className="dashboard-header">
+        <h3 className="dashboard-title">Resumen Contable</h3>
+        <div className="dashboard-toolbar">
+          <div className="date-controls">
+            <select value={reportDate.mes} onChange={(e) => setReportDate(p => ({...p, mes: parseInt(e.target.value)}))}>
+              {months.map(m => <option key={m.value} value={m.value}>{m.name.charAt(0).toUpperCase() + m.name.slice(1)}</option>)}
+            </select>
+            <select value={reportDate.anio} onChange={(e) => setReportDate(p => ({...p, anio: parseInt(e.target.value)}))}>
+              {years.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </div>
+          <div className="action-group">
+            <button 
+              className={`btn-refresh-icon ${isFetching ? 'spinning' : ''}`} 
+              onClick={() => refetch()}
+              title="Actualizar datos"
+            >
+              🔄
+            </button>
+            <button 
+              className="btn-download-pdf" 
+              onClick={handleDownloadReport} 
+              disabled={isDownloading}
+            >
+              {isDownloading ? 'Generando...' : '📄 PDF'}
+            </button>
+          </div>
+        </div>
+      </div>
       
       {error && <p className="error-message">{error.message}</p>}
 
@@ -159,10 +203,10 @@ function AnalyticsDashboard() {
             />
           </div>
 
-          {/* 🌟 AQUÍ EMPIEZA LA NUEVA ESTRUCTURA DEL GRID */}
+          {/* GRID INFERIOR */}
           <div className="dashboard-content-grid">
             
-            {/* Columna Izquierda: El gráfico de barras (ahora ocupa un % del ancho) */}
+            {/* Columna Izquierda */}
             <div className="main-chart-section">
               <h4 className="panel-title" style={{marginBottom: '1rem', color: '#64748b', fontSize: '0.9rem', textAlign: 'center'}}>
                 Resumen de Ingresos Registrados por Mes
@@ -172,10 +216,11 @@ function AnalyticsDashboard() {
               </div>
             </div>
 
-            {/* Columna Derecha: Tarjetas apiladas */}
+            {/* Columna Derecha */}
             <div className="side-panels-section">
-              <ExpensePieChart total={stats.gastos_mes_seleccionado} />
-              <RecentActivityFeed />
+              {/* Inyección de datos reales desde stats */}
+              <ExpensePieChart desgloseData={stats.desglose_gastos} />
+              <RecentActivityFeed actividadesData={stats.ultimos_movimientos} />
             </div>
 
           </div>
@@ -186,24 +231,3 @@ function AnalyticsDashboard() {
 }
 
 export default AnalyticsDashboard;
-
-  const handleDownloadReport = async () => {
-    setIsDownloading(true);
-    try {
-      const response = await api.get(`/analytics/reporte-pdf?mes=${reportDate.mes}&anio=${reportDate.anio}`, {
-        responseType: 'blob'
-      });
-      const url = window.URL.createObjectURL(new Blob([response]));
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `reporte_contable_${reportDate.mes}_${reportDate.anio}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      alert('Error al generar el reporte.');
-    } finally {
-      setIsDownloading(false);
-    }
-  };
