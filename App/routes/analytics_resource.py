@@ -96,12 +96,16 @@ def get_analytics():
         
         reservas_mes_seleccionado = ingresos_año_completo.get(f"{anio_seleccionado}-{mes_seleccionado:02d}", {}).get('reservas', 0)
 
+        # --- TENDENCIA ---
         tendencia_ingresos = 0
         if ingresos_mes_anterior > 0:
             tendencia_ingresos = ((ingresos_mes_seleccionado - ingresos_mes_anterior) / ingresos_mes_anterior) * 100
         elif ingresos_mes_seleccionado > 0:
             tendencia_ingresos = 100
             
+        # =====================================================================
+        # LÓGICA PARA EL DESGLOSE DE GASTOS (Gráfico de Torta)
+        # =====================================================================
         agrupados = db.session.query(
             Gasto.categoria.label('nombre_cat'), 
             func.sum(Gasto.monto).label('total')
@@ -119,28 +123,33 @@ def get_analytics():
                 "color": PALETA_COLORES[i % len(PALETA_COLORES)]
             })
 
-        movimientos = []
+        # =====================================================================
+        # LÓGICA MEJORADA PARA LOS ÚLTIMOS MOVIMIENTOS (Feed lateral)
+        # =====================================================================
+        art_tz = pytz.timezone('America/Argentina/Buenos_Aires')
+        movimientos_crudos = []
         
-        # Buscamos los 3 gastos más recientes
+        # 1. Buscamos los 10 gastos más recientes
         gastos_recientes = db.session.query(Gasto).filter(
             extract('year', Gasto.fecha) == anio_seleccionado,
             extract('month', Gasto.fecha) == mes_seleccionado
-        ).order_by(Gasto.fecha.desc()).limit(3).all()
+        ).order_by(Gasto.fecha.desc()).limit(10).all()
         
         for g in gastos_recientes:
-            movimientos.append({
+            cat = getattr(g, 'categoria', None) or getattr(g, 'concepto', None) or 'Otros'
+            movimientos_crudos.append({
                 "id": f"gasto_{g.id}",
                 "type": "gasto",
-                "text": f"Gasto registrado: {getattr(g, 'categoria', getattr(g, 'concepto', 'General'))}",
+                "text": f"Gasto registrado: {cat}",
                 "amount": -float(g.monto),
-                "date": g.fecha.strftime('%d/%m %H:%M') if g.fecha else "Reciente"
+                "raw_date": g.fecha or datetime.utcnow()
             })
 
-        # Buscamos las 3 reservas más recientes
+        # 2. Buscamos las 10 reservas más recientes
         reservas_recientes = db.session.query(Reserva).filter(
             extract('year', Reserva.fecha_aceptacion) == anio_seleccionado,
             extract('month', Reserva.fecha_aceptacion) == mes_seleccionado
-        ).order_by(Reserva.fecha_aceptacion.desc()).limit(3).all()
+        ).order_by(Reserva.fecha_aceptacion.desc()).limit(10).all()
         
         for r in reservas_recientes:
             texto = f"Reserva {r.estado.capitalize()}"
@@ -150,17 +159,32 @@ def get_analytics():
             tipo_mov = "ingreso" if r.estado == "confirmada" else "info"
             monto_mov = float(r.valor_alquiler) if r.estado == "confirmada" else None
             
-            movimientos.append({
+            movimientos_crudos.append({
                 "id": f"reserva_{r.id}",
                 "type": tipo_mov,
                 "text": texto,
                 "amount": monto_mov,
-                "date": r.fecha_aceptacion.strftime('%d/%m %H:%M') if r.fecha_aceptacion else "Reciente"
+                "raw_date": r.fecha_aceptacion or datetime.utcnow()
             })
 
-        # Ordenamos ambos arreglos combinados por fecha y nos quedamos con los 5 más recientes
-        movimientos.sort(key=lambda x: x['date'], reverse=True)
-        ultimos_movimientos = movimientos[:5]
+        # 3. Ordenamos usando el objeto datetime real para evitar errores de mes
+        movimientos_crudos.sort(key=lambda x: x['raw_date'], reverse=True)
+        
+        # 4. Formateamos a la hora local y nos quedamos con los 7 más recientes
+        ultimos_movimientos = []
+        for m in movimientos_crudos[:7]:
+            dt_utc = m['raw_date']
+            if dt_utc.tzinfo is None:
+                dt_utc = pytz.utc.localize(dt_utc)
+            dt_local = dt_utc.astimezone(art_tz)
+            
+            ultimos_movimientos.append({
+                "id": m["id"],
+                "type": m["type"],
+                "text": m["text"],
+                "amount": m["amount"],
+                "date": dt_local.strftime('%d/%m %H:%M')
+            })
 
 
         # --- EMPAQUETADO FINAL DEL JSON ---
@@ -172,15 +196,15 @@ def get_analytics():
             "tendencia_ingresos_porcentaje": round(tendencia_ingresos, 2),
             "dinero_por_liquidar": total_a_liquidar,
             "ingresos_por_mes": ingresos_año_completo,
-            "desglose_gastos": desglose_gastos,         # 🌟 Conectado al frontend
-            "ultimos_movimientos": ultimos_movimientos  # 🌟 Conectado al frontend
+            "desglose_gastos": desglose_gastos,         
+            "ultimos_movimientos": ultimos_movimientos  
         }
         
         response_builder.add_message("Analíticas generadas con éxito").add_status_code(200).add_data(data)
         return response_schema.dump(response_builder.build()), 200
 
     except Exception as e:
-        db.session.rollback() # <--- LIBERA LA CONEXIÓN
+        db.session.rollback() 
         sentry_sdk.capture_exception(e)
         response_builder.add_message(f"Error al generar analíticas: {str(e)}").add_status_code(500)
         return response_schema.dump(response_builder.build()), 500
