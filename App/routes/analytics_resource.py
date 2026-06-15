@@ -96,13 +96,74 @@ def get_analytics():
         
         reservas_mes_seleccionado = ingresos_año_completo.get(f"{anio_seleccionado}-{mes_seleccionado:02d}", {}).get('reservas', 0)
 
-        # --- TENDENCIA ---
         tendencia_ingresos = 0
         if ingresos_mes_anterior > 0:
             tendencia_ingresos = ((ingresos_mes_seleccionado - ingresos_mes_anterior) / ingresos_mes_anterior) * 100
         elif ingresos_mes_seleccionado > 0:
             tendencia_ingresos = 100
+            
+        agrupados = db.session.query(
+            Gasto.categoria.label('nombre_cat'), 
+            func.sum(Gasto.monto).label('total')
+        ).filter(
+            extract('year', Gasto.fecha) == anio_seleccionado,
+            extract('month', Gasto.fecha) == mes_seleccionado
+        ).group_by(Gasto.categoria).all()
 
+        PALETA_COLORES = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6']
+        desglose_gastos = []
+        for i, row in enumerate(agrupados):
+            desglose_gastos.append({
+                "name": getattr(row, 'nombre_cat', 'Otros') or "Otros",
+                "value": float(row.total) if row.total else 0,
+                "color": PALETA_COLORES[i % len(PALETA_COLORES)]
+            })
+
+        movimientos = []
+        
+        # Buscamos los 3 gastos más recientes
+        gastos_recientes = db.session.query(Gasto).filter(
+            extract('year', Gasto.fecha) == anio_seleccionado,
+            extract('month', Gasto.fecha) == mes_seleccionado
+        ).order_by(Gasto.fecha.desc()).limit(3).all()
+        
+        for g in gastos_recientes:
+            movimientos.append({
+                "id": f"gasto_{g.id}",
+                "type": "gasto",
+                "text": f"Gasto registrado: {getattr(g, 'categoria', getattr(g, 'concepto', 'General'))}",
+                "amount": -float(g.monto),
+                "date": g.fecha.strftime('%d/%m %H:%M') if g.fecha else "Reciente"
+            })
+
+        # Buscamos las 3 reservas más recientes
+        reservas_recientes = db.session.query(Reserva).filter(
+            extract('year', Reserva.fecha_aceptacion) == anio_seleccionado,
+            extract('month', Reserva.fecha_aceptacion) == mes_seleccionado
+        ).order_by(Reserva.fecha_aceptacion.desc()).limit(3).all()
+        
+        for r in reservas_recientes:
+            texto = f"Reserva {r.estado.capitalize()}"
+            if r.usuario:
+                texto += f": {r.usuario.nombre} {r.usuario.apellido}"
+                
+            tipo_mov = "ingreso" if r.estado == "confirmada" else "info"
+            monto_mov = float(r.valor_alquiler) if r.estado == "confirmada" else None
+            
+            movimientos.append({
+                "id": f"reserva_{r.id}",
+                "type": tipo_mov,
+                "text": texto,
+                "amount": monto_mov,
+                "date": r.fecha_aceptacion.strftime('%d/%m %H:%M') if r.fecha_aceptacion else "Reciente"
+            })
+
+        # Ordenamos ambos arreglos combinados por fecha y nos quedamos con los 5 más recientes
+        movimientos.sort(key=lambda x: x['date'], reverse=True)
+        ultimos_movimientos = movimientos[:5]
+
+
+        # --- EMPAQUETADO FINAL DEL JSON ---
         data = {
             "ingresos_mes_seleccionado": ingresos_mes_seleccionado,
             "gastos_mes_seleccionado": gastos_mes_seleccionado,
@@ -110,7 +171,9 @@ def get_analytics():
             "reservas_mes_seleccionado": reservas_mes_seleccionado,
             "tendencia_ingresos_porcentaje": round(tendencia_ingresos, 2),
             "dinero_por_liquidar": total_a_liquidar,
-            "ingresos_por_mes": ingresos_año_completo
+            "ingresos_por_mes": ingresos_año_completo,
+            "desglose_gastos": desglose_gastos,         # 🌟 Conectado al frontend
+            "ultimos_movimientos": ultimos_movimientos  # 🌟 Conectado al frontend
         }
         
         response_builder.add_message("Analíticas generadas con éxito").add_status_code(200).add_data(data)
