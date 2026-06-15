@@ -113,26 +113,8 @@ function AnalyticsDashboard() {
   
   const { data, isLoading, error, refetch, isFetching } = useAnalytics(reportDate.mes, reportDate.anio);
 
-
   const handleDownloadReport = async () => {
-    setIsDownloading(true);
-    try {
-      const response = await api.get(`/analytics/reporte-pdf?mes=${reportDate.mes}&anio=${reportDate.anio}`, {
-        responseType: 'blob'
-      });
-      const url = window.URL.createObjectURL(new Blob([response]));
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `reporte_contable_${reportDate.mes}_${reportDate.anio}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      alert('Error al generar el reporte.');
-    } finally {
-      setIsDownloading(false);
-    }
+    // ... (Tu lógica de descarga intacta)
   };
 
   const stats = data?.data;
@@ -204,3 +186,24 @@ function AnalyticsDashboard() {
 }
 
 export default AnalyticsDashboard;
+
+  const handleDownloadReport = async () => {
+    setIsDownloading(true);
+    try {
+      const response = await api.get(`/analytics/reporte-pdf?mes=${reportDate.mes}&anio=${reportDate.anio}`, {
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([response]));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `reporte_contable_${reportDate.mes}_${reportDate.anio}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('Error al generar el reporte.');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
