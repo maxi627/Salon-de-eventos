@@ -13,7 +13,14 @@ class GastoRepository(Repository_add, Repository_get, Repository_delete):
         return self.repository.add(gasto)
 
     def get_all(self, month=None, year=None) -> List[Gasto]:
-        return self.repository.get_all(month=month, year=year)
+        query = Gasto.query
+        if year:
+            query = query.filter(extract('year', Gasto.fecha) == year)
+        if month:
+            query = query.filter(extract('month', Gasto.fecha) == month)
+
+        return query.order_by(Gasto.fecha.desc()).all()
+
     def get_agrupados_por_categoria(self, month: int, year: int):
         """
         Devuelve una lista de tuplas: (categoria, total_gastado)
