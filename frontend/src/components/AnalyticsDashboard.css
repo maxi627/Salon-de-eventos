@@ -69,7 +69,7 @@
 
 .btn-refresh-icon:hover {
   background: #e1e4e8;
-  border-color: var(--color-primario);
+  border-color: var(--color-primario, #3498db);
   transform: rotate(30deg);
 }
 
@@ -89,7 +89,7 @@
   opacity: 0.9;
 }
 
-/* --- TARJETAS --- */
+/* --- TARJETAS SUPERIORES (KPIs) --- */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -114,12 +114,25 @@
 .stat-card.gastos { border-left-color: #e74c3c; background-color: #fffafa; }
 .stat-card.beneficio { border-left-color: #3498db; background-color: #f7fbff; }
 
+/* NUEVO: Contenedor para el título y el ícono */
+.stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
 .stat-title {
-  margin: 0 0 0.75rem 0;
+  margin: 0;
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: #718096;
+}
+
+.stat-icon {
+  font-size: 1.4rem;
+  opacity: 0.8;
 }
 
 .stat-value {
@@ -145,14 +158,149 @@
   display: block;
 }
 
-/* GRÁFICO */
-.chart-container {
-  margin-top: 2.5rem;
-  background: #fff;
-  padding: 1rem;
-  border: 1px solid #edf2f7;
-  border-radius: 12px;
+
+/* ==========================================================================
+   NUEVA ESTRUCTURA GRID INFERIOR (Gráficos y Movimientos)
+   ========================================================================== */
+
+.dashboard-content-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* Proporción 65% barras / 35% tarjetas laterales */
+  gap: 1.5rem;
+  margin-top: 2rem;
 }
+
+/* Columna Izquierda (Gráfico Principal) */
+.main-chart-section {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #edf2f7; /* Mantenemos el borde suave que te gustaba */
+}
+
+/* Columna Derecha (Tarjetas apiladas) */
+.side-panels-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.side-panel-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #edf2f7;
+}
+
+.panel-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 0.5rem;
+}
+
+/* --- ESTILOS LEYENDA DEL GRÁFICO DE TORTA --- */
+.pie-chart-wrapper {
+  margin-bottom: 1rem;
+}
+
+.custom-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.legend-label {
+  flex-grow: 1;
+}
+
+.legend-value {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* --- ESTILOS FEED DE MOVIMIENTOS --- */
+.activity-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid #f8fafc;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.activity-icon-container {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-size: 1rem;
+  flex-shrink: 0; /* Evita que el ícono se aplaste */
+}
+
+.activity-icon-container.ingreso { background-color: #d1fae5; }
+.activity-icon-container.gasto { background-color: #fee2e2; }
+.activity-icon-container.info { background-color: #e0f2fe; }
+
+.activity-details {
+  flex-grow: 1;
+  min-width: 0; /* Permite truncar texto si es muy largo */
+}
+
+.activity-text {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #334155;
+  margin: 0 0 0.2rem 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.activity-date {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.activity-amount {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-left: 10px;
+}
+
+.activity-amount.ingreso { color: #10b981; }
+.activity-amount.gasto { color: #ef4444; }
+
 
 /* ANIMACIÓN SPIN */
 .spinning {
@@ -166,26 +314,37 @@
   to { transform: rotate(360deg); }
 }
 
-/* --- VISTA MÓVIL (Smartphones y pantallas estrechas) --- */
+/* ==========================================================================
+   RESPONSIVE DESIGN Y MEDIA QUERIES
+   ========================================================================== */
+
+/* Tablets y pantallas medianas (colapsar el grid a 1 columna) */
+@media (max-width: 1024px) {
+  .dashboard-content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* VISTA MÓVIL (Smartphones y pantallas estrechas) */
 @media (max-width: 650px) {
   .analytics-dashboard {
-    padding: 1.2rem; /* Achicamos un poco el padding general para ganar espacio */
+    padding: 1.2rem;
   }
 
   .dashboard-header {
     flex-direction: column;
-    align-items: stretch; /* Obliga a los elementos a usar todo el ancho */
+    align-items: stretch;
     gap: 1.2rem;
     padding-bottom: 0.5rem;
   }
 
   .dashboard-title {
-    text-align: center; /* Queda mucho más simétrico en celulares */
+    text-align: center;
     font-size: 1.3rem;
   }
 
   .dashboard-toolbar {
-    flex-direction: column; /* Apila las fechas ARRIBA de los botones */
+    flex-direction: column;
     width: 100%;
     gap: 1rem;
   }
@@ -198,9 +357,9 @@
   }
 
   .date-controls select {
-    flex: 1; /* Hace que el Mes y el Año midan exactamente 50% cada uno */
+    flex: 1;
     text-align: center;
-    padding: 10px; /* Un poco más alto para que el dedo acierte más fácil */
+    padding: 10px;
   }
 
   .action-group {
@@ -209,7 +368,7 @@
   }
 
   .btn-download-pdf {
-    flex: 1; /* El botón PDF toma todo el espacio restante (se vuelve un botón ancho) */
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -217,9 +376,8 @@
     padding: 10px;
   }
   
-  /* Evita que las tarjetas se salgan de los bordes en celulares muy pequeños */
   .stats-grid {
-    grid-template-columns: 1fr; /* Fuerza 1 sola columna en móviles */
+    grid-template-columns: 1fr;
     gap: 1rem;
   }
 }
