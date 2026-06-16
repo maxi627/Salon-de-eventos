@@ -124,7 +124,7 @@ def get_analytics():
             })
 
         # =====================================================================
-        # LÓGICA MEJORADA PARA LOS ÚLTIMOS MOVIMIENTOS (Feed lateral)
+        # LÓGICA PARA LOS ÚLTIMOS MOVIMIENTOS (Feed lateral)
         # =====================================================================
         art_tz = pytz.timezone('America/Argentina/Buenos_Aires')
         movimientos_crudos = []

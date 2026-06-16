@@ -217,7 +217,8 @@ const ReservasManager = () => {
     </div>
   );
 };
-// --- COMPONENTE PRINCIPAL: ADMIN PANEL (Intacto) ---
+
+// --- COMPONENTE PRINCIPAL: ADMIN PANEL ---
 function AdminPanel() {
   const [activeTab, setActiveTab] = useState(() => {
     return localStorage.getItem('adminActiveTab') || 'accounting';
@@ -238,20 +239,58 @@ function AdminPanel() {
 
   return (
     <div className="admin-wrapper">
-      <aside className="admin-sidebar" style={{ backgroundColor: '#bc9e74', color: '#f1f5f9' }}>
+      {/* Se eliminó el "style={{ backgroundColor: ... }}" para que el CSS tome el control total */}
+      <aside className="admin-sidebar">
         <div className="sidebar-logo">
           <h3>SALÓN ADMIN</h3>
         </div>
+        
         <nav className="sidebar-nav">
-          <button className="nav-btn" onClick={() => navigate('/')}>🏠 Inicio</button>
+          <button className="nav-btn" onClick={() => navigate('/')}>
+            <i className="fa-solid fa-house"></i> Inicio
+          </button>
+          
           <div className="nav-divider">Gestión</div>
-          <button className={`nav-btn ${activeTab === 'accounting' ? 'active' : ''}`} onClick={() => setActiveTab('accounting')}>📊 Contabilidad</button>
-          <button className={`nav-btn ${activeTab === 'prices' ? 'active' : ''}`} onClick={() => setActiveTab('prices')}>💰 Precios</button>
-          <button className={`nav-btn ${activeTab === 'expenses' ? 'active' : ''}`} onClick={() => setActiveTab('expenses')}>📉 Gastos</button>
-          <button className={`nav-btn ${activeTab === 'reservations' ? 'active' : ''}`} onClick={() => setActiveTab('reservations')}>📅 Reservas</button>
-          <button className={`nav-btn ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}>👤 Usuarios</button>
+          
+          <button 
+            className={`nav-btn ${activeTab === 'accounting' ? 'active' : ''}`} 
+            onClick={() => setActiveTab('accounting')}
+          >
+            <i className="fa-solid fa-chart-line"></i> Contabilidad
+          </button>
+          
+          <button 
+            className={`nav-btn ${activeTab === 'prices' ? 'active' : ''}`} 
+            onClick={() => setActiveTab('prices')}
+          >
+            <i className="fa-solid fa-tag"></i> Precios
+          </button>
+          
+          <button 
+            className={`nav-btn ${activeTab === 'expenses' ? 'active' : ''}`} 
+            onClick={() => setActiveTab('expenses')}
+          >
+            <i className="fa-solid fa-arrow-trend-down"></i> Gastos
+          </button>
+          
+          <button 
+            className={`nav-btn ${activeTab === 'reservations' ? 'active' : ''}`} 
+            onClick={() => setActiveTab('reservations')}
+          >
+            <i className="fa-solid fa-calendar-days"></i> Reservas
+          </button>
+          
+          <button 
+            className={`nav-btn ${activeTab === 'users' ? 'active' : ''}`} 
+            onClick={() => setActiveTab('users')}
+          >
+            <i className="fa-solid fa-users-gears"></i> Usuarios
+          </button>
+          
           <div className="sidebar-footer">
-            <button className="nav-btn logout-btn" onClick={handleLogout}>🚪 Cerrar Sesión</button>
+            <button className="nav-btn logout-btn" onClick={handleLogout}>
+              <i className="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
+            </button>
           </div>
         </nav>
       </aside>
