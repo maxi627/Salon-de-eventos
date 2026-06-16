@@ -39,7 +39,7 @@ function PriceEditor() {
     fetchAllPrices();
   }, [fetchAllPrices]);
 
-  // --- 2. BUSCAR FECHA ESPECÍFICA (Asegura existencia en DB) ---
+  // --- 2. BUSCAR FECHA ESPECÍFICA ---
   const handleManualSearch = async (date) => {
     setSelectedDate(date);
     if (!date) {
@@ -51,7 +51,6 @@ function PriceEditor() {
     try {
       setIsLoading(true);
       setError('');
-      // Usamos by-date para que el backend la cree si no existe (get_or_create)
       const response = await fetch(`/api/v1/fecha/by-date/${date}`);
       const result = await response.json();
       
@@ -104,7 +103,7 @@ function PriceEditor() {
     }
   };
 
-  // --- 4. ACTUALIZACIÓN MASIVA (Corregida para KVM vacía) ---
+  // --- 4. ACTUALIZACIÓN MASIVA ---
   const [bulkDay, setBulkDay] = useState(0);
   const [bulkMonths, setBulkMonths] = useState(3);
 
@@ -131,14 +130,11 @@ function PriceEditor() {
     try {
       let count = 0;
       for (const d of targetDates) {
-        // PASO A: Aseguramos que la fecha existe en Postgres (get_or_create)
         const getOrCreateRes = await fetch(`/api/v1/fecha/by-date/${d}`);
         const getOrCreateResult = await getOrCreateRes.json();
         
         if (getOrCreateRes.ok && getOrCreateResult.data) {
           const idParaActualizar = getOrCreateResult.data.id;
-
-          // PASO B: Ahora que tenemos el ID (nuevo o viejo), actualizamos el valor
           await fetch(`/api/v1/fecha/${idParaActualizar}`, {
             method: 'PUT',
             headers: { 
@@ -172,18 +168,24 @@ function PriceEditor() {
       <div className="price-editor-header">
         <h3>Gestión de Tarifas</h3>
         <div className="mode-selector">
-          <button className={mode === 'calendar' ? 'active' : ''} onClick={() => setMode('calendar')}>📅 Calendario</button>
-          <button className={mode === 'individual' ? 'active' : ''} onClick={() => setMode('individual')}>✏️ Individual</button>
-          <button className={mode === 'bulk' ? 'active' : ''} onClick={() => setMode('bulk')}>🚀 Masivo</button>
+          <button className={mode === 'calendar' ? 'active' : ''} onClick={() => setMode('calendar')}>
+            <i className="fa-regular fa-calendar"></i> Calendario
+          </button>
+          <button className={mode === 'individual' ? 'active' : ''} onClick={() => setMode('individual')}>
+            <i className="fa-solid fa-pen-to-square"></i> Individual
+          </button>
+          <button className={mode === 'bulk' ? 'active' : ''} onClick={() => setMode('bulk')}>
+            <i className="fa-solid fa-layer-group"></i> Masivo
+          </button>
         </div>
       </div>
 
       {mode === 'calendar' && (
         <div className="calendar-view">
           <div className="calendar-controls">
-            <button onClick={() => setCurrentMonth(new Date(year, month - 1, 1))}>◀</button>
+            <button onClick={() => setCurrentMonth(new Date(year, month - 1, 1))}><i className="fa-solid fa-chevron-left"></i></button>
             <h4>{currentMonth.toLocaleString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase()}</h4>
-            <button onClick={() => setCurrentMonth(new Date(year, month + 1, 1))}>▶</button>
+            <button onClick={() => setCurrentMonth(new Date(year, month + 1, 1))}><i className="fa-solid fa-chevron-right"></i></button>
           </div>
           
           <div className="calendar-grid">
@@ -265,8 +267,8 @@ function PriceEditor() {
               <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="0" />
             </div>
             <div className="action-buttons">
-              <button type="submit" className="btn-save" disabled={isLoading || !price}>
-                {isLoading ? 'Procesando (creando y actualizando)...' : 'Aplicar a todos'}
+              <button type="submit" className="btn-save bulk-btn" disabled={isLoading || !price}>
+                {isLoading ? 'Procesando...' : 'Aplicar a todos'}
               </button>
               <button type="button" className="btn-cancel" onClick={() => setMode('calendar')}>Cancelar</button>
             </div>
