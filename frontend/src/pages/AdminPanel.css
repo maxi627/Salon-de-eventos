@@ -296,3 +296,79 @@ h1, h2, h3, h4, span, p, strong {
 .recharts-responsive-container {
   background-color: transparent !important;
 }
+
+/* =====================================================================
+   4. ESTILOS DE GESTIÓN DE RESERVAS Y FILTROS
+   ===================================================================== */
+   
+.filters-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  background-color: var(--bg-card);
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-dark);
+  margin-bottom: 1.5rem;
+}
+
+.filters-inputs {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.toggle-group {
+  display: flex;
+  gap: 1.5rem;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.show-past-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s;
+}
+
+.show-past-toggle:hover {
+  color: var(--text-primary);
+}
+
+.show-past-toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--accent-blue);
+  cursor: pointer;
+  background-color: var(--bg-main) !important;
+}
+
+/* Indicador sutil para filas de reservas pasadas */
+.row-past-reservation td {
+  opacity: 0.6;
+  background-color: rgba(255, 255, 255, 0.01);
+}
+
+@media (max-width: 768px) {
+  .filters-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filters-inputs {
+    flex-direction: column;
+  }
+  .toggle-group {
+    justify-content: center;
+  }
+}

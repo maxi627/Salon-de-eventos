@@ -33,6 +33,7 @@ const Pagination = ({ itemsPerPage, totalItems, paginate, currentPage }) => {
 };
 
 // --- SUB-COMPONENTE: GESTIÓN DE RESERVAS UNIFICADA ---
+// --- SUB-COMPONENTE: GESTIÓN DE RESERVAS UNIFICADA ---
 const ReservasManager = () => {
   const { data: reservas = {}, isLoading, error, refetch } = useReservas();
   
@@ -50,7 +51,7 @@ const ReservasManager = () => {
   const [statusFilter, setStatusFilter] = useState('todas');
   const [monthFilter, setMonthFilter] = useState('todos');
   
-  // NUEVO: Estado para mostrar u ocultar reservas pasadas
+  // Estado para mostrar u ocultar reservas pasadas
   const [showPastReservations, setShowPastReservations] = useState(false);
   
   const [currentPage, setCurrentPage] = useState(1);
@@ -107,7 +108,6 @@ const ReservasManager = () => {
 
   // --- FILTRO CRUCIAL: Solo próximas o incluir pasadas ---
   if (!showPastReservations && searchResults === null) {
-    // Si NO queremos ver pasadas (y no estamos buscando a alguien específico), filtramos:
     listToRender = listToRender.filter(r => r.fecha?.dia >= today);
   }
 
@@ -123,53 +123,61 @@ const ReservasManager = () => {
 
   return (
     <div className="admin-section-fade">
-      <div className="reservas-header">
-        <div className="title-with-refresh">
-          <h2 className="section-title">Gestión de Reservas</h2>
-        </div>
-        <div className="reservas-actions">
-          <button className="btn-toggle-archived" onClick={() => setShowArchived(!showArchived)}>
-            {showArchived ? 'Ocultar Archivadas' : 'Ver Archivadas'}
-          </button>
-          <button className="btn-create" onClick={() => { setSelectedReservation(null); setIsCreating(true); setIsModalOpen(true); }}>
-            + Nueva Reserva
-          </button>
-        </div>
+      {/* CABECERA LIMPIA */}
+      <div className="reservas-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-dark)', paddingBottom: '1rem' }}>
+        <h2 className="section-title" style={{ margin: 0, fontSize: '1.4rem', color: 'var(--text-primary)' }}>Gestión de Reservas</h2>
+        <button className="btn-create" onClick={() => { setSelectedReservation(null); setIsCreating(true); setIsModalOpen(true); }}>
+          <i className="fa-solid fa-plus"></i> Nueva Reserva
+        </button>
       </div>
 
       {showArchived && <ArchivedReservations />}
 
+      {/* BARRA DE FILTROS UNIFICADA */}
       <div className="filters-toolbar">
-        <input
-          type="text"
-          placeholder="Buscar cliente, DNI o fecha..."
-          className="search-input toolbar-input"
-          value={searchTerm}
-          onChange={handleSearchChange}
-        />
-        
-        <select className="toolbar-select" value={monthFilter} onChange={(e) => { setMonthFilter(e.target.value); setCurrentPage(1); }} disabled={searchResults !== null}>
-          <option value="todos">Todos los meses</option>
-          {availableMonths.map(month => (
-            <option key={month} value={month}>{month.charAt(0).toUpperCase() + month.slice(1)}</option>
-          ))}
-        </select>
-
-        <select className="toolbar-select" value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}>
-          <option value="todas">Todos los estados</option>
-          <option value="confirmada">Confirmadas</option>
-          <option value="pendiente">Pendientes</option>
-        </select>
-
-        {/* --- NUEVO TOGGLE PARA PASADAS --- */}
-        <label className="show-past-toggle">
-          <input 
-            type="checkbox" 
-            checked={showPastReservations} 
-            onChange={(e) => setShowPastReservations(e.target.checked)} 
+        <div className="filters-inputs">
+          <input
+            type="text"
+            placeholder="Buscar cliente, DNI o fecha..."
+            className="search-input toolbar-input"
+            value={searchTerm}
+            onChange={handleSearchChange}
           />
-          Ver reservas pasadas
-        </label>
+          
+          <select className="toolbar-select" value={monthFilter} onChange={(e) => { setMonthFilter(e.target.value); setCurrentPage(1); }} disabled={searchResults !== null}>
+            <option value="todos">Todos los meses</option>
+            {availableMonths.map(month => (
+              <option key={month} value={month}>{month.charAt(0).toUpperCase() + month.slice(1)}</option>
+            ))}
+          </select>
+
+          <select className="toolbar-select" value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}>
+            <option value="todas">Todos los estados</option>
+            <option value="confirmada">Confirmadas</option>
+            <option value="pendiente">Pendientes</option>
+          </select>
+        </div>
+
+        {/* CONTROLES DE HISTORIAL AGRUPADOS */}
+        <div className="toggle-group">
+          <label className="show-past-toggle">
+            <input 
+              type="checkbox" 
+              checked={showPastReservations} 
+              onChange={(e) => setShowPastReservations(e.target.checked)} 
+            />
+            <span>Ver pasadas</span>
+          </label>
+
+          <label className="show-past-toggle">
+            <input 
+              type="checkbox" 
+              checked={showArchived} 
+              onChange={(e) => setShowArchived(e.target.checked)} 
+            />
+            <span>Ver archivadas</span>
+          </label>
+        </div>
       </div>
 
       <div className="table-container">
@@ -194,7 +202,7 @@ const ReservasManager = () => {
                   <td>{`${reserva.usuario?.nombre || ''} ${reserva.usuario?.apellido || ''}`}</td>
                   <td><span className={`status ${reserva.estado}`}>{reserva.estado}</span></td>
                   <td>${(reserva.valor_alquiler || 0).toLocaleString('es-AR')}</td>
-                  <td style={{ fontWeight: reserva.saldo_restante > 0 ? 'bold' : 'normal', color: reserva.saldo_restante > 0 ? '#e74c3c' : '#27ae60' }}>
+                  <td style={{ fontWeight: reserva.saldo_restante > 0 ? 'bold' : 'normal', color: reserva.saldo_restante > 0 ? '#ef4444' : '#10b981' }}>
                     ${(reserva.saldo_restante || 0).toLocaleString('es-AR')}
                   </td>
                   <td>
@@ -205,7 +213,7 @@ const ReservasManager = () => {
                 </tr>
               ))
             ) : (
-              <tr><td colSpan="6" style={{textAlign: 'center'}}>No hay reservas próximas que coincidan.</td></tr>
+              <tr><td colSpan="6" style={{textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)'}}>No hay reservas que coincidan.</td></tr>
             )}
           </tbody>
         </table>
@@ -217,7 +225,6 @@ const ReservasManager = () => {
     </div>
   );
 };
-
 // --- COMPONENTE PRINCIPAL: ADMIN PANEL ---
 function AdminPanel() {
   const [activeTab, setActiveTab] = useState(() => {
