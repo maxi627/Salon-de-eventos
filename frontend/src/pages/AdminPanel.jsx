@@ -33,7 +33,6 @@ const Pagination = ({ itemsPerPage, totalItems, paginate, currentPage }) => {
 };
 
 // --- SUB-COMPONENTE: GESTIÓN DE RESERVAS UNIFICADA ---
-// --- SUB-COMPONENTE: GESTIÓN DE RESERVAS UNIFICADA ---
 const ReservasManager = () => {
   const { data: reservas = {}, isLoading, error, refetch } = useReservas();
   
@@ -189,7 +188,7 @@ const ReservasManager = () => {
               <th>Estado</th>
               <th>Alquiler</th>
               <th>Saldo Pendiente</th>
-              <th>Acciones</th>
+              <th style={{textAlign: 'center'}}>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -200,14 +199,18 @@ const ReservasManager = () => {
                 <tr key={reserva.id} className={reserva.fecha?.dia < today ? 'row-past-reservation' : ''}>
                   <td><strong>{formatDisplayDate(reserva.fecha?.dia)}</strong></td>
                   <td>{`${reserva.usuario?.nombre || ''} ${reserva.usuario?.apellido || ''}`}</td>
-                  <td><span className={`status ${reserva.estado}`}>{reserva.estado}</span></td>
+                  <td>
+                    <span className={`status-badge ${reserva.estado}`}>
+                      {reserva.estado}
+                    </span>
+                  </td>
                   <td>${(reserva.valor_alquiler || 0).toLocaleString('es-AR')}</td>
                   <td style={{ fontWeight: reserva.saldo_restante > 0 ? 'bold' : 'normal', color: reserva.saldo_restante > 0 ? '#ef4444' : '#10b981' }}>
                     ${(reserva.saldo_restante || 0).toLocaleString('es-AR')}
                   </td>
-                  <td>
+                  <td style={{textAlign: 'center'}}>
                     <button className="btn-view-reserva" onClick={() => { setSelectedReservation(reserva); setIsCreating(false); setIsModalOpen(true); }}>
-                      Gestionar
+                      <i className="fa-solid fa-pen-to-square"></i> Gestionar
                     </button>
                   </td>
                 </tr>
@@ -225,6 +228,7 @@ const ReservasManager = () => {
     </div>
   );
 };
+
 // --- COMPONENTE PRINCIPAL: ADMIN PANEL ---
 function AdminPanel() {
   const [activeTab, setActiveTab] = useState(() => {
@@ -246,7 +250,6 @@ function AdminPanel() {
 
   return (
     <div className="admin-wrapper">
-      {/* Se eliminó el "style={{ backgroundColor: ... }}" para que el CSS tome el control total */}
       <aside className="admin-sidebar">
         <div className="sidebar-logo">
           <h3>SALÓN ADMIN</h3>
