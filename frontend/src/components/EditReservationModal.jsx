@@ -43,11 +43,8 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
       return;
     }
 
-    // Limpiar el teléfono para la URL (sacar espacios/guiones)
     const cleanPhone = telefono.replace(/\s+/g, '').replace(/-/g, '');
-    
     const texto = `Hola ${localReservation.usuario.nombre}, te contacto desde el Salón de Eventos por tu reserva del día ${formData.fecha_dia}. Queríamos coordinar los detalles: capacidad para ${formData.cantidad_personas} personas y horario de ${formData.hora_inicio || '11:00'} a ${formData.hora_fin || '20:00'} hs.`;
-    
     const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(texto)}`;
     window.open(url, '_blank');
   };
@@ -57,16 +54,14 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // --- NUEVA FUNCIÓN: Buscador en vivo con Debounce ---
+  // --- FUNCIÓN: Buscador en vivo con Debounce ---
   const handleUserSearch = (e) => {
     const term = e.target.value;
     setUserSearchTerm(term);
 
-    // Limpiamos el temporizador anterior si el usuario sigue escribiendo
     if (searchTimeout) clearTimeout(searchTimeout);
 
     if (term.trim().length >= 2) {
-      // Esperamos 300ms antes de llamar al backend
       const timeoutId = setTimeout(async () => {
         const token = localStorage.getItem('authToken');
         try {
@@ -239,7 +234,10 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-with-action">
-          <h2>{isCreating ? 'Crear Nueva Reserva' : `Gestionar Reserva`}</h2>
+          <h2>
+            <i className={isCreating ? "fa-solid fa-calendar-plus" : "fa-solid fa-calendar-check"}></i> 
+            {isCreating ? ' Crear Nueva Reserva' : ' Gestionar Reserva'}
+          </h2>
           
           {!isCreating && localReservation?.usuario?.telefono && (
             <button 
@@ -248,7 +246,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
               onClick={handleContactWhatsApp}
               title="Contactar por WhatsApp antes de confirmar"
             >
-              <span className="wa-icon">💬</span> Contactar Cliente
+              <i className="fa-brands fa-whatsapp wa-icon"></i> Contactar Cliente
             </button>
           )}
         </div>
@@ -256,7 +254,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
       {!isCreating && localReservation?.comprobante_url && (
         <div className="receipt-view-section">
           <div className="receipt-header-row">
-            <h4>Comprobante de Solicitud</h4>
+            <h4><i className="fa-solid fa-paperclip"></i> Comprobante de Solicitud</h4>
             <span className="receipt-status-badge">Adjunto</span>
           </div>
           <div className="receipt-action-container">
@@ -266,18 +264,18 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
               rel="noopener noreferrer"
               className="receipt-action-btn"
             >
-              <span className="icon">📄</span>
+              <i className="fa-regular fa-file-image icon"></i>
               <div className="text-content">
                 <span className="main-text">Abrir Comprobante</span>
               </div>
-              <span className="external-link-icon">↗</span>
+              <i className="fa-solid fa-arrow-up-right-from-square external-link-icon"></i>
             </a>
           </div>
         </div>
       )}
 
         {!isCreating && localReservation?.usuario && (
-          <p><strong>Usuario:</strong> {localReservation.usuario.nombre} {localReservation.usuario.apellido}</p>
+          <p className="user-info-text"><i className="fa-regular fa-user"></i> <strong>Usuario:</strong> {localReservation.usuario.nombre} {localReservation.usuario.apellido}</p>
         )}
         
         <form onSubmit={handleSubmit}>
@@ -307,7 +305,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
                 )}
                 {showUserList && userSearchTerm.length >= 2 && filteredUsers.length === 0 && (
                    <ul className="user-search-results">
-                     <li className="no-results" style={{ padding: '10px', color: '#666' }}>No se encontraron usuarios...</li>
+                     <li className="no-results">No se encontraron usuarios...</li>
                    </ul>
                 )}
               </div>
@@ -358,8 +356,8 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
               />
             </div>
           </div>
-          <p className="status-help-text" style={{marginTop: '-10px', marginBottom: '15px'}}>
-            Si se dejan vacíos, el contrato usará el horario base (11:00 a 20:00).
+          <p className="status-help-text">
+            <i className="fa-solid fa-circle-info"></i> Si se dejan vacíos, el contrato usará el horario base (11:00 a 20:00).
           </p>
           
           <div className="form-group">
@@ -372,25 +370,25 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
           </div>
 
           <div className="modal-actions">
-            <button type="button" className="btn-close" onClick={onClose}>Cerrar</button>
+            <button type="button" className="btn-close" onClick={onClose}>Cancelar</button>
             <button type="submit" className="btn-save">
-              {isCreating ? 'Crear Reserva' : 'Guardar y Confirmar'}
+              {isCreating ? <><i className="fa-solid fa-check"></i> Crear Reserva</> : <><i className="fa-solid fa-floppy-disk"></i> Guardar y Confirmar</>}
             </button>
           </div>
         </form>
 
         {!isCreating && (
           <div className="payments-section">
-            <h4>Pagos Registrados</h4>
+            <h4><i className="fa-solid fa-money-bill-wave"></i> Pagos Registrados</h4>
             <ul className="payment-list">
               {localReservation.pagos && localReservation.pagos.length > 0 ? (
                 localReservation.pagos.map(pago => (
                   <li key={pago.id}>
                     <div>
-                      <span>{new Date(pago.fecha_pago).toLocaleDateString('es-ES')}</span>
-                      <strong> - ${(pago.monto || 0).toLocaleString('es-AR')}</strong>
+                      <span><i className="fa-regular fa-calendar-check"></i> {new Date(pago.fecha_pago).toLocaleDateString('es-ES')}</span>
+                      <strong className="payment-amount"> + ${(pago.monto || 0).toLocaleString('es-AR')}</strong>
                     </div>
-                    <button className="btn-delete-pago" onClick={() => handleDeletePayment(pago.id)} title="Eliminar pago">&times;</button>
+                    <button className="btn-delete-pago" onClick={() => handleDeletePayment(pago.id)} title="Eliminar pago"><i className="fa-solid fa-xmark"></i></button>
                   </li>
                 ))
               ) : (
@@ -404,12 +402,14 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
             <div className="add-payment-form">
               <input
                 type="number"
-                placeholder="Monto nuevo pago"
+                placeholder="Monto nuevo pago..."
                 value={newPayment.monto}
                 onChange={handlePaymentChange}
                 min="0"
               />
-              <button type="button" className="btn-add-payment" onClick={handleAddPayment}>Añadir Pago</button>
+              <button type="button" className="btn-add-payment" onClick={handleAddPayment}>
+                <i className="fa-solid fa-hand-holding-dollar"></i> Añadir Pago
+              </button>
             </div>
           </div>
         )}
@@ -417,13 +417,13 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
         {!isCreating && (
           <div className="delete-section">
             <button onClick={handleDelete} className="btn-delete" disabled={isDeleting}>
-              {isDeleting ? 'Archivando...' : 'Archivar Reserva'}
+              <i className="fa-solid fa-box-archive"></i> {isDeleting ? 'Archivando...' : 'Archivar Reserva'}
             </button>
           </div>
         )}
 
-        {error && <p className="error-message">{error}</p>}
-        {message && <p className="message-area" style={{color: 'green', textAlign: 'center', marginTop: '10px'}}>{message}</p>}
+        {error && <p className="error-message"><i className="fa-solid fa-circle-exclamation"></i> {error}</p>}
+        {message && <p className="success-message"><i className="fa-solid fa-circle-check"></i> {message}</p>}
       </div>
     </div>
   );
