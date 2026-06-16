@@ -262,3 +262,37 @@ input:focus, select:focus {
 h1, h2, h3, h4, span, p, strong {
   color: inherit; /* Hereda el color blanco/gris oscuro forzado arriba */
 }
+/* =====================================================================
+   🚨 PARCHE DE FUERZA BRUTA: ELIMINAR FONDOS BLANCOS Y GRADIENTES
+   ===================================================================== */
+
+/* 1. Matar el gradiente beige del Sidebar */
+.admin-sidebar, 
+.sidebar-nav {
+  background: var(--bg-sidebar) !important;
+  background-image: none !important; /* Esto destruye cualquier gradiente */
+}
+
+/* 2. Matar el fondo blanco gigante de los componentes hijos */
+.admin-section-fade,
+.analytics-dashboard,
+.dashboard-container,
+.analytics-container,
+.resumen-contable {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* 3. Asegurar que los títulos generales (como "Resumen Contable") sean blancos */
+.admin-content-area h1,
+.admin-content-area h2,
+.admin-content-area h3 {
+  color: var(--text-primary) !important;
+}
+
+/* 4. Arreglar el fondo blanco residual detrás del gráfico de barras */
+.recharts-responsive-container {
+  background-color: transparent !important;
+}
