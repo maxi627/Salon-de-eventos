@@ -1,149 +1,264 @@
 /* =====================================================================
-   🌑 Midnight Tech Theme - Ultra Dark SaaS
+   🌌 MIDNIGHT TECH THEME - ULTRA DARK SAAS (AdminPanel.css)
    ===================================================================== */
 :root {
-  --sidebar-bg: #030712;         /* Negro profundo */
-  --main-bg: #0b0f1a;            /* Fondo principal oscuro */
-  --card-bg: #111827;            /* Fondo de tarjetas / secciones */
-  --header-bg: #0b0f1a;
-  --border-color: #1f2937;       /* Gris oscuro para bordes sutiles */
-  --accent-color: #3b82f6;       /* Azul vibrante */
-  --accent-hover: rgba(59, 130, 246, 0.1);
-  --text-bright: #f8fafc;        /* Texto blanco puro */
-  --text-muted: #94a3b8;         /* Texto gris para descripciones */
-  --brand-gold: #bc9e74;
+  --bg-main: #0b1120;           /* Negro azulado profundo (Fondo general) */
+  --bg-sidebar: #0f172a;        /* Azul pizarra muy oscuro (Menú lateral) */
+  --bg-card: #1e293b;           /* Gris azulado (Tarjetas y Tablas) */
+  --border-dark: #334155;       /* Bordes tenues */
+  --text-primary: #f8fafc;      /* Blanco brillante */
+  --text-secondary: #94a3b8;    /* Gris texto secundario */
+  --accent-blue: #3b82f6;       /* Azul eléctrico (Botones y Activos) */
+  --accent-hover: rgba(59, 130, 246, 0.15);
+  --danger-red: #ef4444;
+  --success-green: #10b981;
 }
 
-/* Reset de scrollbars para modo oscuro */
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: var(--main-bg); }
-::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-
+/* --- RESET BÁSICO Y SCROLLBAR --- */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-main); }
+::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 4px; }
+
+/* --- CONTENEDOR PRINCIPAL --- */
 .admin-wrapper {
-  display: flex;
+  display: flex !important;
+  flex-direction: row !important;
   width: 100vw;
   height: 100vh;
-  background-color: var(--main-bg);
-  color: var(--text-bright);
-  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-main) !important;
+  background-image: none !important; /* Elimina cualquier gradiente viejo */
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
   overflow: hidden;
 }
 
 /* =====================================================================
-   SIDEBAR (ESTILO ADMIN DASH)
+   1. SIDEBAR (MENÚ LATERAL)
    ===================================================================== */
 .admin-sidebar {
-  width: 250px;
-  background-color: var(--sidebar-bg);
-  border-right: 1px solid var(--border-color);
-  display: flex;
-  flex-direction: column;
-  transition: all 0.3s ease;
+  width: 260px !important;
+  min-width: 260px !important;
+  background-color: var(--bg-sidebar) !important; /* Aplasta el beige del JSX */
+  border-right: 1px solid var(--border-dark);
+  display: flex !important;
+  flex-direction: column !important; /* Arregla los botones amontonados */
+  height: 100vh;
+  z-index: 100;
 }
 
 .sidebar-logo {
-  padding: 2rem 1.5rem;
-  text-align: left;
+  padding: 1.5rem;
+  background: transparent !important;
+  border-bottom: 1px solid var(--border-dark);
+  display: flex;
+  align-items: center;
 }
 
+/* Replicando el logo de la imagen de referencia (Cuadro azul + Texto) */
 .sidebar-logo h3 {
-  font-size: 1.1rem;
-  color: var(--accent-color); /* Logo en azul como la imagen 2 */
+  color: var(--text-primary);
   font-weight: 800;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-
-.sidebar-nav {
-  padding: 1rem;
-  flex-grow: 1;
-}
-
-.nav-divider {
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: #4b5563;
-  text-transform: uppercase;
-  margin: 1.5rem 0 0.75rem 0.5rem;
-}
-
-.nav-btn {
+  font-size: 1.2rem;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 0.8rem 1rem;
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  font-weight: 500;
-  border-radius: 10px;
-  cursor: pointer;
-  width: 100%;
-  transition: all 0.2s;
-  margin-bottom: 4px;
+  letter-spacing: 1px;
 }
 
-.nav-btn i { font-size: 1rem; }
+.sidebar-logo h3::before {
+  content: '✔';
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--accent-blue);
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.sidebar-nav {
+  padding: 1.5rem 1rem;
+  flex-grow: 1;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.4rem;
+  overflow-y: auto;
+}
+
+.nav-divider {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin: 1.5rem 0 0.5rem 0.5rem;
+}
+
+.nav-btn {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px;
+  padding: 0.8rem 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.nav-btn i { font-size: 1.1rem; width: 20px; text-align: center; }
 
 .nav-btn:hover {
   background-color: var(--accent-hover);
-  color: var(--accent-color);
+  color: var(--text-primary);
 }
 
 .nav-btn.active {
-  background-color: var(--accent-color);
-  color: white;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  background-color: var(--accent-blue) !important;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
 }
 
 .sidebar-footer {
-  padding: 1.5rem;
-  border-top: 1px solid var(--border-color);
+  padding: 1rem;
+  border-top: 1px solid var(--border-dark);
 }
 
-.logout-btn { color: #f87171 !important; }
-.logout-btn:hover { background-color: rgba(248, 113, 113, 0.1) !important; }
+.logout-btn { color: var(--danger-red) !important; }
+.logout-btn:hover { background-color: rgba(239, 68, 68, 0.1) !important; }
 
 /* =====================================================================
-   MAIN CONTENT AREA
+   2. ÁREA PRINCIPAL Y CABECERA
    ===================================================================== */
 .admin-main-content {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  background-color: var(--bg-main);
 }
 
 .admin-top-header {
   padding: 1.5rem 2.5rem;
-  background-color: var(--header-bg);
-  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-sidebar);
+  border-bottom: 1px solid var(--border-dark);
   display: flex;
-  justify-content: space-between;
   align-items: center;
 }
 
 .admin-top-header h1 {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--text-bright);
+  color: var(--text-primary);
+  font-size: 1.3rem;
+  font-weight: 600;
 }
 
 .admin-content-area {
   padding: 2.5rem;
-  max-width: 1300px;
-  width: 100%;
+  max-width: 1400px;
   margin: 0 auto;
+  width: 100%;
 }
 
-/* Estilo para que todas las secciones hereden el "Card Look" oscuro */
-.admin-section-fade {
-  background-color: var(--card-bg);
-  border-radius: 16px;
-  padding: 1.5rem;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+/* =====================================================================
+   3. MODO OSCURO FORZADO PARA COMPONENTES HIJOS (MAGIA)
+   ===================================================================== */
+
+/* Tarjetas de Estadísticas (Kpis, Cajas de arriba) */
+.stat-card, 
+.resumen-contable > div,
+.kpi-card {
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--border-dark) !important;
+  border-radius: 12px !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
+}
+
+.stat-card h3, .stat-card p.title { color: var(--text-secondary) !important; }
+.stat-card .value, .stat-card h2 { color: var(--text-primary) !important; }
+
+/* Fondos Blancos de los Gráficos de Recharts */
+.graficos-grid > div,
+.chart-container,
+.recharts-wrapper {
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--border-dark) !important;
+  border-radius: 12px !important;
+  color: var(--text-primary) !important;
+}
+
+/* Texto y líneas de los gráficos */
+.recharts-text { fill: var(--text-secondary) !important; }
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line { stroke: var(--border-dark) !important; }
+
+/* Tablas Completas (Reservas, Gastos, Usuarios) */
+.table-container, .user-table, .reservas-table {
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--border-dark) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.user-table th, .reservas-table th {
+  background-color: var(--bg-sidebar) !important;
+  color: var(--text-secondary) !important;
+  padding: 1rem !important;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--border-dark) !important;
+}
+
+.user-table td, .reservas-table td {
+  padding: 1rem !important;
+  border-bottom: 1px solid var(--border-dark) !important;
+  color: var(--text-primary) !important;
+}
+
+.user-table tr:hover, .reservas-table tr:hover {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+}
+
+/* Inputs, Buscadores y Filtros */
+input, select, textarea, .toolbar-input, .toolbar-select {
+  background-color: var(--bg-sidebar) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-dark) !important;
+  padding: 0.6rem 1rem !important;
+  border-radius: 8px !important;
+}
+
+input:focus, select:focus {
+  outline: none !important;
+  border-color: var(--accent-blue) !important;
+}
+
+/* Botones genéricos de acción */
+.btn-create, .btn-view-reserva, button[type="submit"] {
+  background-color: var(--accent-blue) !important;
+  color: white !important;
+  border: none !important;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-create:hover, .btn-view-reserva:hover { background-color: #2563eb !important; }
+
+/* Textos Generales que puedan quedar en negro */
+h1, h2, h3, h4, span, p, strong {
+  color: inherit; /* Hereda el color blanco/gris oscuro forzado arriba */
 }
