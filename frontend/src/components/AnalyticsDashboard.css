@@ -381,3 +381,33 @@
     gap: 1rem;
   }
 }
+/* --- Ajuste para los componentes internos (Cards) --- */
+.stat-card {
+  background-color: #1f2937 !important; /* Gris azulado oscuro */
+  border: 1px solid #374151 !important;
+  color: white !important;
+}
+
+.stat-card h3 {
+  color: #94a3b8 !important; /* Títulos grisáceos */
+}
+
+.stat-card .value {
+  color: #f8fafc !important; /* Valores blancos brillantes */
+}
+
+/* Ajuste para las tablas en modo oscuro */
+.user-table {
+  background-color: transparent !important;
+  color: var(--text-bright) !important;
+}
+
+.user-table th {
+  background-color: #1f2937 !important;
+  color: var(--text-muted) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.user-table td {
+  border-bottom: 1px solid var(--border-color) !important;
+}

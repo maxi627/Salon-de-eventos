@@ -1,215 +1,149 @@
 /* =====================================================================
-   🌟 VARIABLES DE DISEÑO (Estética SaaS Premium)
+   🌑 Midnight Tech Theme - Ultra Dark SaaS
    ===================================================================== */
 :root {
-  --sidebar-bg: #0f172a;        /* Azul pizarra muy oscuro */
-  --sidebar-hover: #1e293b;     /* Un tono más claro para el efecto hover */
-  --accent-color: #3b82f6;      /* Azul eléctrico para la pestaña activa */
-  --text-main: #f8fafc;         /* Blanco brillante para texto principal */
-  --text-muted: #64748b;        /* Gris azulado para elementos secundarios */
-  --brand-gold: #bc9e74;        /* Tu dorado de marca original */
-  --main-content-bg: #f1f5f9;   /* Fondo gris claro sutil para el área de trabajo */
-  --card-bg: #ffffff;
-  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --sidebar-bg: #030712;         /* Negro profundo */
+  --main-bg: #0b0f1a;            /* Fondo principal oscuro */
+  --card-bg: #111827;            /* Fondo de tarjetas / secciones */
+  --header-bg: #0b0f1a;
+  --border-color: #1f2937;       /* Gris oscuro para bordes sutiles */
+  --accent-color: #3b82f6;       /* Azul vibrante */
+  --accent-hover: rgba(59, 130, 246, 0.1);
+  --text-bright: #f8fafc;        /* Texto blanco puro */
+  --text-muted: #94a3b8;         /* Texto gris para descripciones */
+  --brand-gold: #bc9e74;
 }
 
-/* =====================================================================
-   LAYOUT E INFRAESTRUCTURA VISUAL
-   ===================================================================== */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/* Reset de scrollbars para modo oscuro */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--main-bg); }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
 
-body {
-  font-family: var(--font-family);
-  background-color: var(--main-content-bg);
-  color: #334155;
-  -webkit-font-smoothing: antialiased;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 .admin-wrapper {
   display: flex;
   width: 100vw;
-  min-height: 100vh;
+  height: 100vh;
+  background-color: var(--main-bg);
+  color: var(--text-bright);
+  font-family: 'Inter', sans-serif;
   overflow: hidden;
 }
 
 /* =====================================================================
-   BARRA DE NAVEGACIÓN LATERAL (SIDEBAR)
+   SIDEBAR (ESTILO ADMIN DASH)
    ===================================================================== */
 .admin-sidebar {
-  width: 260px;
-  min-width: 260px;
+  width: 250px;
   background-color: var(--sidebar-bg);
-  color: var(--text-main);
+  border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  position: sticky;
-  top: 0;
-  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.15);
-  z-index: 100;
+  transition: all 0.3s ease;
 }
 
-/* Área del Logo */
 .sidebar-logo {
-  padding: 1.75rem 1.5rem;
-  background-color: var(--brand-gold);
-  text-align: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 2rem 1.5rem;
+  text-align: left;
 }
 
 .sidebar-logo h3 {
-  margin: 0;
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  color: #ffffff;
+  font-size: 1.1rem;
+  color: var(--accent-color); /* Logo en azul como la imagen 2 */
+  font-weight: 800;
+  letter-spacing: 1px;
   text-transform: uppercase;
 }
 
-/* Navegación y Botones */
 .sidebar-nav {
-  padding: 1.5rem 0.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
+  padding: 1rem;
   flex-grow: 1;
-  overflow-y: auto; /* Permite scroll si la pantalla es muy baja */
 }
 
-/* Títulos separadores de sección (ej: GESTIÓN) */
 .nav-divider {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  color: var(--text-muted);
+  color: #4b5563;
   text-transform: uppercase;
-  letter-spacing: 1.2px;
-  margin: 1.5rem 0 0.5rem 0.75rem;
+  margin: 1.5rem 0 0.75rem 0.5rem;
 }
 
-/* Botones Base */
 .nav-btn {
-  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 0.75rem 1rem;
+  padding: 0.8rem 1rem;
   border: none;
   background: transparent;
-  color: #94a3b8; /* Blanco atenuado */
-  font-family: var(--font-family);
-  font-size: 0.95rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
   font-weight: 500;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: left;
   width: 100%;
+  transition: all 0.2s;
+  margin-bottom: 4px;
 }
 
-.nav-btn i {
-  font-size: 1.05rem;
-  width: 20px;
-  text-align: center;
-  transition: transform 0.2s ease;
-}
+.nav-btn i { font-size: 1rem; }
 
-/* Efecto Hover */
 .nav-btn:hover {
-  background-color: var(--sidebar-hover);
-  color: #ffffff;
+  background-color: var(--accent-hover);
+  color: var(--accent-color);
 }
 
-.nav-btn:hover i {
-  transform: scale(1.1);
-}
-
-/* Estado de Pestaña Activa */
 .nav-btn.active {
-  background-color: rgba(59, 130, 246, 0.15); /* Fondo azul traslúcido */
-  color: #60a5fa; /* Azul claro brillante */
-  font-weight: 600;
-}
-
-/* Indicador lineal vertical para la pestaña activa */
-.nav-btn.active::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 15%;
-  height: 70%;
-  width: 4px;
   background-color: var(--accent-color);
-  border-radius: 0 4px 4px 0;
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
-/* Footer de Sidebar y Cerrar Sesión */
 .sidebar-footer {
-  margin-top: auto;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 1.5rem;
+  border-top: 1px solid var(--border-color);
 }
 
-.logout-btn {
-  color: #f87171; /* Rojo pastel */
-}
-
-.logout-btn:hover {
-  background-color: rgba(239, 68, 68, 0.1) !important;
-  color: #ef4444 !important;
-}
+.logout-btn { color: #f87171 !important; }
+.logout-btn:hover { background-color: rgba(248, 113, 113, 0.1) !important; }
 
 /* =====================================================================
-   CONTENIDO PRINCIPAL (COLUMNA DERECHA)
+   MAIN CONTENT AREA
    ===================================================================== */
 .admin-main-content {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  overflow-y: auto; /* El contenido hace scroll solo de su lado */
-  background-color: var(--main-content-bg);
+  overflow-y: auto;
 }
 
-/* Encabezado Superior Fijo */
 .admin-top-header {
-  background-color: #ffffff;
-  padding: 1.5rem 2rem;
-  border-bottom: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  padding: 1.5rem 2.5rem;
+  background-color: var(--header-bg);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .admin-top-header h1 {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 700;
-  color: #1e293b;
-  letter-spacing: -0.5px;
+  color: var(--text-bright);
 }
 
-/* Área Dinámica donde se renderizan los Managers */
 .admin-content-area {
-  padding: 2rem;
-  flex-grow: 1;
-  max-width: 1400px; /* Evita que en pantallas ultrawide las tablas se deformen */
+  padding: 2.5rem;
+  max-width: 1300px;
   width: 100%;
   margin: 0 auto;
 }
 
-/* Transición sutil al cambiar de pestaña */
+/* Estilo para que todas las secciones hereden el "Card Look" oscuro */
 .admin-section-fade {
-  animation: fadeIn 0.25s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  background-color: var(--card-bg);
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
