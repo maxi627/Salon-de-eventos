@@ -1,76 +1,139 @@
+/* ==========================================================================
+   🌌 GASTOS MANAGER - MIDNIGHT TECH (Modo Oscuro)
+   ========================================================================== */
+
 .gastos-container {
-  margin-top: 3rem;
+  width: 100%;
+}
+
+.gastos-header-main {
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border-dark, #334155);
+  padding-bottom: 1.5rem;
 }
 
 .gastos-title {
-  border-bottom: 2px solid var(--color-primario);
-  padding-bottom: 0.5rem;
-  margin-bottom: 1.5rem;
+  margin: 0;
+  color: var(--text-primary, #f8fafc);
+  font-weight: 700;
+  font-size: 1.4rem;
 }
 
 .gastos-content {
   display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 2rem;
+  grid-template-columns: 350px 1fr; /* Formulario fijo a la izq, tabla flexible a la der */
+  gap: 1.5rem;
+  align-items: start;
 }
 
+/* --- TARJETAS (CARDS) --- */
+.gasto-form-card, .gastos-list-card {
+  background-color: var(--bg-card, #1e293b);
+  border-radius: 12px;
+  border: 1px solid var(--border-dark, #334155);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+/* --- FORMULARIO --- */
 .gasto-form {
   padding: 1.5rem;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
 }
 
 .gasto-form h3 {
   margin-top: 0;
   margin-bottom: 1.5rem;
+  color: var(--text-primary, #f8fafc);
+  font-size: 1.1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.gastos-list {
-  max-height: 400px;
-  overflow-y: auto;
+.gasto-form h3 i {
+  color: var(--accent-blue, #3b82f6);
 }
 
-.gastos-list table {
+.form-group {
+  margin-bottom: 1.2rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary, #94a3b8);
+}
+
+.form-group input, 
+.form-group select {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-dark, #334155);
+  font-size: 0.95rem;
+  background-color: var(--bg-main, #0b1120); /* Input un poco más oscuro que la tarjeta */
+  color: var(--text-primary, #f8fafc);
+  transition: all 0.2s;
+  color-scheme: dark; /* Para el calendario nativo (date picker) */
+}
+
+.form-group input:focus, .form-group select:focus {
+  border-color: var(--accent-blue, #3b82f6);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.btn-save-gasto {
   width: 100%;
-  border-collapse: collapse;
-}
-
-.gastos-list th, .gastos-list td {
-  padding: 10px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
-
-.gastos-list th {
-  background-color: #f4f7f6;
-}
-
-.btn-delete-gasto {
-  background-color: #e74c3c;
+  padding: 12px;
+  background-color: var(--accent-blue, #3b82f6);
   color: white;
   border: none;
-  padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 1rem;
 }
 
-@media (max-width: 768px) {
-  .gastos-content {
-    grid-template-columns: 1fr;
-  }
+.btn-save-gasto:hover {
+  background-color: #2563eb;
+  transform: translateY(-2px);
 }
 
-.gastos-header {
+.error-message {
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* --- LISTA Y NAVEGADOR DE MESES --- */
+.gastos-list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
-  flex-wrap: wrap; /* Para que se ajuste en pantallas pequeñas */
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-dark, #334155);
+  background-color: rgba(0, 0, 0, 0.1);
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
-.gastos-header h3 {
+.gastos-list-header h3 {
   margin: 0;
+  color: var(--text-primary, #f8fafc);
+  font-size: 1.1rem;
 }
 
 .month-navigator {
@@ -80,23 +143,135 @@
 }
 
 .month-navigator button {
-  background-color: #f0f0f0;
-  border: 1px solid #ddd;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
+  background-color: var(--bg-main, #0b1120);
+  color: var(--text-primary, #f8fafc);
+  border: 1px solid var(--border-dark, #334155);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
   cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
 }
 
 .month-navigator button:hover {
-  background-color: #e0e0e0;
+  background-color: var(--accent-blue, #3b82f6);
+  border-color: var(--accent-blue, #3b82f6);
+  color: white;
 }
 
 .month-display {
   font-weight: 600;
-  text-transform: capitalize;
-  min-width: 150px; /* Evita que el layout salte al cambiar de mes */
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  min-width: 140px;
   text-align: center;
+  color: var(--text-primary, #f8fafc);
+}
+
+/* --- TABLA DE GASTOS --- */
+.gastos-table-wrapper {
+  max-height: 500px;
+  overflow-y: auto;
+  padding: 0 1rem 1rem 1rem;
+}
+
+.gastos-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+
+.gastos-table th, .gastos-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.gastos-table th {
+  color: var(--text-secondary, #94a3b8);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: sticky;
+  top: 0;
+  background-color: var(--bg-card, #1e293b);
+  z-index: 10;
+}
+
+.gastos-table td {
+  color: var(--text-primary, #f8fafc);
+  font-size: 0.9rem;
+}
+
+.gastos-table tr:hover td {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.desc-cell {
+  font-weight: 500;
+}
+
+.amount-cell {
+  font-weight: 700;
+  color: #ef4444; /* Rojo suave para indicar salida de dinero */
+}
+
+/* Badges de Categoría */
+.cat-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.cat-badge.servicios { background-color: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+.cat-badge.insumos { background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+.cat-badge.otros { background-color: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+
+/* Botón Eliminar Fila */
+.btn-delete-gasto {
+  background-color: transparent;
+  color: #ef4444;
+  border: 1px solid transparent;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.btn-delete-gasto:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Estados de Carga y Vacío */
+.loading-state, .empty-state {
+  text-align: center;
+  padding: 3rem !important;
+  color: var(--text-secondary, #94a3b8);
+  font-style: italic;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 992px) {
+  .gastos-content {
+    grid-template-columns: 1fr; /* Apila el formulario sobre la tabla en pantallas pequeñas */
+  }
+}
+
+@media (max-width: 600px) {
+  .gastos-list-header {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+  .month-navigator {
+    justify-content: center;
+  }
 }

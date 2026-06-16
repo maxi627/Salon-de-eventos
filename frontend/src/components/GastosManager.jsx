@@ -35,7 +35,6 @@ function GastosManager() {
       }
 
       const result = await response.json();
-      // Nos aseguramos de que result.data sea siempre un array
       setGastos(Array.isArray(result.data) ? result.data : []);
     } catch (err) {
       setError(err.message);
@@ -108,78 +107,105 @@ function GastosManager() {
   }
 
   return (
-    <div className="gastos-container">
-      <h2 className="gastos-title">Gestión de Gastos</h2>
+    <div className="gastos-container admin-section-fade">
+      <div className="gastos-header-main">
+        <h2 className="gastos-title">Control de Gastos</h2>
+      </div>
+
       <div className="gastos-content">
-        <form onSubmit={handleSubmit} className="gasto-form">
-          <h3>Registrar Nuevo Gasto</h3>
-          <div className="form-group">
-            <label>Descripción</label>
-            <input type="text" name="descripcion" value={formData.descripcion} onChange={handleChange} required />
-          </div>
-          <div className="form-group">
-            <label>Monto ($)</label>
-            <input type="number" name="monto" value={formData.monto} onChange={handleChange} required min="0.01" step="0.01" />
-          </div>
-          <div className="form-group">
-            <label>Categoría</label>
-            <select name="categoria" value={formData.categoria} onChange={handleChange}>
-              <option value="Servicios">Servicios</option>
-              <option value="Insumos">Insumos</option>
-              <option value="Otros">Otros</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label>Fecha</label>
-            <input type="date" name="fecha" value={formData.fecha} onChange={handleChange} required />
-          </div>
-          <button type="submit" className="btn-save">Añadir Gasto</button>
-          {error && <p className="error-message">{error}</p>}
-        </form>
-        <div className="gastos-list">
-          <div className="gastos-header">
+        {/* COLUMNA IZQUIERDA: FORMULARIO */}
+        <div className="gasto-form-card">
+          <form onSubmit={handleSubmit} className="gasto-form">
+            <h3><i className="fa-solid fa-file-invoice-dollar"></i> Registrar Nuevo Gasto</h3>
+            
+            <div className="form-group">
+              <label>Descripción</label>
+              <input type="text" name="descripcion" value={formData.descripcion} onChange={handleChange} required placeholder="Ej: Compra de insumos..." />
+            </div>
+            
+            <div className="form-group">
+              <label>Monto ($)</label>
+              <input type="number" name="monto" value={formData.monto} onChange={handleChange} required min="0.01" step="0.01" placeholder="0.00" />
+            </div>
+            
+            <div className="form-group">
+              <label>Categoría</label>
+              <select name="categoria" value={formData.categoria} onChange={handleChange}>
+                <option value="Servicios">Servicios</option>
+                <option value="Insumos">Insumos</option>
+                <option value="Otros">Otros</option>
+              </select>
+            </div>
+            
+            <div className="form-group">
+              <label>Fecha</label>
+              <input type="date" name="fecha" value={formData.fecha} onChange={handleChange} required />
+            </div>
+            
+            <button type="submit" className="btn-save-gasto">
+              <i className="fa-solid fa-plus"></i> Añadir Gasto
+            </button>
+            {error && <p className="error-message"><i className="fa-solid fa-triangle-exclamation"></i> {error}</p>}
+          </form>
+        </div>
+
+        {/* COLUMNA DERECHA: TABLA DE GASTOS */}
+        <div className="gastos-list-card">
+          <div className="gastos-list-header">
             <h3>Gastos Registrados</h3>
             <div className="month-navigator">
-              <button onClick={() => changeMonth(-1)}>&lt;</button>
+              <button onClick={() => changeMonth(-1)}><i className="fa-solid fa-chevron-left"></i></button>
               <span className="month-display">
                 {currentDate.toLocaleString('es-ES', { month: 'long', year: 'numeric' })}
               </span>
-              <button onClick={() => changeMonth(1)}>&gt;</button>
+              <button onClick={() => changeMonth(1)}><i className="fa-solid fa-chevron-right"></i></button>
             </div>
           </div>
 
-          {isLoading ? <p>Cargando...</p> : (
-            <table>
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Descripción</th>
-                  <th>Categoría</th>
-                  <th>Monto</th>
-                  <th>Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                {gastos && gastos.length > 0 ? (
-                  gastos.map(gasto => (
-                    <tr key={gasto.id}>
-                      {/* Agregamos validación a la fecha */}
-                      <td>{gasto.fecha ? new Date(gasto.fecha).toLocaleDateString('es-ES', {timeZone: 'UTC'}) : '---'}</td>
-                      <td>{gasto.descripcion || 'Sin descripción'}</td>
-                      <td>{gasto.categoria || 'General'}</td>
-                      {/* CORRECCIÓN CRÍTICA: Encadenamiento opcional para evitar el crash */}
-                      <td>${gasto.monto?.toLocaleString('es-AR') || '0,00'}</td>
-                      <td><button className="btn-delete-gasto" onClick={() => handleDelete(gasto.id)}>Eliminar</button></td>
-                    </tr>
-                  ))
-                ) : (
+          <div className="gastos-table-wrapper">
+            {isLoading ? (
+              <div className="loading-state">
+                <i className="fa-solid fa-circle-notch fa-spin"></i> Cargando...
+              </div>
+            ) : (
+              <table className="gastos-table">
+                <thead>
                   <tr>
-                    <td colSpan="5">No se encontraron gastos para este mes.</td>
+                    <th>Fecha</th>
+                    <th>Descripción</th>
+                    <th>Categoría</th>
+                    <th>Monto</th>
+                    <th style={{textAlign: 'center'}}>Acción</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          )}
+                </thead>
+                <tbody>
+                  {gastos && gastos.length > 0 ? (
+                    gastos.map(gasto => (
+                      <tr key={gasto.id}>
+                        <td>{gasto.fecha ? new Date(gasto.fecha).toLocaleDateString('es-ES', {timeZone: 'UTC'}) : '---'}</td>
+                        <td className="desc-cell">{gasto.descripcion || 'Sin descripción'}</td>
+                        <td>
+                          <span className={`cat-badge ${gasto.categoria ? gasto.categoria.toLowerCase() : 'otros'}`}>
+                            {gasto.categoria || 'General'}
+                          </span>
+                        </td>
+                        <td className="amount-cell">${gasto.monto?.toLocaleString('es-AR') || '0,00'}</td>
+                        <td style={{textAlign: 'center'}}>
+                          <button className="btn-delete-gasto" onClick={() => handleDelete(gasto.id)} title="Eliminar gasto">
+                            <i className="fa-solid fa-trash-can"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="5" className="empty-state">No se encontraron gastos para este mes.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            )}
+          </div>
         </div>
       </div>
     </div>
