@@ -252,3 +252,25 @@ ul {
         color: var(--color-secundario);
     }
 }
+/* =====================================================================
+   REGLAS DE AISLAMIENTO PARA EL PANEL ADMINISTRADOR
+   ===================================================================== */
+
+/* 1. Hacemos que el main del admin ocupe el 100% sin márgenes ocultos */
+main.no-padding {
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: 100% !important;
+  height: 100vh;
+  overflow: hidden; /* Evita scrolls dobles con el panel admin */
+}
+
+/* 2. Prevenimos que el color dorado global afecte los enlaces del admin */
+main.no-padding a {
+  color: inherit;
+}
+
+/* 3. Prevenimos que el fondo blanco global del body se asome */
+body:has(main.no-padding) {
+  background-color: #0b1120 !important; /* El fondo oscuro del admin */
+}
