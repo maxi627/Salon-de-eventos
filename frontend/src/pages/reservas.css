@@ -12,29 +12,30 @@
   --calendar-gap: 10px;
 }
 
+/* El contenedor padre actuará como nuestro "Escudo" */
 .reservas-page-container {
-  max-width: 1000px; 
+  max-width: 1000px;
   margin: 0 auto;
   padding: 40px 20px;
   font-family: 'Inter', sans-serif;
-  color: var(--res-text-main) !important; /* Defensa */
+  color: var(--res-text-main);
   text-align: center;
 }
 
-.reservas-hero {
+.reservas-page-container .reservas-hero {
   margin-bottom: 40px;
 }
 
-.reservas-hero h1 {
+.reservas-page-container .reservas-hero h1 {
   font-size: 2.5rem;
   font-weight: 800;
   margin-bottom: 8px;
-  color: #0f172a !important; /* Defensa */
+  color: #0f172a;
   letter-spacing: -1px;
 }
 
 /* --- ESTRUCTURA CENTRAL --- */
-.calendar-main-section {
+.reservas-page-container .calendar-main-section {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -42,293 +43,280 @@
 }
 
 /* --- TARJETA DEL CALENDARIO --- */
-.calendar-container-card {
-  background: var(--res-card) !important; /* Defensa contra el Admin */
+.reservas-page-container .calendar-container-card {
+  background: var(--res-card);
   border-radius: var(--res-radius);
   padding: 30px;
-  box-shadow: var(--res-shadow) !important;
-  border: 1px solid #92bde9 !important;
+  box-shadow: var(--res-shadow);
+  border: 1px solid #92bde9;
   width: 100%;
-  max-width: 750px; 
+  max-width: 750px;
 }
 
-.calendar-header-nav {
+.reservas-page-container .calendar-header-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
 }
 
-.current-month-display h3 {
+.reservas-page-container .current-month-display h3 {
   font-size: 1.4rem;
   font-weight: 700;
   text-transform: capitalize;
   margin: 0;
-  color: var(--res-text-main) !important;
 }
 
-.nav-arrow {
-  background: #f1f5f9 !important;
-  border: none !important;
+.reservas-page-container .nav-arrow {
+  background: #f1f5f9;
+  border: none;
   width: 40px;
   height: 40px;
   border-radius: 12px;
   font-size: 1.4rem;
   cursor: pointer;
-  color: var(--res-primary) !important;
+  color: var(--res-primary);
   transition: all 0.2s;
 }
 
-.nav-arrow:hover {
-  background: var(--res-primary) !important;
-  color: white !important;
+.reservas-page-container .nav-arrow:hover {
+  background: var(--res-primary);
+  color: white;
 }
 
 /* --- ENCABEZADOS DE DÍAS --- */
-.calendar-week-labels {
+.reservas-page-container .calendar-week-labels {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: var(--calendar-gap);
   margin-bottom: 15px;
 }
 
-.calendar-week-labels div {
+.reservas-page-container .calendar-week-labels div {
   font-weight: 700;
   font-size: 0.75rem;
   text-transform: uppercase;
-  color: #94a3b8 !important; /* Defensa */
+  color: #94a3b8;
   letter-spacing: 1px;
 }
 
-/* --- GRID DE DÍAS (Aquí estaba el mayor conflicto) --- */
-.calendar-grid {
+/* --- GRID DE DÍAS (Aquí aplicamos el escudo para que no pise al Admin) --- */
+.reservas-page-container .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: var(--calendar-gap) !important;
-  background-color: transparent !important; /* Mata el fondo oscuro del admin */
-  border: none !important;
-  padding: 0 !important;
+  gap: var(--calendar-gap);
+  background-color: transparent;
+  border: none;
+  padding: 0;
 }
 
-.calendar-day-wrapper {
+.reservas-page-container .calendar-day-wrapper {
   aspect-ratio: 1 / 1; 
 }
 
-.calendar-day-card {
+.reservas-page-container .calendar-day-card {
   width: 100%;
   height: 100%;
-  border: 1px solid #a0ccf8 !important;
-  border-radius: 14px !important;
-  background: white !important; /* Mata el fondo de celda oscuro */
+  border: 1px solid #a0ccf8;
+  border-radius: 14px;
+  background: white;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 8px !important;
+  padding: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-  color: var(--res-text-main) !important; /* Fuerza texto oscuro sobre fondo blanco */
 }
 
-.day-number {
+.reservas-page-container .day-number {
   font-size: 1rem;
   font-weight: 700;
-  color: var(--res-text-main) !important;
+  color: var(--res-text-main);
 }
 
-.day-price {
+.reservas-page-container .day-price {
   font-size: 0.7rem;
   font-weight: 800;
-  color: var(--res-success) !important;
-  background: #f0fdf4 !important;
+  color: var(--res-success);
+  background: #f0fdf4;
   padding: 2px 0;
   border-radius: 6px;
   width: 100%;
-  border: 1px solid #dcfce7 !important;
+  border: 1px solid #dcfce7;
   text-align: center;
 }
 
 /* --- ESTADOS --- */
-.calendar-day-card.disponible:hover {
-  border-color: var(--res-primary) !important;
+.reservas-page-container .calendar-day-card.disponible:hover {
+  border-color: var(--res-primary);
   transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
-.calendar-day-card.past { 
-  opacity: 0.4 !important; 
-  cursor: not-allowed; 
-  background: #f1f5f9 !important;
-}
-
-.calendar-day-card.reservada { 
-  background: #ee8b8b !important; 
-  border-color: #c45454 !important; 
+.reservas-page-container .calendar-day-card.past { 
+  opacity: 0.4; 
   cursor: not-allowed; 
 }
 
-.calendar-day-card.reservada .day-number,
-.calendar-day-card.reservada .day-price {
-  color: #fff !important; /* Texto blanco para contrastar con el rojo */
+.reservas-page-container .calendar-day-card.reservada { 
+  background: #ee8b8b; 
+  border-color: #c45454; 
+  cursor: not-allowed; 
 }
 
-.calendar-day-card.pendiente { 
-  background: #f3dd82 !important; 
-  border-color: #fef3c7 !important; 
+.reservas-page-container .calendar-day-card.pendiente { 
+  background: #f3dd82; 
+  border-color: #fef3c7; 
   cursor: not-allowed;  
 }
 
-.calendar-day-card.pendiente .day-number,
-.calendar-day-card.pendiente .day-price {
-  color: #78350f !important; /* Texto marrón para contrastar con el amarillo */
-}
-
-.calendar-day.empty { 
-  background: transparent !important; 
-  border: none !important; 
+.reservas-page-container .calendar-day.empty { 
+  background: transparent; 
+  border: none; 
 }
 
 /* --- INFORMACIÓN INFERIOR (INTEGRADA) --- */
-.calendar-info-bottom {
+.reservas-page-container .calendar-info-bottom {
   width: 100%;
   max-width: 750px;
 }
 
-.info-card-integrated {
-  background: #ffffffcd !important;
+.reservas-page-container .info-card-integrated {
+  background: #ffffffcd;
   padding: 20px 30px;
   border-radius: 20px;
-  border: 1px solid #6da2d6 !important;
+  border: 1px solid #6da2d6;
   text-align: left;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.02) !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
 }
 
-.info-card-integrated h4 {
+.reservas-page-container .info-card-integrated h4 {
   margin: 0 0 10px 0;
   font-size: 1rem;
-  color: #0f172a !important;
+  color: #0f172a;
 }
 
-.info-card-integrated p {
+.reservas-page-container .info-card-integrated p {
   margin: 0 0 15px 0;
   font-size: 0.9rem;
-  color: var(--res-text-muted) !important;
+  color: var(--res-text-muted);
   line-height: 1.5;
 }
 
-.disclaimer-mini {
+.reservas-page-container .disclaimer-mini {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #fff9eb !important;
+  background: #fff9eb;
   padding: 8px 15px;
   border-radius: 10px;
   font-size: 0.8rem;
-  color: #92400e !important;
-  border-left: 3px solid #f39c12 !important;
+  color: #92400e;
+  border-left: 3px solid #f39c12;
 }
 
 /* --- LEYENDA --- */
-.calendar-footer-legend {
+.reservas-page-container .calendar-footer-legend {
   margin-top: 25px;
   padding-top: 20px;
-  border-top: 1px solid #badafa !important;
+  border-top: 1px solid #badafa;
   display: flex;
   justify-content: center;
   gap: 25px;
 }
 
-.legend-group {
+.reservas-page-container .legend-group {
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--res-text-muted) !important;
+  color: var(--res-text-muted);
 }
 
-.dot { width: 10px; height: 10px; border-radius: 3px; }
-.dot.disponible { background: var(--res-primary) !important; }
-.dot.pendiente { background: #f59e0b !important; }
-.dot.reservada { background: var(--res-error) !important; }
+.reservas-page-container .dot { width: 10px; height: 10px; border-radius: 3px; }
+.reservas-page-container .dot.disponible { background: var(--res-primary); }
+.reservas-page-container .dot.pendiente { background: #f59e0b; }
+.reservas-page-container .dot.reservada { background: var(--res-error); }
 
-/* --- TOAST --- */
+/* --- TOAST (Lo dejamos global para que flote bien) --- */
 .notification-toast {
   position: fixed;
   bottom: 30px;
   right: 30px;
-  background: #1e293b !important;
-  color: white !important;
+  background: #1e293b;
+  color: white;
   padding: 15px 25px;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
   z-index: 9999;
 }
 
 /* --- RESPONSIVE CORREGIDO --- */
 @media (max-width: 600px) {
   .reservas-page-container {
-    padding: 20px 10px !important; 
+    padding: 20px 10px; 
   }
 
-  .reservas-hero h1 {
-    font-size: 1.8rem !important; 
+  .reservas-page-container .reservas-hero h1 {
+    font-size: 1.8rem; 
   }
 
-  .calendar-container-card { 
-    padding: 10px !important; 
-    border-radius: 16px !important; 
-    width: 100% !important;
-    box-sizing: border-box !important;
+  .reservas-page-container .calendar-container-card { 
+    padding: 10px; 
+    border-radius: 16px; 
+    width: 100%;
+    box-sizing: border-box;
   }
 
-  .calendar-grid { 
-    gap: 4px !important; 
+  .reservas-page-container .calendar-grid { 
+    gap: 4px; 
   }
 
-  .calendar-week-labels {
-    gap: 4px !important;
-    margin-bottom: 8px !important;
+  .reservas-page-container .calendar-week-labels {
+    gap: 4px;
+    margin-bottom: 8px;
   }
 
-  .calendar-week-labels div {
-    font-size: 0.6rem !important; 
-    letter-spacing: 0 !important;
+  .reservas-page-container .calendar-week-labels div {
+    font-size: 0.6rem; 
+    letter-spacing: 0;
   }
 
-  .calendar-day-wrapper {
-    aspect-ratio: auto !important; 
-    min-height: 55px !important; 
+  .reservas-page-container .calendar-day-wrapper {
+    aspect-ratio: auto; 
+    min-height: 55px; 
   }
 
-  .calendar-day-card { 
-    border-radius: 6px !important; 
-    padding: 4px 2px !important; 
-    justify-content: space-around !important; 
+  .reservas-page-container .calendar-day-card { 
+    border-radius: 6px; 
+    padding: 4px 2px; 
+    justify-content: space-around; 
   }
 
-  .day-number { 
-    font-size: 0.8rem !important; 
+  .reservas-page-container .day-number { 
+    font-size: 0.8rem; 
   }
 
-  .day-price { 
-    font-size: 0.55rem !important; 
-    padding: 1px 0 !important;
-    border-radius: 4px !important;
-    letter-spacing: -0.5px !important; 
-    font-weight: 700 !important;
-    width: 100% !important;
-    display: block !important;
-    text-align: center !important;
+  .reservas-page-container .day-price { 
+    font-size: 0.55rem; 
+    padding: 1px 0;
+    border-radius: 4px;
+    letter-spacing: -0.5px; 
+    font-weight: 700;
+    width: 100%;
+    display: block;
+    text-align: center;
   }
 
-  .calendar-footer-legend {
-    gap: 10px !important;
-    flex-wrap: wrap !important; 
+  .reservas-page-container .calendar-footer-legend {
+    gap: 10px;
+    flex-wrap: wrap; 
   }
 }
 
 @media (max-width: 380px) {
-  .day-price {
-    font-size: 0.5rem !important;
+  .reservas-page-container .day-price {
+    font-size: 0.5rem;
   }
 }
