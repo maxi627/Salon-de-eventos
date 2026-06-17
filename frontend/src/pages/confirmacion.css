@@ -1,54 +1,60 @@
+/* =====================================================================
+   ESTILOS DE CONFIRMACIÓN DE RESERVA (VISTA PÚBLICA / BLANCA)
+   ===================================================================== */
+
+/* Escudo principal: Nos aseguramos de que el fondo sea claro */
 .confirm-container {
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 2rem;
   min-height: calc(100vh - 150px);
-  background-color: #f4f7f6;
+  background-color: #f4f7f6 !important;
 }
 
 .confirm-box {
-  background-color: #fff;
+  background-color: #fff !important;
   padding: 2.5rem;
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   text-align: center;
   width: 100%;
   max-width: 500px;
+  color: #333 !important; /* Fuerza el texto oscuro sobre fondo blanco */
 }
 
 .confirm-box h2 {
-  color: var(--color-secundario);
+  color: var(--color-secundario) !important;
   margin-bottom: 1.5rem;
 }
 
-.confirm-text {
+.confirm-box .confirm-text {
   font-size: 1.1rem;
-  color: var(--color-texto);
+  color: #4a5568 !important;
 }
 
-.confirm-date {
+.confirm-box .confirm-date {
   font-size: 2rem;
   font-weight: bold;
-  color: var(--color-primario);
+  color: var(--color-primario) !important;
   margin: 1rem 0;
-  background-color: #eaf7ff;
+  background-color: #eaf7ff !important;
   padding: 0.5rem;
   border-radius: 5px;
 }
 
-.confirm-note {
+.confirm-box .confirm-note {
   font-size: 0.9rem;
-  color: #777;
+  color: #777 !important;
   margin-bottom: 2rem;
 }
 
-.confirm-button {
+.confirm-box .confirm-button {
   width: 100%;
   padding: 0.8rem;
-  background-color: #27ae60;
-  color: white;
-  border: none;
+  background-color: #27ae60 !important;
+  color: white !important;
+  border: none !important;
   border-radius: 5px;
   font-size: 1.1rem;
   font-weight: bold;
@@ -56,131 +62,164 @@
   transition: background-color 0.3s ease;
 }
 
-.confirm-button:hover {
-  background-color: #229954;
+.confirm-box .confirm-button:hover {
+  background-color: #229954 !important;
 }
 
-.message-area {
+.confirm-box .message-area {
   margin-top: 1.5rem;
   padding: 1rem;
   border-radius: 5px;
-  background-color: #eaf7ff;
-  color: #333;
+  background-color: #eaf7ff !important;
+  color: #333 !important;
   font-weight: 500;
 }
 
-
-.contract-box {
+.confirm-box .contract-box {
   text-align: left;
   height: 120px;
   overflow-y: auto;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #e0e0e0 !important;
   padding: 1rem;
   margin: 1.5rem 0;
   border-radius: 5px;
-  background-color: #f9f9f9;
+  background-color: #f9f9f9 !important;
   font-size: 0.8rem;
+  color: #333 !important; /* Asegurar que el texto del contrato se vea */
 }
-.contract-box h3 {
+
+.confirm-box .contract-box h3 {
   margin-top: 0;
   margin-bottom: 0.5rem;
+  color: #333 !important;
 }
-.form-check {
+
+.confirm-box .form-check {
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 1.5rem;
+  color: #333 !important;
 }
-.form-check input {
+
+.confirm-box .form-check input {
   margin-right: 0.5rem;
   width: 16px;
   height: 16px;
+  accent-color: #007bff; /* Color moderno para el checkbox */
 }
-.form-group {
+
+.confirm-box .form-group {
   margin-bottom: 1.5rem;
   text-align: left;
 }
-.form-group label {
+
+.confirm-box .form-group label {
   display: block;
   font-weight: 600;
   margin-bottom: 0.5rem;
+  color: #333 !important;
 }
-.form-group input[type="file"] {
+
+/* --- ESCUDO PARA EL INPUT DE ARCHIVO (ADIÓS DARK MODE) --- */
+.confirm-box .form-group input[type="file"] {
+  display: block;
   width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-.error-message {
-  color: #e74c3c;
-  background-color: #fbeae5;
-  border-radius: 4px;
-  padding: 0.5rem;
-  margin-top: 1rem;
+  padding: 10px !important;
+  border: 2px dashed #ccc !important;
+  border-radius: 8px !important;
+  background-color: #fafafa !important; /* Fondo gris muy clarito */
+  color: #555 !important; /* Texto oscuro para el nombre del archivo */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  color-scheme: light; /* Fuerza a que el botón nativo de subida sea claro */
 }
 
-.payment-info {
-  margin: 1.5rem 0;
-  padding: 1rem;
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 5px;
+.confirm-box .form-group input[type="file"]:hover {
+  border-color: #3085d6 !important;
+  background-color: #f0f8ff !important;
+}
+
+/* Color para el botón nativo de "Seleccionar archivo" dentro del input */
+.confirm-box .form-group input[type="file"]::file-selector-button {
+  background-color: #e9ecef !important;
+  color: #333 !important;
+  border: 1px solid #ced4da !important;
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.confirm-box .form-group input[type="file"]::file-selector-button:hover {
+  background-color: #dde0e3 !important;
+}
+
+.confirm-box .error-message {
+  color: #d32f2f !important;
+  background-color: #fdeaea !important;
+  padding: 10px 15px;
+  border-radius: 6px;
+  font-weight: 500;
+  margin-top: 15px;
   text-align: center;
+  border: 1px solid #f5c2c7 !important;
+  animation: shake 0.4s ease-in-out;
 }
 
-.payment-alias {
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: var(--color-secundario);
-  background-color: #e9ecef;
-  padding: 0.5rem;
-  border-radius: 4px;
-  margin-top: 0.5rem;
-  user-select: all; /* Permite copiar el texto fácilmente */
-}
-
-/* Contenedor principal de la info de pago */
-.payment-info {
-  background-color: #f8f9fa;
+/* --- INFO DE PAGO --- */
+.confirm-box .payment-info {
+  background-color: #f8f9fa !important;
   border-radius: 12px;
   padding: 20px;
   margin: 20px 0;
-  border: 1px solid #e9ecef;
+  border: 1px solid #e9ecef !important;
   text-align: center;
 }
 
-.payment-info p {
+.confirm-box .payment-info p {
   margin-bottom: 10px;
-  color: #495057;
+  color: #495057 !important;
 }
 
-/* Cuadro resaltado para el CVU */
-.cvu-copy-box {
+.confirm-box .payment-alias {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--color-secundario) !important;
+  background-color: #e9ecef !important;
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+  user-select: all; 
+}
+
+.confirm-box .cvu-copy-box {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #ffffff;
-  border: 2px dashed #007bff;
+  background: #ffffff !important;
+  border: 2px dashed #007bff !important;
   padding: 12px 15px;
   border-radius: 8px;
   margin: 15px 0;
   gap: 10px;
 }
 
-.cvu-number {
+.confirm-box .cvu-number {
   font-family: 'Courier New', Courier, monospace;
   font-size: 1.2rem;
   font-weight: bold;
-  color: #212529;
+  color: #212529 !important;
   letter-spacing: 1px;
-  word-break: break-all; /* Para que no se rompa en móviles */
+  word-break: break-all;
 }
 
-/* Botón de copiado */
-.copy-button {
-  background-color: #007bff;
-  color: white;
-  border: none;
+.confirm-box .copy-button {
+  background-color: #007bff !important;
+  color: white !important;
+  border: none !important;
   padding: 8px 15px;
   border-radius: 6px;
   cursor: pointer;
@@ -189,70 +228,35 @@
   white-space: nowrap;
 }
 
-.copy-button:hover {
-  background-color: #0056b3;
+.confirm-box .copy-button:hover {
+  background-color: #0056b3 !important;
   transform: translateY(-1px);
 }
 
-.copy-button:active {
+.confirm-box .copy-button:active {
   transform: translateY(0);
 }
 
-/* Estado cuando ya se copió */
-.copy-button.copied {
-  background-color: #28a745;
+.confirm-box .copy-button.copied {
+  background-color: #28a745 !important;
   cursor: default;
 }
 
-/* Texto de ayuda para la seña */
-.payment-seña {
+.confirm-box .payment-seña {
   font-size: 0.9rem;
   font-weight: bold;
-  color: #d63384; /* Un color que resalte la importancia del pago */
+  color: #d63384 !important;
   margin-top: 10px;
 }
 
-/* Estilos para el área de mensajes de éxito */
-.message-area.success {
-  background-color: #d4edda;
-  color: #155724;
+.confirm-box .message-area.success {
+  background-color: #d4edda !important;
+  color: #155724 !important;
   padding: 15px;
   border-radius: 8px;
-  border: 1px solid #c3e6cb;
+  border: 1px solid #c3e6cb !important;
   margin-top: 20px;
   text-align: center;
-}
-/* --- MEJORAS VISUALES PARA EL INPUT DE ARCHIVO --- */
-
-.form-group input[type="file"] {
-  display: block;
-  width: 100%;
-  padding: 10px;
-  border: 2px dashed #ccc;
-  border-radius: 8px;
-  background-color: #fafafa;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 0.9rem;
-  color: #555;
-}
-
-.form-group input[type="file"]:hover {
-  border-color: #3085d6; /* Combina con el azul de tu botón de SweetAlert */
-  background-color: #f0f8ff;
-}
-
-/* Opcional: Un pequeño efecto para que el texto de error "tiemble" y llame la atención */
-.error-message {
-  color: #d32f2f;
-  background-color: #fdeaea;
-  padding: 10px 15px;
-  border-radius: 6px;
-  font-weight: 500;
-  margin-top: 15px;
-  text-align: center;
-  border: 1px solid #f5c2c7;
-  animation: shake 0.4s ease-in-out;
 }
 
 @keyframes shake {

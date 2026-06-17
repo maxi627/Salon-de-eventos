@@ -143,27 +143,29 @@
   background-color: #ffffff !important;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
 }
-
 /* --- BOTÓN DE ENVIAR MEJORADO --- */
 .chat-footer button {
   background-color: var(--color-primario, #3b82f6) !important;
   border: none !important;
-  width: 42px !important;
-  height: 42px !important;
-  border-radius: 50% !important; /* Botón circular */
+  width: 48px !important;        /* Círculo un poco más grande */
+  height: 48px !important;       /* Círculo un poco más grande */
+  border-radius: 50% !important; 
   color: white !important;
-  font-size: 1.1rem !important;
+  font-size: 1.5rem !important;  /* Restauramos el tamaño original del ícono */
   cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
   transition: all 0.2s ease;
   flex-shrink: 0;
+  /* Pequeño ajuste porque los iconos de 'enviar' suelen verse descentrados visualmente en los círculos */
+  padding-right: 4px !important; 
+  padding-top: 2px !important;
 }
 
 .chat-footer button:hover {
   background-color: #2563eb !important;
-  transform: scale(1.05);
+  transform: scale(1.08);
 }
 
 /* --- ANIMACIONES --- */
