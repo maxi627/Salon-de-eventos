@@ -3,8 +3,9 @@
    ========================================================================== */
 
 .analytics-dashboard {
-  padding: 0; /* Quitamos padding excesivo porque AdminPanel.css ya lo maneja */
+  padding: 0;
   width: 100%;
+  box-sizing: border-box;
 }
 
 /* --- CABECERA --- */
@@ -30,7 +31,6 @@
 .dashboard-toolbar { display: flex; align-items: center; gap: 15px; }
 .date-controls { display: flex; gap: 8px; }
 
-/* Menús desplegables (Mes y Año) */
 .date-controls select {
   padding: 8px 12px;
   border-radius: 6px;
@@ -85,25 +85,22 @@
 /* --- TARJETAS SUPERIORES (KPIs) --- */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1.5rem;
   margin-top: 1rem;
 }
 
-/* Base oscura para las tarjetas */
 .stat-card {
   padding: 1.5rem;
   background-color: var(--bg-card, #1e293b);
   border-radius: 12px;
   border: 1px solid var(--border-dark, #334155);
-  border-left: 6px solid #64748b; /* Borde izquierdo base */
+  border-left: 6px solid #64748b;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
 
 .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4); }
-
-/* Colores de los bordes izquierdos */
 .stat-card.ingresos { border-left-color: #10b981; }
 .stat-card.gastos { border-left-color: #ef4444; }
 .stat-card.beneficio { border-left-color: #3b82f6; }
@@ -112,11 +109,9 @@
 .stat-title { margin: 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary, #94a3b8); }
 .stat-icon { font-size: 1.4rem; opacity: 0.9; }
 .stat-value { margin: 0; font-size: 1.8rem; font-weight: 700; color: var(--text-primary, #f8fafc); }
-
 .stat-trend { margin: 0.5rem 0 0; font-size: 0.85rem; font-weight: 600; }
 .trend-positive { color: #10b981; }
 .trend-negative { color: #ef4444; }
-
 .stat-note { margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-secondary, #94a3b8); display: block; }
 
 /* ==========================================================================
@@ -124,22 +119,22 @@
    ========================================================================== */
 .dashboard-content-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr; /* Proporción 65% barras / 35% tarjetas laterales */
+  grid-template-columns: 2fr 1fr;
   gap: 1.5rem;
   margin-top: 2rem;
+  min-width: 0; 
 }
 
-/* Columna Izquierda (Gráfico Principal) */
 .main-chart-section {
   background-color: var(--bg-card, #1e293b);
   border-radius: 12px;
   padding: 1.5rem;
   border: 1px solid var(--border-dark, #334155);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  min-width: 0; 
 }
 
-/* Columna Derecha (Tarjetas apiladas) */
-.side-panels-section { display: flex; flex-direction: column; gap: 1.5rem; }
+.side-panels-section { display: flex; flex-direction: column; gap: 1.5rem; min-width: 0; }
 
 .side-panel-card {
   background-color: var(--bg-card, #1e293b);
@@ -147,6 +142,7 @@
   padding: 1.5rem;
   border: 1px solid var(--border-dark, #334155);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  min-width: 0; 
 }
 
 .panel-title {
@@ -159,7 +155,6 @@
   padding-bottom: 0.75rem;
 }
 
-/* --- ESTILO ESPECÍFICO PARA EL TÍTULO DEL GRÁFICO DE BARRAS --- */
 .main-chart-section .panel-title {
   color: var(--text-primary) !important;
   font-size: 1.1rem !important;
@@ -169,26 +164,25 @@
   border: none !important;
 }
 
-/* --- ESTILO PARA LA TIPOGRAFÍA DE LOS EJES DEL GRÁFICO (RECHARTS) --- */
 .recharts-cartesian-axis-tick-value {
   font-family: 'Inter', system-ui, sans-serif;
 }
 
-/* --- LEYENDA DEL GRÁFICO DE TORTA --- */
-.pie-chart-wrapper { margin-bottom: 1rem; }
+/* LEYENDA DEL GRÁFICO DE TORTA */
+.pie-chart-wrapper { margin-bottom: 1rem; width: 100%; }
 .custom-legend { display: flex; flex-direction: column; gap: 0.75rem; }
 .legend-item { display: flex; align-items: center; font-size: 0.85rem; color: var(--text-secondary, #94a3b8); }
-.legend-color { width: 12px; height: 12px; border-radius: 50%; margin-right: 10px; }
+.legend-color { width: 12px; height: 12px; border-radius: 50%; margin-right: 10px; flex-shrink: 0; }
 .legend-label { flex-grow: 1; }
 .legend-value { font-weight: 600; color: var(--text-primary, #f8fafc); }
 
-/* --- FEED DE MOVIMIENTOS --- */
+/* FEED DE MOVIMIENTOS */
 .activity-list { list-style: none; padding: 0; margin: 0; }
 .activity-item {
   display: flex;
   align-items: center;
   padding: 0.85rem 0;
-  border-bottom: 1px solid rgba(255,255,255,0.05); /* Separador ultra sutil */
+  border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 .activity-item:last-child { border-bottom: none; padding-bottom: 0; }
 
@@ -204,7 +198,6 @@
   flex-shrink: 0;
 }
 
-/* Colores de los íconos adaptados para fondos oscuros */
 .activity-icon-container.ingreso { background-color: rgba(16, 185, 129, 0.2); }
 .activity-icon-container.gasto { background-color: rgba(239, 68, 68, 0.2); }
 .activity-icon-container.info { background-color: rgba(59, 130, 246, 0.2); }
@@ -216,35 +209,85 @@
   font-weight: 500;
   color: var(--text-primary, #f8fafc);
   margin: 0 0 0.2rem 0;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .activity-date { font-size: 0.75rem; color: var(--text-secondary, #94a3b8); margin: 0; }
-
-.activity-amount { font-size: 0.9rem; font-weight: 700; margin-left: 10px; }
+.activity-amount { font-size: 0.9rem; font-weight: 700; margin-left: 10px; flex-shrink: 0; }
 .activity-amount.ingreso { color: #10b981; }
 .activity-amount.gasto { color: #ef4444; }
 
-/* ANIMACIÓN SPIN */
 .spinning { animation: spin 1s linear infinite; pointer-events: none; opacity: 0.6; }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
 /* ==========================================================================
-   RESPONSIVE DESIGN Y MEDIA QUERIES
+   📱 NAVBAR & LAYOUT RESPONSIVE (NUEVO)
+   Aplica la clase .admin-navbar a tu componente de navegación principal
    ========================================================================== */
-@media (max-width: 1024px) {
-  .dashboard-content-grid { grid-template-columns: 1fr; }
+
+/* Comportamiento por defecto (Desktop) - Asumiendo que es un sidebar o nav normal */
+.admin-navbar {
+  /* Tus estilos actuales de desktop van aquí, o puedes dejar que tu layout actúe normal */
+  transition: all 0.3s ease;
 }
 
-@media (max-width: 650px) {
-  .dashboard-header { flex-direction: column; align-items: stretch; gap: 1.2rem; padding-bottom: 0.5rem; }
-  .dashboard-title { text-align: center; font-size: 1.3rem; }
-  .dashboard-toolbar { flex-direction: column; width: 100%; gap: 1rem; }
-  .date-controls { width: 100%; display: flex; justify-content: space-between; gap: 10px; }
-  .date-controls select { flex: 1; text-align: center; padding: 10px; }
-  .action-group { width: 100%; display: flex; }
-  .btn-download-pdf { flex: 1; display: flex; justify-content: center; align-items: center; font-size: 1rem; padding: 10px; }
-  .stats-grid { grid-template-columns: 1fr; gap: 1rem; }
+/* Tablets y Pantallas Medianas */
+@media (max-width: 1024px) {
+  .dashboard-content-grid { 
+    grid-template-columns: 1fr; 
+  }
+}
+
+/* Celulares Estándar y Phablets */
+@media (max-width: 768px) {
+  /* MAGIA DEL NAVBAR: Se pega a la parte superior en móviles */
+  .admin-navbar {
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000; /* Asegura que pase por encima de los gráficos */
+    background-color: var(--bg-card, #1e293b); /* Fondo sólido obligatorio */
+    border-bottom: 1px solid var(--border-dark, #334155);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); /* Sombra para despegarlo del fondo */
+    
+    /* Si tenías un sidebar lateral, esto lo fuerza a ser horizontal */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 15px;
+    height: auto;
+  }
+
+  /* Ajuste de espacio para el contenido principal si usabas 'fixed' en vez de 'sticky' */
+  .admin-layout-content {
+    /* padding-top: 70px; Usa esto SOLO si cambiaste 'position: sticky' por 'position: fixed' arriba */
+  }
+
+  /* Resto del responsive del dashboard (el que ya teníamos) */
+  .dashboard-header { flex-direction: column; align-items: stretch; gap: 1rem; padding-bottom: 0.75rem; margin-top: 1rem;}
+  .dashboard-title { text-align: left; font-size: 1.35rem; }
+  .dashboard-toolbar { flex-direction: column; width: 100%; gap: 0.75rem; }
+  .date-controls { width: 100%; display: flex; gap: 8px; }
+  .date-controls select { flex: 1; padding: 10px; font-size: 0.85rem;}
+  .action-group { width: 100%; display: flex; gap: 8px;}
+  .btn-download-pdf { flex: 1; display: flex; justify-content: center; align-items: center; font-size: 0.95rem; padding: 10px; }
+  .btn-refresh-icon { width: 42px; height: 42px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 0.85rem; }
+  .stat-card { padding: 1rem; }
+  .stat-value { font-size: 1.35rem; }
+  .stat-icon { font-size: 1.1rem; }
+  .stat-trend { font-size: 0.75rem; }
+  .custom-legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.5rem; }
+}
+
+/* Celulares Muy Pequeños */
+@media (max-width: 360px) {
+  .stats-grid { grid-template-columns: 1fr; }
+  .main-chart-section, .side-panel-card { padding: 0.85rem; }
 }

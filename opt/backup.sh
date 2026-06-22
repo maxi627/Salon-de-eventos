@@ -62,3 +62,4 @@ find "$DIRECTORIO_BACKUP" -type f -name "*.sql.gz.enc" -mtime +7 -exec rm {} \;
 rm $TEMP_DUMP
 
 echo "Proceso finalizado exitosamente."
+
