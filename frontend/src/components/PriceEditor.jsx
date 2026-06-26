@@ -6,6 +6,14 @@ const DAYS_OF_WEEK = [
   { label: 'Mié', value: 3 }, { label: 'Jue', value: 4 }, { label: 'Vie', value: 5 }, { label: 'Sáb', value: 6 },
 ];
 
+// Función para achicar números grandes (Ej: 120000 -> 120k)
+const formatPriceShort = (value) => {
+  if (value >= 1000) {
+    return `$${value / 1000}k`;
+  }
+  return `$${value.toLocaleString('es-AR')}`;
+};
+
 function PriceEditor() {
   const [mode, setMode] = useState('calendar'); // 'calendar', 'individual', 'bulk'
   const [selectedDate, setSelectedDate] = useState('');
@@ -202,7 +210,7 @@ function PriceEditor() {
                 }}>
                   <span className="day-number">{day}</span>
                   {dayData ? (
-                    <span className="price-tag">${dayData.valor.toLocaleString('es-AR')}</span>
+                    <span className="price-tag">{formatPriceShort(dayData.valor)}</span>
                   ) : (
                     <span className="price-missing">Sin precio</span>
                   )}

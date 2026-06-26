@@ -313,7 +313,6 @@
 @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
 @keyframes slideInToast { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-
 /* --- RESPONSIVE RADICAL PARA MÓVILES --- */
 @media (max-width: 768px) {
   .price-editor-container { padding: 0.8rem !important; }
@@ -346,22 +345,26 @@
     margin-bottom: 2px !important;
   }
   
-  .price-tag, .price-missing {
-    font-size: 0.65rem !important; 
+  .price-tag {
+    font-size: 0.75rem !important; /* Un poco más grande y legible ahora que es corto */
     padding: 0 !important;
     background: transparent !important; 
     border: none !important;
     width: 100% !important; 
     text-align: center;
-    
-    /* Configuración para que el texto se corte con "..." si no entra */
+    color: #10b981 !important; /* Verde esmeralda */
+    font-weight: 700 !important;
+    letter-spacing: -0.5px !important; /* Junta apenas los números para que calcen perfecto */
     display: block !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important; 
   }
 
   .price-missing { 
     font-size: 0.55rem !important; 
+    padding: 0 !important;
+    background: transparent !important; 
+    border: none !important;
+    width: 100% !important; 
+    text-align: center;
+    display: block !important;
   }
 }
