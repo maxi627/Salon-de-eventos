@@ -1,20 +1,21 @@
 import os
 from datetime import datetime
-from app.tasks import procesar_reserva_background
+
 import sentry_sdk
 from flask import Blueprint, render_template, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from marshmallow import ValidationError
 from werkzeug.utils import secure_filename
-from app.tasks import enviar_contrato_background
+
 from app.config.response_builder import ResponseBuilder
 from app.extensions import db, limiter
 from app.mapping import ReservaSchema, ResponseSchema
 from app.services import NotificationService, ReservaService
+from app.tasks import enviar_contrato_background, procesar_reserva_background
 from app.utils.decorators import admin_required
 
-
 Reserva = Blueprint('Reserva', __name__)
+
 def _enviar_contrato_confirmacion(reserva_obj):
     """
     Función de ayuda para generar el HTML del contrato y enviarlo 
@@ -42,11 +43,11 @@ def _enviar_contrato_confirmacion(reserva_obj):
         )
     except Exception as mail_err:
         sentry_sdk.capture_exception(mail_err)  
+
 @Reserva.route('/reserva', methods=['GET'])
 @admin_required()
-@limiter.limit("100 per minute") # Límite aumentado para el panel admin
+@limiter.limit("100 per minute")
 def all():
-    # Instanciamos todo dentro para asegurar el contexto de Flask
     service = ReservaService()
     reserva_schema = ReservaSchema()
     response_builder = ResponseBuilder()
@@ -90,7 +91,6 @@ def request_by_user():
     response_builder = ResponseBuilder()
     
     try:
-        # 1. Verificar si viene el archivo
         if 'comprobante' not in request.files:
             return response_builder.add_message("No se subió ningún comprobante").add_status_code(400).build(), 400
 
@@ -104,19 +104,16 @@ def request_by_user():
         if archivo.filename == '':
             return response_builder.add_message("Archivo sin nombre").add_status_code(400).build(), 400
 
-        # limpiamos el nombre y añadimos un timestamp para evitar colisiones entre usuarios
         filename = secure_filename(archivo.filename)
         nombre_seguro = f"{int(datetime.utcnow().timestamp())}_{filename}"
         
-        # Guardamos en la raíz del volumen compartido configurado en Docker
         ruta_local = os.path.join('/home/flaskapp/app/uploads', nombre_seguro)
         archivo.save(ruta_local)
 
-        # 4. Preparar el objeto para la base de datos con un placeholder temporal
         reserva_data = {
             'fecha_id': int(fecha_id),
             'usuario_id': user_id,
-            'comprobante_url': 'procesando...', # Esto evitará celdas vacías y se actualizará en Celery
+            'comprobante_url': 'procesando...',
             'estado': 'pendiente',
             'cantidad_personas': request.form.get('cantidad_personas', 40),
             'hora_inicio': request.form.get('hora_inicio'), 
@@ -124,16 +121,15 @@ def request_by_user():
         }
         
         reserva = reserva_schema.load(reserva_data)
-        reserva.ip_aceptacion = request.remote_addr
+        
+        # --- CORRECCIÓN DE SEGURIDAD AQUÍ ---
+        reserva.ip_aceptacion = request.remote_addr or "IP Desconocida"
         reserva.fecha_aceptacion = datetime.utcnow()
 
-        # 5. Guardar en DB mediante el servicio (pone la fecha en 'pendiente')
         reserva_creada = service.add(reserva)
         
-        # 6. Despachamos el ID de la reserva y la RUTA del archivo local a Celery
         procesar_reserva_background.delay(reserva_creada.id, ruta_local)
         
-        # 7. Respuesta inmediata al frontend
         data = reserva_schema.dump(reserva_creada)
         response_builder.add_message("Reserva solicitada con éxito. ¡Te notificaremos en breve!").add_status_code(201).add_data(data)
         return response_builder.build(), 201
@@ -145,7 +141,6 @@ def request_by_user():
         db.session.rollback()
         sentry_sdk.capture_exception(e)
         
-        # Limpieza de seguridad: si algo falló antes del .delay(), borramos el archivo local si existe
         if 'ruta_local' in locals() and os.path.exists(ruta_local):
             try:
                 os.remove(ruta_local)
@@ -178,10 +173,11 @@ def create_for_admin():
                 raise ValidationError("El formato de fecha_dia es inválido. Usar YYYY-MM-DD.")
 
         reserva = reserva_schema.load(json_data)
-        reserva.ip_aceptacion = request.remote_addr
+        
+        # --- CORRECCIÓN DE SEGURIDAD AQUÍ ---
+        reserva.ip_aceptacion = request.remote_addr or "IP Desconocida"
         reserva.fecha_aceptacion = datetime.utcnow()
 
-        # Guardamos en la base de datos y atrapamos el objeto creado
         reserva_creada = service.add(reserva)
 
         if reserva_creada.estado == 'confirmada':

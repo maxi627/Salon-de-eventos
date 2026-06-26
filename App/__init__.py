@@ -4,14 +4,14 @@ import sentry_sdk
 from flask import Flask
 from flask_jwt_extended import get_jwt, verify_jwt_in_request
 from sentry_sdk.integrations.flask import FlaskIntegration
-
+from werkzeug.middleware.proxy_fix import ProxyFix
 from app.config import factory
 from app.extensions import cache, db, jwt, limiter
 
 def create_app(config_name=None):
     app = Flask(__name__)
     app.config.from_object(factory(config_name))
-    
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
     # Inicialización de Celery para vincularlo al contexto de Flask
     from app.celery_app import celery
     
