@@ -90,7 +90,7 @@ const ReservasManager = () => {
       }, 300);
       setSearchTimeout(timeoutId);
     } else {
-      setSearchResults(null);
+      searchResults(null);
     }
   };
 
@@ -235,6 +235,9 @@ function AdminPanel() {
     return localStorage.getItem('adminActiveTab') || 'accounting';
   });
   
+  // Estado para controlar si el menú móvil está abierto
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -248,15 +251,40 @@ function AdminPanel() {
     navigate('/login');
   };
 
+  // Función para cambiar de pestaña y cerrar el menú móvil al mismo tiempo
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <div className="admin-wrapper">
-      <aside className="admin-sidebar">
+      
+      {/* Barra superior exclusiva para móviles */}
+      <div className="mobile-admin-header">
+        <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(true)}>
+          <i className="fa-solid fa-bars"></i>
+        </button>
+        <span className="mobile-logo-text">SALÓN ADMIN</span>
+      </div>
+
+      {/* Capa oscura de fondo al abrir el menú en móviles */}
+      {isMobileMenuOpen && (
+        <div className="sidebar-overlay" onClick={() => setIsMobileMenuOpen(false)}></div>
+      )}
+
+      {/* Agregamos la clase dinámica 'open' dependiendo del estado */}
+      <aside className={`admin-sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
         <div className="sidebar-logo">
           <h3>SALÓN ADMIN</h3>
+          {/* Botón X para cerrar el menú en móviles */}
+          <button className="mobile-close-btn" onClick={() => setIsMobileMenuOpen(false)}>
+            <i className="fa-solid fa-xmark"></i>
+          </button>
         </div>
         
         <nav className="sidebar-nav">
-          <button className="nav-btn" onClick={() => navigate('/')}>
+          <button className="nav-btn" onClick={() => { navigate('/'); setIsMobileMenuOpen(false); }}>
             <i className="fa-solid fa-house"></i> Inicio
           </button>
           
@@ -264,35 +292,35 @@ function AdminPanel() {
           
           <button 
             className={`nav-btn ${activeTab === 'accounting' ? 'active' : ''}`} 
-            onClick={() => setActiveTab('accounting')}
+            onClick={() => handleTabChange('accounting')}
           >
             <i className="fa-solid fa-chart-line"></i> Contabilidad
           </button>
           
           <button 
             className={`nav-btn ${activeTab === 'prices' ? 'active' : ''}`} 
-            onClick={() => setActiveTab('prices')}
+            onClick={() => handleTabChange('prices')}
           >
             <i className="fa-solid fa-tag"></i> Precios
           </button>
           
           <button 
             className={`nav-btn ${activeTab === 'expenses' ? 'active' : ''}`} 
-            onClick={() => setActiveTab('expenses')}
+            onClick={() => handleTabChange('expenses')}
           >
             <i className="fa-solid fa-arrow-trend-down"></i> Gastos
           </button>
           
           <button 
             className={`nav-btn ${activeTab === 'reservations' ? 'active' : ''}`} 
-            onClick={() => setActiveTab('reservations')}
+            onClick={() => handleTabChange('reservations')}
           >
             <i className="fa-solid fa-calendar-days"></i> Reservas
           </button>
           
           <button 
             className={`nav-btn ${activeTab === 'users' ? 'active' : ''}`} 
-            onClick={() => setActiveTab('users')}
+            onClick={() => handleTabChange('users')}
           >
             <i className="fa-solid fa-users-gears"></i> Usuarios
           </button>

@@ -2,13 +2,13 @@
    🌌 MIDNIGHT TECH THEME - ULTRA DARK SAAS (AdminPanel.css)
    ===================================================================== */
 :root {
-  --bg-main: #0b1120;           /* Negro azulado profundo (Fondo general) */
+  --bg-main: #0b1120;          /* Negro azulado profundo (Fondo general) */
   --bg-sidebar: #0f172a;        /* Azul pizarra muy oscuro (Menú lateral) */
-  --bg-card: #1e293b;           /* Gris azulado (Tarjetas y Tablas) */
-  --border-dark: #334155;       /* Bordes tenues */
+  --bg-card: #1e293b;          /* Gris azulado (Tarjetas y Tablas) */
+  --border-dark: #334155;      /* Bordes tenues */
   --text-primary: #f8fafc;      /* Blanco brillante */
   --text-secondary: #94a3b8;    /* Gris texto secundario */
-  --accent-blue: #3b82f6;       /* Azul eléctrico (Botones y Activos) */
+  --accent-blue: #3b82f6;      /* Azul eléctrico (Botones y Activos) */
   --accent-hover: rgba(59, 130, 246, 0.15);
   --danger-red: #ef4444;
   --success-green: #10b981;
@@ -383,15 +383,123 @@ h1, h2, h3, h4, span, p, strong {
   border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
-@media (max-width: 768px) {
+/* =====================================================================
+   5. DISEÑO RESPONSIVE Y MENÚ HAMBURGUESA
+   ===================================================================== */
+
+/* Ocultar elementos exclusivos de móvil en pantallas grandes */
+.mobile-admin-header, .mobile-close-btn, .sidebar-overlay {
+  display: none;
+}
+
+/* Breakpoint para Tablets y Móviles (900px unifica la barra y las reservas) */
+@media (max-width: 900px) {
+  
+  /* Convertir el contenedor principal en columna para apilar la barra superior */
+  .admin-wrapper {
+    flex-direction: column !important;
+  }
+
+  /* --- HEADER MÓVIL --- */
+  .mobile-admin-header {
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-sidebar);
+    padding: 1rem 1.5rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-dark);
+  }
+
+  .mobile-menu-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    margin-right: 1rem;
+    display: flex;
+    align-items: center;
+  }
+
+  .mobile-logo-text {
+    font-weight: 800;
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+  }
+
+  /* --- SIDEBAR FLOTANTE --- */
+  .admin-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 1000;
+    transform: translateX(-100%); /* Oculto fuera de pantalla a la izquierda */
+    transition: transform 0.3s ease-in-out;
+    box-shadow: 2px 0 15px rgba(0, 0, 0, 0.8);
+  }
+
+  /* Clase dinámica que inyecta React cuando el estado es true */
+  .admin-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-logo {
+    justify-content: space-between;
+  }
+
+  .mobile-close-btn {
+    display: block;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .mobile-close-btn:hover {
+    color: var(--text-primary);
+  }
+
+  /* --- CAPA OSCURA DE FONDO --- */
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 999; /* Justo por debajo del z-index del sidebar (1000) */
+  }
+
+  /* --- AJUSTES DEL CONTENIDO PRINCIPAL --- */
+  .admin-main-content {
+    width: 100%;
+  }
+
+  /* Opcional: Ocultar el título repetido del desktop en móvil para ganar espacio */
+  .admin-top-header {
+    display: none; 
+  }
+
+  .admin-content-area {
+    padding: 1.5rem 1rem;
+  }
+
+  /* --- AJUSTES DE FILTROS DE RESERVAS PARA MÓVIL --- */
   .filters-toolbar {
     flex-direction: column;
     align-items: stretch;
   }
+  
   .filters-inputs {
     flex-direction: column;
   }
+  
   .toggle-group {
     justify-content: center;
+    flex-wrap: wrap;
   }
 }
