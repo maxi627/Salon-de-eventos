@@ -7,9 +7,7 @@ import './confirmacion.css';
 const ContractTerms = () => (
   <>
     <h3>Términos y Condiciones</h3>
-    <p>
-      <strong>Contrato de Alquiler de Salón de Eventos.</strong>
-    </p>
+    <p><strong>Contrato de Alquiler de Salón de Eventos.</strong></p>
     <p>
       El presente contrato se celebra entre EL LOCADOR (propietario del salón) y EL LOCATARIO 
       (usuario que realiza la reserva a través de la página web, cuyos datos personales se 
@@ -17,60 +15,21 @@ const ContractTerms = () => (
     </p>
     
     <ol>
-      <li>
-        <strong>Objeto:</strong> EL LOCADOR alquila a EL LOCATARIO el salón de eventos 
-        ubicado en Bolivar 1425, para uso exclusivo en la fecha y horario acordados en la reserva.
-      </li>
-      <li>
-        <strong>Uso y Responsabilidad:</strong> EL LOCADOR no se responsabiliza por el tipo 
-        de actividad o evento que se realice, siempre que sea lícito. Queda prohibida la venta 
-        de entradas, la venta o suministro de alcohol a menores de edad, el consumo de 
-        sustancias ilegales y cualquier actividad contraria a la ley. EL LOCATARIO es único 
-        responsable por cualquier daño material, accidente o hecho ocurrido durante el evento, 
-        así como de las acciones de los invitados y terceros que ingresen al salón.
-      </li>
-      <li>
-        <strong>Cumplimiento Legal:</strong> EL LOCATARIO asume toda responsabilidad por cumplir 
-        con las disposiciones legales vigentes en materia de seguridad, salubridad y control de 
-        menores. En caso de incumplimiento, EL LOCADOR queda totalmente exento de toda 
-        responsabilidad civil, penal o administrativa.
-      </li>
-      <li>
-        <strong>Daños y Limpieza:</strong> EL LOCATARIO deberá restituir el salón en las mismas 
-        condiciones en que lo recibió, siendo responsable por cualquier daño ocasionado a las 
-        instalaciones, mobiliario o equipamiento. Los gastos de reparación o reposición correrán 
-        por cuenta del LOCATARIO.
-      </li>
-      <li>
-        <strong>Pagos y Cancelaciones:</strong> EL LOCATARIO deberá abonar la seña establecida 
-        al momento de la reserva. En caso de cancelación, no 
-        habrá devolución de la seña. En caso de cancelación por parte del LOCADOR por causas de 
-        fuerza mayor, se reintegrará el monto abonado sin derecho a reclamos adicionales.
-      </li>
-      <li>
-        <strong>Penalidades:</strong> En caso de incumplimiento de alguna cláusula, EL LOCADOR 
-        podrá suspender el evento sin derecho a reclamo o reembolso, además de iniciar las 
-        acciones legales correspondientes.
-      </li>
-      <li>
-        <strong>Capacidad Base y Ajustes:</strong> El presente contrato se emite inicialmente bajo una estimación de <strong>40 personas</strong>. En caso de requerir una capacidad superior, EL LOCATARIO deberá coordinar con EL LOCADOR el ajuste de capacidad y precio final. El contrato definitivo con el valor legal final será enviado por correo electrónico una vez que EL LOCADOR confirme la reserva desde el panel de administración.
-      </li>
-      <li>
-        <strong>Jurisdicción:</strong> Para cualquier conflicto legal derivado del presente, las partes se someten a la jurisdicción de los Tribunales Ordinarios de la Segunda Circunscripción Judicial de la Provincia de Mendoza, con asiento en la ciudad de San Rafael.
-      </li>
-      <li>
-        <strong>Aceptación Digital:</strong> La aceptación del presente contrato mediante el 
-        sistema de reservas online equivale a la firma manuscrita y constituye plena conformidad 
-        legal por parte de EL LOCATARIO.
-      </li>
-      <li>
-        <strong>Firma y Conformidad:</strong> Ambas partes declaran haber leído y comprendido 
-        el presente contrato, aceptando las cláusulas aquí establecidas.
-      </li>
+      <li><strong>Objeto:</strong> EL LOCADOR alquila a EL LOCATARIO el salón de eventos ubicado en Bolivar 1425, para uso exclusivo en la fecha y horario acordados en la reserva.</li>
+      <li><strong>Uso y Responsabilidad:</strong> EL LOCADOR no se responsabiliza por el tipo de actividad o evento que se realice, siempre que sea lícito. Queda prohibida la venta de entradas, la venta o suministro de alcohol a menores de edad, el consumo de sustancias ilegales y cualquier actividad contraria a la ley. EL LOCATARIO es único responsable por cualquier daño material, accidente o hecho ocurrido durante el evento, así como de las acciones de los invitados y terceros que ingresen al salón.</li>
+      <li><strong>Cumplimiento Legal y Ruidos Molestos:</strong> EL LOCATARIO asume toda responsabilidad por cumplir con las normativas vigentes en materia de seguridad, salubridad y la Ordenanza Municipal de San Rafael sobre ruidos molestos. El volumen de la música deberá mantenerse dentro de los decibeles permitidos, y queda estrictamente prohibido generar disturbios en la vía pública o alterar el orden del vecindario. En caso de multas, quejas formales o clausuras derivadas del comportamiento de los asistentes, EL LOCADOR queda exento de toda responsabilidad civil, penal o administrativa, debiendo EL LOCATARIO responder económica y legalmente.</li>
+      <li><strong>Daños y Limpieza:</strong> EL LOCATARIO deberá restituir el salón en las mismas condiciones en que lo recibió, siendo responsable por cualquier daño ocasionado a las instalaciones, mobiliario o equipamiento. Los gastos de reparación o reposición correrán por cuenta del LOCATARIO.</li>
+      <li><strong>Pagos y Cancelaciones:</strong> EL LOCATARIO deberá abonar la seña establecida al momento de la reserva. En caso de cancelación, no habrá devolución de la seña. En caso de cancelación por parte del LOCADOR por causas de fuerza mayor, se reintegrará el monto abonado sin derecho a reclamos adicionales.</li>
+      <li><strong>Penalidades:</strong> En caso de incumplimiento de alguna cláusula, EL LOCADOR podrá suspender el evento sin derecho a reclamo o reembolso, además de iniciar las acciones legales correspondientes.</li>
+      <li><strong>Capacidad Base y Ajustes:</strong> El presente contrato se emite inicialmente bajo una estimación de <strong>40 personas</strong>. En caso de requerir una capacidad superior, EL LOCATARIO deberá coordinar con EL LOCADOR el ajuste de capacidad y precio final. El contrato definitivo con el valor legal final será enviado por correo electrónico una vez que EL LOCADOR confirme la reserva desde el panel de administración.</li>
+      <li><strong>Exceso de Horario y Finalización:</strong> El evento deberá finalizar indefectiblemente a la hora de cierre pactada en el "Horario Base". Cualquier extensión deberá solicitarse con antelación, sujeta a disponibilidad y al abono de la tarifa vigente. Si no se desaloja a la hora estipulada sin autorización, EL LOCADOR podrá dar por finalizado el evento y aplicar una multa automática por retención indebida del espacio.</li>
+      <li><strong>Derechos de Autor (SADAIC/AADI CAPIF):</strong> Conforme al Decreto Nacional 765/2024, el evento es de carácter estrictamente privado, por lo que queda exento de aranceles por derechos de autor. Si EL LOCATARIO alterase la naturaleza del evento (acceso público o cobro de entrada), será el único responsable de gestionar permisos y abonar los cánones correspondientes.</li>
+      <li><strong>Jurisdicción:</strong> Para cualquier conflicto legal, las partes se someten a la jurisdicción de los Tribunales Ordinarios de la Segunda Circunscripción Judicial de la Provincia de Mendoza, con asiento en San Rafael.</li>
+      <li><strong>Aceptación Digital:</strong> La aceptación del presente contrato mediante el sistema de reservas online equivale a la firma manuscrita y constituye plena conformidad legal por parte de EL LOCATARIO.</li>
+      <li><strong>Firma y Conformidad:</strong> Ambas partes declaran haber leído y comprendido el presente contrato, aceptando las cláusulas aquí establecidas.</li>
     </ol>
   </>
 );
-
 function Confirmacion() {
   const { dateString } = useParams();
   const navigate = useNavigate();
@@ -238,7 +197,9 @@ function Confirmacion() {
               
               <p className="payment-seña">SEÑA: 30% del valor estimado para iniciar el proceso.</p>
             </div>
-
+            <div style={{ backgroundColor: '#eff6ff', borderLeft: '4px solid #3b82f6', padding: '12px', margin: '15px 0', fontSize: '0.9rem', color: '#1e40af', borderRadius: '4px' }}>
+                <strong>Importante:</strong> Para procesar tu reserva, el pago debe coincidir con el titular del contrato. Si transferís desde otra cuenta, debés aclarar el <strong>DNI del titular</strong> en la referencia del pago.
+            </div>
             <div className="contract-box">
               <ContractTerms />
             </div>
