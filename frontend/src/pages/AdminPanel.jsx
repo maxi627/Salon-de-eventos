@@ -197,18 +197,18 @@ const ReservasManager = () => {
             ) : currentItems.length > 0 ? (
               currentItems.map(reserva => (
                 <tr key={reserva.id} className={reserva.fecha?.dia < today ? 'row-past-reservation' : ''}>
-                  <td><strong>{formatDisplayDate(reserva.fecha?.dia)}</strong></td>
-                  <td>{`${reserva.usuario?.nombre || ''} ${reserva.usuario?.apellido || ''}`}</td>
-                  <td>
+                  <td data-label="Fecha del Evento"><strong>{formatDisplayDate(reserva.fecha?.dia)}</strong></td>
+                  <td data-label="Cliente">{`${reserva.usuario?.nombre || ''} ${reserva.usuario?.apellido || ''}`}</td>
+                  <td data-label="Estado">
                     <span className={`status-badge ${reserva.estado}`}>
                       {reserva.estado}
                     </span>
                   </td>
-                  <td>${(reserva.valor_alquiler || 0).toLocaleString('es-AR')}</td>
-                  <td style={{ fontWeight: reserva.saldo_restante > 0 ? 'bold' : 'normal', color: reserva.saldo_restante > 0 ? '#ef4444' : '#10b981' }}>
+                  <td data-label="Alquiler">${(reserva.valor_alquiler || 0).toLocaleString('es-AR')}</td>
+                  <td data-label="Saldo Pendiente" style={{ fontWeight: reserva.saldo_restante > 0 ? 'bold' : 'normal', color: reserva.saldo_restante > 0 ? '#ef4444' : '#10b981' }}>
                     ${(reserva.saldo_restante || 0).toLocaleString('es-AR')}
                   </td>
-                  <td style={{textAlign: 'center'}}>
+                  <td data-label="Acciones" style={{textAlign: 'center'}}>
                     <button className="btn-view-reserva" onClick={() => { setSelectedReservation(reserva); setIsCreating(false); setIsModalOpen(true); }}>
                       <i className="fa-solid fa-pen-to-square"></i> Gestionar
                     </button>
