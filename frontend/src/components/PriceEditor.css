@@ -313,49 +313,55 @@
 @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
 @keyframes slideInToast { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
+
 /* --- RESPONSIVE RADICAL PARA MÓVILES --- */
 @media (max-width: 768px) {
-  .price-editor-container { padding: 1rem !important; }
+  .price-editor-container { padding: 0.8rem !important; }
   
   .calendar-grid { 
-    gap: 4px !important; 
-    padding: 6px !important; 
+    gap: 2px !important; 
+    padding: 4px !important;
+    /* Forzamos a que las 7 columnas se ajusten sí o sí al ancho disponible */
+    grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+    width: 100% !important;
   }
   
   .calendar-cell { 
-    min-height: 75px !important; 
-    padding: 4px !important; 
+    min-height: 60px !important; 
+    padding: 2px !important; 
     align-items: center !important; 
     justify-content: center !important; 
+    /* LA REGLA DE ORO: Evita que el contenido flex empuje la celda hacia afuera */
+    min-width: 0 !important; 
+    overflow: hidden !important;
   }
   
   .calendar-day-label { 
-    font-size: 0.7rem !important; 
-    padding: 4px 0 !important; 
+    font-size: 0.65rem !important; 
+    padding: 2px 0 !important; 
   }
   
   .day-number { 
-    font-size: 0.95rem !important; 
+    font-size: 0.85rem !important; 
     margin-bottom: 2px !important;
   }
   
-  .price-tag {
-    font-size: 0.7rem !important; /* Tamaño legible pero ajustado */
-    padding: 2px !important;
+  .price-tag, .price-missing {
+    font-size: 0.65rem !important; 
+    padding: 0 !important;
     background: transparent !important; 
     border: none !important;
-    width: 100%; /* Ocupa el ancho de la celda */
+    width: 100% !important; 
     text-align: center;
-    /* Evita que el texto rompa hacia abajo o hacia los costados */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; 
+    
+    /* Configuración para que el texto se corte con "..." si no entra */
+    display: block !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important; 
   }
-  
+
   .price-missing { 
-    font-size: 0.65rem !important; 
-    background: transparent !important; 
-    border: none !important; 
-    padding: 0 !important;
+    font-size: 0.55rem !important; 
   }
 }
