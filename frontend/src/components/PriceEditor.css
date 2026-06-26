@@ -103,12 +103,14 @@
 /* --- CUADRÍCULA DEL CALENDARIO --- */
 .calendar-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  /* El minmax(0, 1fr) evita que el contenido empuje y rompa el contenedor */
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 10px;
   padding: 15px;
   background-color: var(--bg-main, #0b1120);
   border-radius: 12px;
   border: 1px solid var(--border-dark, #334155);
+  width: 100%; /* Obligamos a que respete el 100% */
 }
 
 .calendar-day-label {
@@ -314,18 +316,46 @@
 /* --- RESPONSIVE RADICAL PARA MÓVILES --- */
 @media (max-width: 768px) {
   .price-editor-container { padding: 1rem !important; }
-  .calendar-grid { gap: 4px !important; padding: 6px !important; }
-  .calendar-cell { min-height: 65px !important; padding: 4px !important; align-items: center !important; justify-content: center !important; }
   
-  .price-tag {
-    font-size: 2.2vw !important; 
-    padding: 2px !important;
-    letter-spacing: -0.5px !important;
-    background: transparent !important; 
-    border: none !important;
+  .calendar-grid { 
+    gap: 4px !important; 
+    padding: 6px !important; 
   }
   
-  .price-missing { font-size: 0.6rem !important; background: transparent !important; border: none !important; }
-  .calendar-day-label { font-size: 0.65rem !important; padding: 4px 0 !important; }
-  .day-number { font-size: 0.85rem !important; }
+  .calendar-cell { 
+    min-height: 75px !important; 
+    padding: 4px !important; 
+    align-items: center !important; 
+    justify-content: center !important; 
+  }
+  
+  .calendar-day-label { 
+    font-size: 0.7rem !important; 
+    padding: 4px 0 !important; 
+  }
+  
+  .day-number { 
+    font-size: 0.95rem !important; 
+    margin-bottom: 2px !important;
+  }
+  
+  .price-tag {
+    font-size: 0.7rem !important; /* Tamaño legible pero ajustado */
+    padding: 2px !important;
+    background: transparent !important; 
+    border: none !important;
+    width: 100%; /* Ocupa el ancho de la celda */
+    text-align: center;
+    /* Evita que el texto rompa hacia abajo o hacia los costados */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; 
+  }
+  
+  .price-missing { 
+    font-size: 0.65rem !important; 
+    background: transparent !important; 
+    border: none !important; 
+    padding: 0 !important;
+  }
 }
