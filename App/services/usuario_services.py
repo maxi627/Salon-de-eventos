@@ -1,5 +1,6 @@
 import time
 from contextlib import contextmanager
+from datetime import datetime
 
 from app import db
 from app.extensions import cache, db, redis_client
@@ -65,6 +66,11 @@ class UsuarioService:
                 if hasattr(usuario, 'contrasena') and usuario.contrasena:
                     usuario_existente.contrasena = usuario.contrasena 
                 
+                # --- ACTUALIZACIÓN DE CONSENTIMIENTO EN REACTIVACIÓN ---
+                if getattr(usuario, 'consentimiento_datos', False):
+                    usuario_existente.consentimiento_datos = True
+                    usuario_existente.fecha_consentimiento = datetime.utcnow()
+                
                 # Usamos flush() en vez de commit() para sincronizar con la DB sin cerrar la transacción
                 db.session.flush()
                 
@@ -77,6 +83,11 @@ class UsuarioService:
             else:
                 # Si existe y está activo, es un error normal de correo duplicado
                 raise ValueError("Este correo ya está registrado en el sistema.")
+
+        # --- REGISTRO DE CONSENTIMIENTO PARA USUARIO NUEVO ---
+        # Si el usuario consintió, registramos el timestamp exacto en formato UTC
+        if getattr(usuario, 'consentimiento_datos', False):
+            usuario.fecha_consentimiento = datetime.utcnow()
 
         # 2. Si no existe, lo creamos de forma normal
         new_usuario = self.repository.add(usuario)
