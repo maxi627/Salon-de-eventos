@@ -13,10 +13,10 @@ import Confirmacion from './pages/confirmacion.jsx';
 import ForgotPassword from './pages/ForgotPassword.jsx';
 import Home from './pages/home.jsx';
 import Login from './pages/login.jsx';
+import Privacidad from './pages/Privacidad';
 import Register from './pages/register.jsx';
 import Reservas from './pages/reservas.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
-
 // 1. Configuración de Sentry
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN_FRONTEND,
@@ -62,6 +62,7 @@ const router = createBrowserRouter([
       { path: "/reset-password/:token", element: <ResetPassword /> },
       { path: "/reservar", element: <Reservas /> },
       { path: "/reservar/:dateString", element: <Confirmacion /> },
+      { path: "/privacidad", element: <Privacidad />},
       {
         element: <ProtectedRoute />,
         children: [

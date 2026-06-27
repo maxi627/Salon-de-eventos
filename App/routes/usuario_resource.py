@@ -55,7 +55,7 @@ def one(id):
         return response_schema.dump(response_builder.build()), 500
 
 @Usuario.route('/usuario', methods=['POST'])
-@limiter.limit("10 per minute")
+@limiter.limit("40 per minute")
 def add():
     service = UsuarioService()
     usuario_schema = UsuarioSchema()
@@ -85,7 +85,7 @@ def add():
 @Usuario.route('/usuario/<int:id>', methods=['PUT'])
 @jwt_required()
 @admin_required()
-@limiter.limit("10 per minute")
+@limiter.limit("40 per minute")
 def update(id):
     service = UsuarioService()
     usuario_schema = UsuarioSchema()
@@ -119,7 +119,7 @@ def update(id):
 @Usuario.route('/usuario/<int:id>', methods=['DELETE'])
 @jwt_required()
 @admin_required()
-@limiter.limit("10 per minute")
+@limiter.limit("40 per minute")
 def delete(id):
     service = UsuarioService()
     response_schema = ResponseSchema()

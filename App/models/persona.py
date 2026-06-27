@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from time import time
+from datetime import datetime
 
 import jwt
 from flask import current_app
@@ -21,6 +22,11 @@ class Persona(db.Model):
     password_hash: str = db.Column(db.String(128), nullable=False)
     tipo = db.Column(db.String(50), nullable=False)
     activo = db.Column(db.Boolean, default=True, nullable=False)
+    
+    # Nuevos campos de respaldo legal (Privacidad y Tratamiento de Datos)
+    consentimiento_datos: bool = db.Column(db.Boolean, default=False, nullable=False)
+    fecha_consentimiento: datetime = db.Column(db.DateTime, nullable=True)
+
     __mapper_args__ = {
         'polymorphic_identity': 'persona',
         'polymorphic_on': tipo

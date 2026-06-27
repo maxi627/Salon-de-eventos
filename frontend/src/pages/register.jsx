@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // 1. Importar useNavigate
+import { useNavigate } from 'react-router-dom';
 import './register.css';
 
 function Register() {
-  const navigate = useNavigate(); // 2. Inicializar el hook de navegación
+  const navigate = useNavigate();
 
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
@@ -12,25 +12,34 @@ function Register() {
   const [password, setPassword] = useState('');
   const [telefono, setTelefono] = useState('');
   
+  // Nuevo estado para el consentimiento de datos
+  const [consentimientoDatos, setConsentimientoDatos] = useState(false);
+  
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false); // Estado para el mensaje de éxito
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError(null);
     setSuccess(false);
 
-    // El endpoint de tu API para crear un usuario
+    // Validación estricta en el frontend
+    if (!consentimientoDatos) {
+      setError("Debes aceptar la Política de Privacidad y Tratamiento de Datos para registrarte.");
+      return;
+    }
+
     const url = '/api/v1/usuario';
 
-    // Los datos que enviaremos, coinciden con tu UsuarioSchema
+    // Agregamos el campo al payload que enviamos al backend
     const userData = {
       nombre,
       apellido,
-      dni: parseInt(dni, 10), // Aseguramos que el DNI sea un número
+      dni: parseInt(dni, 10),
       correo,
       telefono,
       password,
+      consentimiento_datos: consentimientoDatos
     };
 
     try {
@@ -43,17 +52,13 @@ function Register() {
       const result = await response.json();
 
       if (!response.ok) {
-        // Si el backend devuelve un error (ej: email duplicado)
-        // El mensaje de error vendrá en result.data o result.message
         const errorMessage = result.data?.correo?.[0] || result.message || 'Error al registrar el usuario';
         throw new Error(errorMessage);
       }
       
-      // Si todo sale bien
       console.log('Usuario registrado:', result.data);
       setSuccess(true);
 
-      // 3. Redirigir al login después de 2 segundos
       setTimeout(() => {
         navigate('/login');
       }, 2000);
@@ -68,7 +73,6 @@ function Register() {
       <form className="register-form" onSubmit={handleSubmit}>
         <h2>Crear una Cuenta</h2>
 
-        {/* Mensaje de éxito */}
         {success && (
           <p className="success-message">
             ¡Registro exitoso! Redirigiendo al inicio de sesión...
@@ -116,7 +120,7 @@ function Register() {
         </div>
 
         <div className="form-group">
-          <label htmlFor="telefono">Teléfono</label>
+          <label htmlFor="telefono">Teléfono (Opcional)</label>
           <input
             type="tel" id="telefono" value={telefono}
             onChange={(e) => setTelefono(e.target.value)}
@@ -133,6 +137,21 @@ function Register() {
             required
             placeholder='Ingresa tu contraseña'
           />
+        </div>
+
+        {/* --- CASILLA DE CONSENTIMIENTO --- */}
+        <div className="form-group form-check" style={{ marginTop: '15px', marginBottom: '15px' }}>
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '0.85rem', color: '#475569', cursor: 'pointer' }}>
+            <input 
+              type="checkbox" 
+              checked={consentimientoDatos}
+              onChange={(e) => setConsentimientoDatos(e.target.checked)}
+              style={{ marginTop: '3px' }}
+            />
+            <span>
+              He leído y consiento el tratamiento de mis datos personales según la <a href="/privacidad" target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', textDecoration: 'underline' }}>Política de Privacidad</a>, en cumplimiento con la Ley 25.326.
+            </span>
+          </label>
         </div>
         
         {error && <p className="error-message">{error}</p>}

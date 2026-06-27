@@ -10,7 +10,9 @@ class PersonaSchema(Schema):
     dni = fields.Int(required=True, validate=validate.Range(min=1))
     nombre = fields.Str(required=True, validate=validate.Length(min=1))
     tipo = fields.Str(dump_only=True)
-    telefono = fields.Str(required=False, allow_none=True) 
+    telefono = fields.Str(required=False, allow_none=True)
+    consentimiento_datos = fields.Bool(required=True)
+    fecha_consentimiento = fields.DateTime(required=False, allow_none=True)
     @post_load
     def make_persona(self, data, **kwargs):
 
