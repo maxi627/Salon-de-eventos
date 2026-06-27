@@ -12,7 +12,8 @@ class UsuarioSchema(Schema):
     telefono = fields.Str(required=True, allow_none=True)
     tipo = fields.Str(dump_only=True)
     password = fields.Str(required=True, load_only=True, validate=validate.Length(min=8))
-
+    consentimiento_datos = fields.Bool(required=True,error_messages={"required": "El consentimiento de datos es obligatorio."})
+    fecha_consentimiento = fields.DateTime(dump_only=True,)
     @post_load
     def make_usuario(self, data, **kwargs):
         password = data.pop("password")

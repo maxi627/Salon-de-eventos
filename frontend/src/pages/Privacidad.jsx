@@ -51,7 +51,7 @@ function Privacidad() {
 
       <h2 className="privacidad-subtitle">5. Sus Derechos (Derechos ARCO)</h2>
       <p>
-        El titular de los datos personales tiene la facultad de ejercer el derecho de <strong>Acceso, Rectificación, Actualización y Supresión</strong> 
+        El titular de los datos personales tiene la facultad de ejercer el derecho de <strong>Acceso, Rectificación, Actualización y Supresión </strong> 
         de sus datos en forma gratuita. Si desea eliminar su cuenta o corregir algún dato, puede hacerlo enviándonos 
         una solicitud formal al correo electrónico: <strong>buscandoanemo172@gmail.com</strong>.
       </p>
