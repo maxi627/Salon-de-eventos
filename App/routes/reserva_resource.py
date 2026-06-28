@@ -345,3 +345,58 @@ def solicitar_arrepentimiento():
         db.session.rollback()
         sentry_sdk.capture_exception(e)
         return response_builder.add_message(f"Error interno: {str(e)}").add_status_code(500).build(), 500
+
+@Reserva.route('/reserva/reintegros-pendientes', methods=['GET'])
+@jwt_required()
+@admin_required()
+def get_reintegros_pendientes():
+    service = ReservaService()
+    reserva_schema = ReservaSchema() # Asumimos que tu schema ya mapea 'usuario' y 'fecha'
+    response_builder = ResponseBuilder()
+    
+    try:
+        # 1. Llamamos al método que creamos en el servicio/repositorio
+        reintegros = service.get_reintegros_pendientes()
+        
+        # 2. Serializamos los datos
+        data = reserva_schema.dump(reintegros, many=True)
+        
+        # 3. Construimos la respuesta exitosa
+        response_builder.add_message("Reintegros pendientes obtenidos exitosamente") \
+                        .add_status_code(200) \
+                        .add_data(data)
+        return response_builder.build(), 200
+        
+    except Exception as e:
+        sentry_sdk.capture_exception(e) 
+        return response_builder.add_message(f"Error al obtener reintegros: {str(e)}") \
+                               .add_status_code(500) \
+                               .build(), 500
+@Reserva.route('/reserva/<int:reserva_id>/reintegro', methods=['PATCH'])
+@jwt_required()
+@admin_required()
+def marcar_reintegro_pagado(reserva_id):
+    service = ReservaService()
+    response_builder = ResponseBuilder()
+    
+    try:
+        # 1. Ejecutamos la acción en el servicio 
+        reserva = service.marcar_reintegro_pagado(reserva_id)
+        
+        # 2. Respuesta exitosa
+        response_builder.add_message("Reintegro marcado como pagado exitosamente") \
+                        .add_status_code(200) \
+                        .add_data({"reserva_id": reserva.id})
+        return response_builder.build(), 200
+        
+    except ValueError as e:
+        # Errores de negocio (ej: no se encontró la reserva)
+        return response_builder.add_message(str(e)).add_status_code(400).build(), 400
+        
+    except Exception as e:
+        # Errores críticos
+        db.session.rollback() # Por las dudas, aunque el @transactional ya debería atajarlo
+        sentry_sdk.capture_exception(e) 
+        return response_builder.add_message(f"Error interno al actualizar reintegro: {str(e)}") \
+                               .add_status_code(500) \
+                               .build(), 500
