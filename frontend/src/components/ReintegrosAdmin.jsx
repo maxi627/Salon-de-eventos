@@ -10,7 +10,7 @@ function ReintegrosAdmin() {
   const fetchReintegros = async () => {
     try {
       // Reemplazá el token según cómo lo manejes en tu auth (localStorage, context, etc)
-      const token = localStorage.getItem('token'); 
+      const token = localStorage.getItem('authToken'); 
       const response = await fetch('/api/v1/reserva/reintegros-pendientes', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -41,7 +41,7 @@ function ReintegrosAdmin() {
     if (!confirmacion) return;
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('authToken');
       const response = await fetch(`/api/v1/reserva/${reservaId}/reintegro`, {
         method: 'PATCH', // Usamos PATCH porque solo modificamos un campo pequeño
         headers: {
