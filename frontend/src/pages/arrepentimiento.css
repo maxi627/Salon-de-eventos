@@ -58,8 +58,13 @@
 }
 .arrepentimiento-form input::placeholder,
 .arrepentimiento-form textarea::placeholder {
-  color: #94a3b8 !important;
+  color: #8599b6 !important;
   opacity: 1;
+}
+.arrepentimiento-form input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(0.8); /* Esto oscurece el icono del calendario */
+  opacity: 0.8;
 }
 .arrepentimiento-form label {
   color: #334155 !important;
