@@ -1,27 +1,25 @@
 .arrepentimiento-container {
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  padding: 4rem 2rem;
-  background-color: var(--color-superficie, #f4f7f6);
-  min-height: calc(100vh - 200px);
+  align-items: center;
+  padding: 4rem 1rem;
+  background-color: #f4f7f6;
+  min-height: 80vh;
 }
 
 .arrepentimiento-card {
   background-color: #ffffff;
   padding: 2.5rem;
   border-radius: 12px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 500px;
-  border: 1px solid var(--color-borde, #e2e8f0);
 }
 
 .arrepentimiento-card h2 {
-  color: var(--color-secundario, #2c3e50);
+  color: #2c3e50;
   margin-bottom: 0.5rem;
   text-align: center;
-  font-size: 1.8rem;
 }
 
 .arrepentimiento-subtitle {
@@ -29,19 +27,14 @@
   color: #64748b;
   font-size: 0.9rem;
   margin-bottom: 2rem;
-  line-height: 1.5;
-}
-
-.arrepentimiento-form .form-group {
-  margin-bottom: 1.5rem;
 }
 
 .arrepentimiento-form label {
   display: block;
   margin-bottom: 0.5rem;
-  color: #333;
+  color: #334155 !important;
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
 }
 
 .arrepentimiento-form input,
@@ -50,65 +43,34 @@
   padding: 0.85rem 1rem;
   border: 1.5px solid #cbd5e1;
   border-radius: 8px;
+  background-color: #ffffff !important; 
+  color: #1e293b !important;
   font-size: 1rem;
-  font-family: inherit;
-  transition: border-color 0.3s ease;
 }
 
-.arrepentimiento-form input:focus,
-.arrepentimiento-form textarea:focus {
-  outline: none;
-  border-color: #3498db;
-}
-
-.arrepentimiento-form small {
-  display: block;
-  margin-top: 5px;
-  color: #94a3b8;
-  font-size: 0.75rem;
-}
-
-.arrepentimiento-form .submit-button {
+.submit-button {
   width: 100%;
   padding: 0.9rem;
-  background-color: #e2e8f0;
-  color: #475569;
+  background-color: #3b82f6;
+  color: white;
   border: none;
   border-radius: 8px;
-  font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 1rem;
-}
-
-/* Cambia de color cuando el usuario interactúa */
-.arrepentimiento-form .submit-button:not(:disabled) {
-  background-color: #e74c3c;
-  color: white;
-}
-
-.arrepentimiento-form .submit-button:not(:disabled):hover {
-  background-color: #c0392b;
 }
 
 .success-alert {
-  background-color: #d4edda;
-  color: #155724;
+  background-color: #d1fae5;
+  color: #065f46;
   padding: 1rem;
   border-radius: 8px;
-  margin-bottom: 1.5rem;
-  font-size: 0.9rem;
-  line-height: 1.4;
-  border: 1px solid #c3e6cb;
+  margin-bottom: 1rem;
 }
 
 .error-alert {
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: #fee2e2;
+  color: #991b1b;
   padding: 1rem;
   border-radius: 8px;
-  margin-bottom: 1.5rem;
-  font-size: 0.9rem;
-  border: 1px solid #f5c2c7;
+  margin-bottom: 1rem;
 }
