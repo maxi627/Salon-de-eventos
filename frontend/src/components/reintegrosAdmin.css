@@ -75,3 +75,126 @@
   background-color: #059669; /* Verde más profundo al pasar el mouse */
   transform: translateY(-1px); /* Pequeño efecto de elevación */
 }
+/* --- ESTILOS DEL MODAL (TEMA OSCURO) --- */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7); /* Fondo semi-transparente oscuro */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Asegura que quede por encima de todo el panel */
+  backdrop-filter: blur(4px); /* Pequeño desenfoque al fondo para resaltar el modal */
+}
+
+.modal-content {
+  background-color: #1e293b; /* Mismo tono oscuro del contenedor principal */
+  padding: 2.5rem;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  border: 1px solid #334155;
+}
+
+.modal-content h3 {
+  color: #f8fafc;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.modal-content p {
+  color: #94a3b8;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.modal-content strong {
+  color: #e2e8f0;
+}
+
+/* Estilo del input file en modo oscuro */
+.file-input {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #0f172a; /* Fondo más oscuro para el input */
+  border: 1px dashed #475569; /* Borde punteado sutil */
+  border-radius: 8px;
+  color: #e2e8f0;
+  cursor: pointer;
+  margin-bottom: 2rem;
+  transition: border-color 0.2s ease;
+}
+
+.file-input:hover {
+  border-color: #3b82f6; /* Se ilumina en azul al pasar el mouse */
+}
+
+/* Ocultar el botón feo por defecto del input file y darle un toque más limpio */
+.file-input::file-selector-button {
+  background-color: #334155;
+  color: #f8fafc;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  margin-right: 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.file-input::file-selector-button:hover {
+  background-color: #475569;
+}
+
+/* Contenedor de los botones del modal */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.btn-cancelar {
+  background-color: transparent;
+  color: #94a3b8;
+  border: 1px solid #475569;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.btn-cancelar:hover:not(:disabled) {
+  background-color: #334155;
+  color: #f8fafc;
+}
+
+.btn-confirmar {
+  background-color: #3b82f6; /* Azul brillante para la acción de envío */
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.btn-confirmar:hover:not(:disabled) {
+  background-color: #2563eb;
+  transform: translateY(-1px);
+}
+
+/* Estados deshabilitados (cuando está cargando) */
+.btn-cancelar:disabled,
+.btn-confirmar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}

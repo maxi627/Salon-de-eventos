@@ -380,23 +380,24 @@ def marcar_reintegro_pagado(reserva_id):
     response_builder = ResponseBuilder()
     
     try:
-        # 1. Ejecutamos la acción en el servicio 
-        reserva = service.marcar_reintegro_pagado(reserva_id)
+        # Extraemos el archivo que viene en el FormData
+        comprobante_file = request.files.get('comprobante')
         
-        # 2. Respuesta exitosa
-        response_builder.add_message("Reintegro marcado como pagado exitosamente") \
+        if not comprobante_file:
+            return response_builder.add_message("El comprobante es obligatorio").add_status_code(400).build(), 400
+
+        # Le pasamos el ID y el archivo al servicio
+        reserva = service.marcar_reintegro_pagado(reserva_id, comprobante_file)
+        
+        response_builder.add_message("Reintegro marcado como pagado y correo enviado") \
                         .add_status_code(200) \
                         .add_data({"reserva_id": reserva.id})
         return response_builder.build(), 200
         
     except ValueError as e:
-        # Errores de negocio (ej: no se encontró la reserva)
         return response_builder.add_message(str(e)).add_status_code(400).build(), 400
         
     except Exception as e:
-        # Errores críticos
-        db.session.rollback() # Por las dudas, aunque el @transactional ya debería atajarlo
+        db.session.rollback()
         sentry_sdk.capture_exception(e) 
-        return response_builder.add_message(f"Error interno al actualizar reintegro: {str(e)}") \
-                               .add_status_code(500) \
-                               .build(), 500
+        return response_builder.add_message(f"Error interno: {str(e)}").add_status_code(500).build(), 500

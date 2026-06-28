@@ -1,13 +1,14 @@
 import time
 from contextlib import contextmanager
 from datetime import date, datetime
-
+from werkzeug.utils import secure_filename
 from app.extensions import cache, db, redis_client
 from app.models import Fecha, Reserva
 from app.repositories import ReservaRepository
 from app.services.fecha_services import FechaService
 from app.utils.decorators import transactional
-
+from app.services import NotificationService
+from app.utils.storage import upload_bytes_to_r2
 
 class ReservaService:
     """
@@ -231,19 +232,39 @@ class ReservaService:
 
         return reserva
     @transactional
-    def marcar_reintegro_pagado(self, reserva_id: int):
-        """
-        Marca una reserva cancelada como 'pagada', bajando la bandera 
-        de reintegro para que desaparezca del panel de pendientes.
-        """
+    def marcar_reintegro_pagado(self, reserva_id: int, comprobante_file):
         reserva = self.repository.get_by_id(reserva_id)
         
         if not reserva:
             raise ValueError(f"No se encontró la reserva con ID {reserva_id}.")
             
+        # 1. Bajamos la bandera
         reserva.requiere_reintegro = False
-        reserva.estado = 'archivada'  # Archivamos la reserva tras el reintegro
-        reserva.observaciones = f"{reserva.observaciones} - [Reintegro transferido el {date.today()}]"
+        
+        # 2. Leer los bytes del archivo que subiste desde React en memoria
+        file_bytes = comprobante_file.read()
+        file_name = secure_filename(f"reintegro_{reserva_id}_{comprobante_file.filename}")
+        
+        # 3. (Recomendado) Subir a R2 igual que hacés con los contratos
+        # Esto te da un comprobante en la nube por si alguna vez hay un reclamo
+        comprobante_url = upload_bytes_to_r2(file_bytes, file_name, folder="comprobantes_reintegros")
+        
+        # 4. Instanciar el servicio y disparar el correo
+        notificador = NotificationService()
+        notificador.send_reintegro_email(
+            to_email=reserva.usuario.correo,
+            user_name=reserva.usuario.nombre,
+            event_date=str(reserva.fecha.dia),
+            file_bytes=file_bytes,
+            file_name=file_name
+        )
+
+        # 5. Dejamos un registro textual por las dudas
+        if comprobante_url:
+            reserva.observaciones = f"{reserva.observaciones} | Reintegro transferido. URL Comprobante: {comprobante_url}"
+        else:
+            reserva.observaciones = f"{reserva.observaciones} | Reintegro transferido y notificado al cliente."
+
         return reserva
     
     def get_reintegros_pendientes(self):

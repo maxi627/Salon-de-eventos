@@ -134,3 +134,49 @@ class NotificationService:
         except Exception as e:
             print(f"ERROR al enviar email de reseteo: {e}")
             return False
+    def send_reintegro_email(self, to_email: str, user_name: str, event_date: str, file_bytes: bytes, file_name: str):
+        if not self.is_configured:
+            print("ERROR: El servicio de email no está configurado.")
+            return False
+
+        try:
+            message = MIMEMultipart("mixed")
+            message["Subject"] = f"Comprobante de Devolución - Reserva del {event_date}"
+            message["From"] = self.sender_email
+            message["To"] = to_email
+
+            # Cuerpo del mensaje
+            email_body_html = f"""
+            <html>
+                <body style="font-family: sans-serif; color: #333; line-height: 1.5;">
+                    <h2 style="color: #2c3e50;">Comprobante de Devolución de Seña</h2>
+                    <p>Hola, <strong>{user_name}</strong>,</p>
+                    <p>Te informamos que hemos procesado correctamente la devolución correspondiente a la cancelación de tu reserva para el día <strong>{event_date}</strong>.</p>
+                    <p>Adjunto a este correo encontrarás el comprobante de la transferencia.</p>
+                    <br>
+                    <p>Esperamos poder acompañarte en futuros eventos.</p>
+                    <p>Saludos cordiales,<br><strong>El equipo del Salón</strong></p>
+                    <hr style="border: none; border-top: 1px solid #eee;">
+                    <p style="font-size: 0.8em; color: #7f8c8d;">Este es un mensaje automático, por favor no lo respondas.</p>
+                </body>
+            </html>
+            """
+            message.attach(MIMEText(email_body_html, "html"))
+            
+            # Adjuntar el archivo directamente desde los bytes (funciona para PDF, PNG, JPG)
+            adjunto = MIMEApplication(file_bytes)
+            adjunto.add_header('Content-Disposition', 'attachment', filename=file_name)
+            message.attach(adjunto)
+
+            # Enviar el correo
+            context = ssl.create_default_context()
+            with smtplib.SMTP_SSL(self.smtp_server, int(self.smtp_port), context=context) as server:
+                server.login(self.sender_email, self.sender_password)
+                server.sendmail(self.sender_email, to_email, message.as_string())
+            
+            print(f"ÉXITO: Comprobante de reintegro enviado a {to_email}")
+            return True
+
+        except Exception as e:
+            print(f"ERROR al enviar comprobante de reintegro: {e}")
+            return False
