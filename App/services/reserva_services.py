@@ -170,3 +170,62 @@ class ReservaService:
             return []
         
         return self.repository.search(term)
+    @transactional
+    def procesar_arrepentimiento(self, datos: dict):
+        """
+        Procesa la solicitud de arrepentimiento validando los plazos legales (10 días)
+        y la excepción por proximidad al evento.
+        """
+        identificacion = datos['identificacion']
+        fecha_evento = datos['fecha_evento'] # Marshmallow ya lo parseó a un objeto Date
+        motivo = datos.get('motivo', '')
+
+        # 1. Buscar la reserva cruzando los datos
+        reserva = self.repository.get_by_identificacion_and_date(identificacion, fecha_evento)
+        
+        if not reserva:
+            raise ValueError("No encontramos una reserva activa para ese cliente en la fecha indicada.")
+
+        # 2. Matemáticas de fechas
+        hoy = date.today()
+        
+        # Extraemos solo la fecha (sin la hora) de cuando se creó la reserva
+        fecha_creacion = reserva.fecha_creacion.date() if isinstance(reserva.fecha_creacion, datetime) else reserva.fecha_creacion
+        
+        # Asumiendo que el campo en tu modelo Fecha se llama 'dia'
+        fecha_del_evento = reserva.fecha.dia 
+
+        dias_desde_creacion = (hoy - fecha_creacion).days
+        dias_para_evento = (fecha_del_evento - hoy).days
+
+        # 3. Regla a favor del salón: Bloqueo por proximidad (ej. menos de 7 días)
+        # Si la fecha está muy cerca, no permitimos cancelar automáticamente por el lucro cesante.
+        if dias_para_evento < 7:
+            raise ValueError(
+                "Por la proximidad del evento (menos de 7 días), la cancelación automática "
+                "por arrepentimiento no está disponible. Por favor, contactanos por WhatsApp."
+            )
+
+        # 4. Regla del consumidor: ¿Pasaron más de 10 días desde que señó?
+        if dias_desde_creacion > 10:
+            raise ValueError(
+                "El plazo legal de 10 días corridos para la revocación sin costo ha expirado. "
+                "Según la Cláusula 5 del contrato, no corresponde la devolución de la seña."
+            )
+
+        # 5. Todo en orden: Cancelamos y liberamos el calendario
+        reserva.estado = 'cancelada'
+        
+        # Liberamos el objeto Fecha asociado para que otro cliente pueda reservarlo
+        if reserva.fecha:
+            reserva.fecha.estado = 'disponible' 
+
+        # (Opcional) Si en tu modelo Reserva tenés un campo para observaciones, podés guardar el motivo
+        # reserva.observaciones = f"Cancelación por Botón de Arrepentimiento. Motivo: {motivo}"
+        if motivo:
+            reserva.observaciones = f"Cancelación por Botón de Arrepentimiento. Motivo: {motivo}"
+        # --- Limpieza de Caché ---
+        cache.delete('reservas')
+        cache.delete('fechas_disponibles')
+
+        return reserva

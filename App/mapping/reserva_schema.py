@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields, post_load
+from marshmallow import Schema, fields, post_load, validate
 
 from app.models import Reserva
 
@@ -17,7 +17,7 @@ class ReservaSchema(Schema):
     fecha = fields.Nested('FechaSchema', only=("id", "dia"), dump_only=True)
     hora_inicio = fields.Time(format='%H:%M', allow_none=True)
     hora_fin = fields.Time(format='%H:%M', allow_none=True)
-    
+    observaciones = fields.Str(allow_none=True)
     pagos = fields.Nested('PagoSchema', many=True, dump_only=True)
     saldo_restante = fields.Float(dump_only=True)
 
@@ -27,3 +27,11 @@ class ReservaSchema(Schema):
     @post_load
     def make_reserva(self, data, **kwargs):
         return Reserva(**data)
+
+
+class ArrepentimientoSchema(Schema):
+    
+    identificacion = fields.String(required=True, validate=validate.Length(min=5))
+    fecha_evento = fields.Date(required=True, error_messages={"required": "La fecha del evento es obligatoria."})
+    # Campo opcional
+    motivo = fields.String(allow_none=True)

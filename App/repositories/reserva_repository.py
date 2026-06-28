@@ -3,7 +3,8 @@ from typing import List
 from sqlalchemy.orm import joinedload
 
 from app.extensions import db
-from app.models import Reserva, Usuario
+from app.models import (Fecha, Reserva,  # Asegurate de importar Fecha aquí
+                        Usuario)
 
 from .repository import (Repository_add, Repository_delete, Repository_get,
                          Repository_update)
@@ -76,3 +77,22 @@ class ReservaRepository(Repository_add, Repository_get, Repository_delete):
                 Reserva.estado.ilike(search_pattern) # Por si quieres buscar escribiendo "pendiente"
             )
         ).limit(limit).all()
+
+    # --- NUEVO MÉTODO PARA EL BOTÓN DE ARREPENTIMIENTO ---
+    def get_by_identificacion_and_date(self, identificacion: str, fecha_evento) -> Reserva:
+        """
+        Busca una reserva activa cruzando DNI o Correo y la fecha del evento.
+        """
+        # Hacemos JOIN con Usuario y Fecha para poder filtrar por sus columnas
+        return Reserva.query.join(Reserva.usuario).join(Reserva.fecha).options(
+            joinedload(Reserva.usuario),
+            joinedload(Reserva.fecha),
+            joinedload(Reserva.pagos)
+        ).filter(
+            db.or_(
+                Usuario.correo == identificacion,
+                db.cast(Usuario.dni, db.String) == str(identificacion)
+            ),
+            Fecha.dia == fecha_evento, 
+            Reserva.estado.notin_(['cancelada', 'archivada']) # Ignoramos si ya está cancelada
+        ).first()

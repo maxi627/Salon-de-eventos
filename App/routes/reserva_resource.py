@@ -10,6 +10,7 @@ from werkzeug.utils import secure_filename
 from app.config.response_builder import ResponseBuilder
 from app.extensions import db, limiter
 from app.mapping import ReservaSchema, ResponseSchema
+from app.mapping.reserva_schema import ArrepentimientoSchema
 from app.services import NotificationService, ReservaService
 from app.tasks import enviar_contrato_background, procesar_reserva_background
 from app.utils.decorators import admin_required
@@ -305,3 +306,42 @@ def search_live():
         db.session.rollback()
         sentry_sdk.capture_exception(e) 
         return response_builder.add_message(f"Error en búsqueda en vivo: {str(e)}").add_status_code(500).build(), 500
+    
+@Reserva.route('/reserva/arrepentimiento', methods=['POST'])
+@limiter.limit("5 per minute") # Límite estricto para evitar abuso/spam
+def solicitar_arrepentimiento():
+    service = ReservaService()
+    arrepentimiento_schema = ArrepentimientoSchema()
+    response_builder = ResponseBuilder()
+    
+    try:
+        # 1. Validación de entrada
+        json_data = request.get_json()
+        if not json_data:
+            return response_builder.add_message("No se enviaron datos").add_status_code(400).build(), 400
+
+        # Validación con Marshmallow
+        datos_validados = arrepentimiento_schema.load(json_data)
+        
+        # 2. Lógica de negocio (Lanza ValueError si falla alguna regla)
+        reserva_cancelada = service.procesar_arrepentimiento(datos_validados)
+        
+        # 3. Respuesta de éxito
+        response_builder.add_message("Solicitud registrada. Reserva cancelada exitosamente.") \
+                        .add_status_code(200) \
+                        .add_data({"reserva_id": reserva_cancelada.id})
+        return response_builder.build(), 200
+
+    except ValidationError as e:
+        # Errores de formato (marshmallow)
+        return response_builder.add_message("Datos inválidos").add_status_code(422).add_data(e.messages).build(), 422
+
+    except ValueError as e:
+        # Errores de reglas de negocio (fechas, plazos, no encontrada)
+        return response_builder.add_message(str(e)).add_status_code(400).build(), 400
+
+    except Exception as e:
+        # Errores de servidor
+        db.session.rollback()
+        sentry_sdk.capture_exception(e)
+        return response_builder.add_message(f"Error interno: {str(e)}").add_status_code(500).build(), 500

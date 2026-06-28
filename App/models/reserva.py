@@ -29,7 +29,7 @@ class Reserva(db.Model):
     fecha_id = db.Column(db.Integer, db.ForeignKey('fecha.id'), nullable=False, index=True)
     hora_inicio = db.Column(db.Time, nullable=True)
     hora_fin = db.Column(db.Time, nullable=True)
-    
+    observaciones = db.Column(db.Text, nullable=True)
     
     usuario = db.relationship('Usuario', back_populates='reservas', lazy='select')
     fecha   = db.relationship('Fecha',   back_populates='reserva',  lazy='select')
