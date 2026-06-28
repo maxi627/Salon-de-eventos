@@ -108,3 +108,43 @@
   text-align: center;
   font-weight: 500;
 }
+
+/* --- CASILLA DE CONSENTIMIENTO DE DATOS --- */
+.register-form .consent-group {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.register-form .consent-label {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 0.9rem !important;
+  color: #475569 !important;
+  cursor: pointer;
+  text-transform: none !important; /* Anula las mayúsculas del label global */
+  font-weight: 500 !important; /* Anula la negrita extrema */
+  letter-spacing: normal !important;
+  margin: 0 !important;
+}
+
+/* Evita que el checkbox herede el 100% de ancho del input global */
+.register-form .consent-input {
+  width: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  cursor: pointer;
+  box-shadow: none !important; /* Quita el brillo de foco enorme si lo tiene */
+}
+
+.register-form .consent-link {
+  color: var(--color-primario, #3498db) !important;
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+.register-form .consent-link:hover {
+  color: #2980b9 !important;
+}

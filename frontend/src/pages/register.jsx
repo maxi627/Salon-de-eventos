@@ -140,15 +140,16 @@ function Register() {
         </div>
 
         {/* --- CASILLA DE CONSENTIMIENTO --- */}
-        <div className="form-group form-check" style={{ marginTop: '15px', marginBottom: '15px' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: '#475569', cursor: 'pointer', textTransform: 'none' }}>
+        <div className="consent-group">
+          <label className="consent-label">
             <input 
               type="checkbox" 
               checked={consentimientoDatos}
               onChange={(e) => setConsentimientoDatos(e.target.checked)}
+              className="consent-input"
             />
             <span>
-              Acepto la <a href="/privacidad" target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', textDecoration: 'underline' }}>Política de Privacidad</a>.
+              Acepto la <a href="/privacidad" target="_blank" rel="noopener noreferrer" className="consent-link">Política de Privacidad</a>.
             </span>
           </label>
         </div>
