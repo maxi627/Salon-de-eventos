@@ -274,3 +274,30 @@ main.no-padding a {
 body:has(main.no-padding) {
   background-color: #0b1120 !important; /* El fondo oscuro del admin */
 }
+
+
+/* --- ENLACES LEGALES FOOTER --- */
+.footer-legal-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 15px;
+  font-size: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.legal-link {
+  color: #94a3b8; /* Gris sutil para no desentonar con un footer oscuro/claro */
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.legal-link:hover {
+  color: #3b82f6; /* Azul al pasar el mouse */
+  text-decoration: underline;
+}
+
+.legal-separator {
+  color: #475569;
+}

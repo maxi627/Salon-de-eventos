@@ -133,7 +133,17 @@ function App() {
                 <div className="tooltip">Instagram</div>
               </li>
             </ul>
-            <p>© 2025 Salón de Eventos. Todos los derechos reservados.</p>
+            <p>© {new Date().getFullYear()} Salón de Eventos Full Time. Todos los derechos reservados.</p>
+            
+            {/* ENLACES LEGALES (Resolución 424/2020 y 274/2021) */}
+            <div className="footer-legal-links">
+              <Link to="/arrepentimiento" className="legal-link">Botón de Arrepentimiento</Link>
+              <span className="legal-separator">|</span>
+              <a href="https://www.argentina.gob.ar/produccion/defensadelconsumidor/formulario" target="_blank" rel="noopener noreferrer" className="legal-link">
+                Defensa de las y los Consumidores
+              </a>
+            </div>
+
           </div>
         </footer>
       )}
