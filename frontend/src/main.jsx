@@ -9,6 +9,7 @@ import App from './App.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import './index.css';
 import AdminPanel from './pages/AdminPanel.jsx';
+import Arrepentimiento from './pages/Arrepentimiento.jsx';
 import Confirmacion from './pages/confirmacion.jsx';
 import ForgotPassword from './pages/ForgotPassword.jsx';
 import Home from './pages/home.jsx';
@@ -17,6 +18,7 @@ import Privacidad from './pages/Privacidad';
 import Register from './pages/register.jsx';
 import Reservas from './pages/reservas.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
+
 // 1. Configuración de Sentry
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN_FRONTEND,
@@ -63,6 +65,7 @@ const router = createBrowserRouter([
       { path: "/reservar", element: <Reservas /> },
       { path: "/reservar/:dateString", element: <Confirmacion /> },
       { path: "/privacidad", element: <Privacidad />},
+      { path: "/arrepentimiento", element: <Arrepentimiento /> },
       {
         element: <ProtectedRoute />,
         children: [
