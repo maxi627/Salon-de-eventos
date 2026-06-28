@@ -244,3 +244,11 @@ class ReservaService:
         reserva.requiere_reintegro = False        
         reserva.observaciones = f"{reserva.observaciones} - [Reintegro transferido el {date.today()}]"
         return reserva
+    
+    def get_reintegros_pendientes(self):
+        """
+        Obtiene todas las reservas canceladas por arrepentimiento
+        que tienen la bandera de reintegro activa.
+        """
+        # Delegamos la consulta al repositorio
+        return self.repository.get_reintegros_pendientes()
