@@ -307,7 +307,7 @@ def search_live():
         sentry_sdk.capture_exception(e) 
         return response_builder.add_message(f"Error en búsqueda en vivo: {str(e)}").add_status_code(500).build(), 500
     
-@Reserva.route('/reserva/arrepentimiento', methods=['POST'])
+@Reserva.route('/reservas/arrepentimiento', methods=['POST'])
 @limiter.limit("5 per minute") # Límite estricto para evitar abuso/spam
 def solicitar_arrepentimiento():
     service = ReservaService()
