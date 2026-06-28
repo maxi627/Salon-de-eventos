@@ -1,17 +1,19 @@
+/* --- TEMA OSCURO PARA EL PANEL ADMIN --- */
+
 .reintegros-admin-container {
   padding: 2rem;
-  background-color: #ffffff;
+  background-color: #1e293b; /* Fondo oscuro (slate-800) acorde al panel */
   border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Sombra más profunda */
 }
 
 .reintegros-admin-container h2 {
-  color: #1e293b;
+  color: #f8fafc; /* Texto blanco brillante */
   margin-bottom: 0.5rem;
 }
 
 .reintegros-subtitle {
-  color: #64748b;
+  color: #94a3b8; /* Gris claro/azulado para el subtítulo */
   font-size: 0.95rem;
   margin-bottom: 2rem;
 }
@@ -20,10 +22,11 @@
 .reintegros-empty {
   text-align: center;
   padding: 3rem;
-  color: #64748b;
+  color: #cbd5e1;
   font-size: 1.1rem;
-  background-color: #f8fafc;
+  background-color: #0f172a; /* Un tono aún más oscuro para resaltar el "vacío" */
   border-radius: 8px;
+  border: 1px solid #334155;
 }
 
 .table-responsive {
@@ -37,37 +40,38 @@
 }
 
 .reintegros-table th {
-  background-color: #f1f5f9;
-  color: #334155;
+  background-color: #0f172a; /* Cabecera de tabla oscura */
+  color: #e2e8f0;
   padding: 1rem;
   font-weight: 600;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid #334155; /* Borde sutil oscuro */
 }
 
 .reintegros-table td {
   padding: 1rem;
-  border-bottom: 1px solid #e2e8f0;
-  color: #1e293b;
+  border-bottom: 1px solid #334155; /* Borde sutil para separar filas */
+  color: #f8fafc; /* Texto de la tabla en blanco */
   vertical-align: middle;
 }
 
 .observaciones-cell {
   max-width: 250px;
   font-style: italic;
-  color: #475569;
+  color: #94a3b8; /* Un gris intermedio para no saturar la vista */
 }
 
 .btn-pagado {
-  background-color: #10b981; /* Verde esmeralda */
+  background-color: #10b981; /* Verde esmeralda (resalta perfecto en oscuro) */
   color: white;
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
 }
 
 .btn-pagado:hover {
-  background-color: #059669;
+  background-color: #059669; /* Verde más profundo al pasar el mouse */
+  transform: translateY(-1px); /* Pequeño efecto de elevación */
 }

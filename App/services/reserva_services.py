@@ -241,7 +241,8 @@ class ReservaService:
         if not reserva:
             raise ValueError(f"No se encontró la reserva con ID {reserva_id}.")
             
-        reserva.requiere_reintegro = False        
+        reserva.requiere_reintegro = False
+        reserva.estado = 'archivada'  # Archivamos la reserva tras el reintegro
         reserva.observaciones = f"{reserva.observaciones} - [Reintegro transferido el {date.today()}]"
         return reserva
     
