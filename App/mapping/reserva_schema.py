@@ -20,7 +20,7 @@ class ReservaSchema(Schema):
     observaciones = fields.Str(allow_none=True)
     pagos = fields.Nested('PagoSchema', many=True, dump_only=True)
     saldo_restante = fields.Float(dump_only=True)
-
+    requiere_reintegro = fields.Bool()
     usuario_id = fields.Int(required=True, load_only=True)
     fecha_id = fields.Int(required=True, load_only=True)
 

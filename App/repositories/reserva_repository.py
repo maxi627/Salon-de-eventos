@@ -96,3 +96,12 @@ class ReservaRepository(Repository_add, Repository_get, Repository_delete):
             Fecha.dia == fecha_evento, 
             Reserva.estado.notin_(['cancelada', 'archivada']) # Ignoramos si ya está cancelada
         ).first()
+    
+    def get_reintegros_pendientes(self) -> List[Reserva]:
+        """Obtiene reservas que exigen devolución de dinero al cliente."""
+        return Reserva.query.options(
+            joinedload(Reserva.usuario),
+            joinedload(Reserva.fecha)
+        ).filter(
+            Reserva.requiere_reintegro == True
+        ).all()

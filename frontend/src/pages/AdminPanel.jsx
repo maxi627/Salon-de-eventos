@@ -6,6 +6,7 @@ import EditReservationModal from '../components/EditReservationModal';
 import GastosManager from '../components/GastosManager';
 import PriceEditor from '../components/PriceEditor';
 import UserList from '../components/UserList';
+import ReintegrosAdmin from '../components/ReintegrosAdmin';
 import { useReservas } from '../hooks/useAdminData';
 import './AdminPanel.css';
 
@@ -319,6 +320,13 @@ function AdminPanel() {
           </button>
           
           <button 
+            className={`nav-btn ${activeTab === 'reintegros' ? 'active' : ''}`} 
+            onClick={() => handleTabChange('reintegros')}
+          >
+            <i className="fa-solid fa-money-bill-transfer"></i> Reintegros
+          </button>
+
+          <button 
             className={`nav-btn ${activeTab === 'users' ? 'active' : ''}`} 
             onClick={() => handleTabChange('users')}
           >
@@ -348,6 +356,7 @@ function AdminPanel() {
           {activeTab === 'prices' && <PriceEditor />}
           {activeTab === 'expenses' && <GastosManager />}
           {activeTab === 'reservations' && <ReservasManager />}
+          {activeTab === 'reintegros' && <ReintegrosAdmin />}
           {activeTab === 'users' && <UserList />}
         </section>
       </main>

@@ -1,11 +1,13 @@
 import time
 from contextlib import contextmanager
 from datetime import date, datetime
+
 from app.extensions import cache, db, redis_client
 from app.models import Fecha, Reserva
 from app.repositories import ReservaRepository
 from app.services.fecha_services import FechaService
 from app.utils.decorators import transactional
+
 
 class ReservaService:
     """
@@ -215,17 +217,30 @@ class ReservaService:
 
         # 5. Todo en orden: Cancelamos y liberamos el calendario
         reserva.estado = 'cancelada'
+        reserva.requiere_reintegro = True
         
         # Liberamos el objeto Fecha asociado para que otro cliente pueda reservarlo
         if reserva.fecha:
             reserva.fecha.estado = 'disponible' 
 
-        # (Opcional) Si en tu modelo Reserva tenés un campo para observaciones, podés guardar el motivo
-        # reserva.observaciones = f"Cancelación por Botón de Arrepentimiento. Motivo: {motivo}"
         if motivo:
             reserva.observaciones = f"Cancelación por Botón de Arrepentimiento. Motivo: {motivo}"
         # --- Limpieza de Caché ---
         cache.delete('reservas')
         cache.delete('fechas_disponibles')
 
+        return reserva
+    @transactional
+    def marcar_reintegro_pagado(self, reserva_id: int):
+        """
+        Marca una reserva cancelada como 'pagada', bajando la bandera 
+        de reintegro para que desaparezca del panel de pendientes.
+        """
+        reserva = self.repository.get_by_id(reserva_id)
+        
+        if not reserva:
+            raise ValueError(f"No se encontró la reserva con ID {reserva_id}.")
+            
+        reserva.requiere_reintegro = False        
+        reserva.observaciones = f"{reserva.observaciones} - [Reintegro transferido el {date.today()}]"
         return reserva

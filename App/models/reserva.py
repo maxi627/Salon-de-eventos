@@ -30,7 +30,7 @@ class Reserva(db.Model):
     hora_inicio = db.Column(db.Time, nullable=True)
     hora_fin = db.Column(db.Time, nullable=True)
     observaciones = db.Column(db.Text, nullable=True)
-    
+    requiere_reintegro = db.Column(db.Boolean, nullable=False, default=False)
     usuario = db.relationship('Usuario', back_populates='reservas', lazy='select')
     fecha   = db.relationship('Fecha',   back_populates='reserva',  lazy='select')
     
