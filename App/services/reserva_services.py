@@ -1,7 +1,7 @@
 import time
 from contextlib import contextmanager
 from datetime import date, datetime
-from app.tasks import tarea_enviar_reintegro_async
+
 from werkzeug.utils import secure_filename
 
 from app.extensions import cache, db, redis_client
@@ -255,7 +255,8 @@ class ReservaService:
         # Si la subida falla, cortamos la ejecución para no dejar datos inconsistentes
         if not comprobante_url:
             raise ValueError("Error al subir el comprobante a R2. Intentá nuevamente.")
-        
+        from app.tasks import tarea_enviar_reintegro_async
+
         # 4. DELEGAR A CELERY usando .delay()
         tarea_enviar_reintegro_async.delay(
             to_email=reserva.usuario.correo,
