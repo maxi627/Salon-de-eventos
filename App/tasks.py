@@ -206,3 +206,29 @@ def tarea_enviar_reintegro_async(to_email: str, user_name: str, event_date: str,
         print(f"Error crítico en la tarea de Celery (reintegros): {e}")
         sentry_sdk.capture_exception(e)
         return False
+
+@shared_task
+def notificar_arrepentimiento_async(nombre_cliente: str, fecha_evento: str, motivo: str):
+    """
+    Tarea en segundo plano: Envía una notificación a Telegram cuando 
+    un cliente usa el botón de arrepentimiento.
+    """
+    try:
+        telegram = PushNotificationService()
+        
+        mensaje_alerta = (
+            f"🚨 *ALERTA DE ARREPENTIMIENTO* 🚨\n"
+            f"👤 *Cliente:* {nombre_cliente}\n"
+            f"📅 *Fecha Liberada:* {fecha_evento}\n"
+            f"💸 *Reintegro:* Pendiente (Revisar Panel)\n"
+            f"📝 *Motivo:* {motivo if motivo else 'N/A'}"
+        )
+        
+        telegram.send_notification(mensaje_alerta, title="⚠️ Cancelación de Reserva")
+        print(f"Tarea 'notificar_arrepentimiento_async' ejecutada: Telegram enviado para {nombre_cliente}.")
+        return True
+        
+    except Exception as e:
+        sentry_sdk.capture_exception(e)
+        print(f"Error Celery al enviar Telegram por arrepentimiento: {e}")
+        return False    

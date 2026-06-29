@@ -194,25 +194,21 @@ class ReservaService:
 
         # 2. Matemáticas de fechas
         hoy = date.today()
-        
-        # Extraemos solo la fecha (sin la hora) de cuando se creó la reserva
+        from datetime import datetime
         fecha_creacion = reserva.fecha_creacion.date() if isinstance(reserva.fecha_creacion, datetime) else reserva.fecha_creacion
-        
-        # Asumiendo que el campo en tu modelo Fecha se llama 'dia'
         fecha_del_evento = reserva.fecha.dia 
 
         dias_desde_creacion = (hoy - fecha_creacion).days
         dias_para_evento = (fecha_del_evento - hoy).days
 
-        # 3. Regla a favor del salón: Bloqueo por proximidad (ej. menos de 7 días)
-        # Si la fecha está muy cerca, no permitimos cancelar automáticamente por el lucro cesante.
+        # 3. Regla a favor del salón: Bloqueo por proximidad
         if dias_para_evento < 7:
             raise ValueError(
                 "Por la proximidad del evento (menos de 7 días), la cancelación automática "
                 "por arrepentimiento no está disponible. Por favor, contactanos por WhatsApp."
             )
 
-        # 4. Regla del consumidor: ¿Pasaron más de 10 días desde que señó?
+        # 4. Regla del consumidor: Plazo legal de 10 días
         if dias_desde_creacion > 10:
             raise ValueError(
                 "El plazo legal de 10 días corridos para la revocación sin costo ha expirado. "
@@ -223,15 +219,28 @@ class ReservaService:
         reserva.estado = 'cancelada'
         reserva.requiere_reintegro = True
         
-        # Liberamos el objeto Fecha asociado para que otro cliente pueda reservarlo
         if reserva.fecha:
             reserva.fecha.estado = 'disponible' 
 
-        if motivo:
-            reserva.observaciones = f"Cancelación por Botón de Arrepentimiento. Motivo: {motivo}"
+        reserva.observaciones = f"Cancelación por Botón de Arrepentimiento. Motivo: {motivo}" if motivo else "Cancelación por Botón de Arrepentimiento. Sin motivo especificado."
+            
         # --- Limpieza de Caché ---
+        from app.extensions import cache
         cache.delete('reservas')
         cache.delete('fechas_disponibles')
+
+        # --- 6. Notificación Asíncrona por Telegram (CELERY) ---
+        nombre_cliente = f"{reserva.usuario.nombre} {reserva.usuario.apellido}" if reserva.usuario else "Cliente no registrado"
+        
+        # Importación local para evitar Circular Imports
+        from app.tasks import notificar_arrepentimiento_async
+
+        # Disparamos la tarea a Celery pasando solo strings
+        notificar_arrepentimiento_async.delay(
+            nombre_cliente=nombre_cliente,
+            fecha_evento=str(fecha_del_evento),
+            motivo=motivo
+        )
 
         return reserva
     @transactional
