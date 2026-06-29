@@ -3,10 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import './confirmacion.css';
 
-// Componente con TU contrato original sin tocar ni una coma
+// Componente con el contrato original
 const ContractTerms = () => (
   <>
-    <h3>Términos y Condiciones</h3>
     <p><strong>Contrato de Alquiler de Salón de Eventos.</strong></p>
     <p>
       El presente contrato se celebra entre EL LOCADOR (propietario del salón) y EL LOCATARIO 
@@ -17,13 +16,13 @@ const ContractTerms = () => (
     <ol>
       <li><strong>Objeto:</strong> EL LOCADOR alquila a EL LOCATARIO el salón de eventos ubicado en Bolivar 1425, para uso exclusivo en la fecha y horario acordados en la reserva.</li>
       <li><strong>Uso y Responsabilidad:</strong> EL LOCADOR no se responsabiliza por el tipo de actividad o evento que se realice, siempre que sea lícito. Queda prohibida la venta de entradas, la venta o suministro de alcohol a menores de edad, el consumo de sustancias ilegales y cualquier actividad contraria a la ley. EL LOCATARIO es único responsable por cualquier daño material, accidente o hecho ocurrido durante el evento, así como de las acciones de los invitados y terceros que ingresen al salón.</li>
-      <li><strong>Cumplimiento Legal y Ruidos Molestos:</strong> EL LOCATARIO asume toda responsabilidad por cumplir con las normativas vigentes en materia de seguridad, salubridad y la Ordenanza Municipal de San Rafael sobre ruidos molestos. El volumen de la música deberá mantenerse dentro de los decibeles permitidos, y queda estrictamente prohibido generar disturbios en la vía pública o alterar el orden del vecindario. En caso de multas, quejas formales o clausuras derivadas del comportamiento de los asistentes, EL LOCADOR queda exento de toda responsabilidad civil, penal o administrativa, debiendo EL LOCATARIO responder económica y legalmente.</li>
+      <li><strong>Cumplimiento Legal y Ruidos Molestos:</strong> EL LOCATARIO asume toda responsabilidad por cumplir con las normativas vigentes en materia de seguridad, salubridad y la Ordenanza Municipal sobre ruidos molestos. El volumen de la música deberá mantenerse dentro de los decibeles permitidos, y queda estrictamente prohibido generar disturbios en la vía pública o alterar el orden del vecindario. En caso de multas, quejas formales o clausuras derivadas del comportamiento de los asistentes, EL LOCADOR queda exento de toda responsabilidad civil, penal o administrativa, debiendo EL LOCATARIO responder económica y legalmente.</li>
       <li><strong>Daños y Limpieza:</strong> EL LOCATARIO deberá restituir el salón en las mismas condiciones en que lo recibió, siendo responsable por cualquier daño ocasionado a las instalaciones, mobiliario o equipamiento. Los gastos de reparación o reposición correrán por cuenta del LOCATARIO.</li>
       <li><strong>Pagos y Cancelaciones:</strong> EL LOCATARIO deberá abonar la seña establecida al momento de la reserva. En caso de cancelación, no habrá devolución de la seña. En caso de cancelación por parte del LOCADOR por causas de fuerza mayor, se reintegrará el monto abonado sin derecho a reclamos adicionales.</li>
       <li><strong>Penalidades:</strong> En caso de incumplimiento de alguna cláusula, EL LOCADOR podrá suspender el evento sin derecho a reclamo o reembolso, además de iniciar las acciones legales correspondientes.</li>
-      <li><strong>Capacidad Base y Ajustes:</strong> El presente contrato se emite inicialmente bajo una estimación de <strong>40 personas</strong>. En caso de requerir una capacidad superior, EL LOCATARIO deberá coordinar con EL LOCADOR el ajuste de capacidad y precio final. El contrato definitivo con el valor legal final será enviado por correo electrónico una vez que EL LOCADOR confirme la reserva desde el panel de administración.</li>
-      <li><strong>Exceso de Horario y Finalización:</strong>  El evento contempla exclusivamente la franja horaria pactada en la reserva. Entendemos que los eventos pueden prolongarse, por lo que cualquier extensión del horario deberá solicitarse con anticipación, quedando sujeta a la disponibilidad del salón y al abono de la tarifa de "hora extra" vigente. De excederse el límite horario sin coordinación ni autorización previa, se aplicará de forma automática el cobro del tiempo excedido. Por cuestiones de logística y respeto a reservas posteriores, si el salón no tuviera disponibilidad para extender el turno, EL LOCATARIO se compromete a finalizar el evento y desocupar las instalaciones a la hora acordada, facultando a EL LOCADOR a dar por concluido el servicio para iniciar las tareas de acondicionamiento.</li>
-      <li><strong>Derechos de Autor (SADAIC/AADI CAPIF):</strong> Conforme al Decreto Nacional 765/2024, el evento es de carácter estrictamente privado, por lo que queda exento de aranceles por derechos de autor. Si EL LOCATARIO alterase la naturaleza del evento (acceso público o cobro de entrada), será el único responsable de gestionar permisos y abonar los cánones correspondientes.</li>
+      <li><strong>Capacidad Base y Ajustes:</strong> El presente contrato se emite inicialmente bajo una estimación de <strong>40 personas</strong>. En caso de requerir una capacidad superior, EL LOCATARIO deberá coordinar con EL LOCADOR el ajuste de capacidad y precio final. El contrato definitivo con el valor legal final será enviado por correo electrónico una vez que EL LOCADOR confirme la reserva.</li>
+      <li><strong>Exceso de Horario y Finalización:</strong> El evento contempla exclusivamente la franja horaria pactada en la reserva. Entendemos que los eventos pueden prolongarse, por lo que cualquier extensión del horario deberá solicitarse con anticipación, quedando sujeta a la disponibilidad del salón y al abono de la tarifa de "hora extra" vigente. De excederse el límite horario sin autorización previa, se aplicará de forma automática el cobro del tiempo excedido. Si el salón no tuviera disponibilidad para extender el turno, EL LOCATARIO se compromete a finalizar el evento a la hora acordada, facultando a EL LOCADOR a dar por concluido el servicio.</li>
+      <li><strong>Derechos de Autor (SADAIC/AADI CAPIF):</strong> Conforme al Decreto Nacional 765/2024, el evento es de carácter estrictamente privado, por lo que queda exento de aranceles por derechos de autor. Si EL LOCATARIO alterase la naturaleza del evento, será el único responsable de gestionar permisos y abonar los cánones correspondientes.</li>
       <li><strong>Jurisdicción:</strong> Para cualquier conflicto legal, las partes se someten a la jurisdicción de los Tribunales Ordinarios de la Segunda Circunscripción Judicial de la Provincia de Mendoza, con asiento en San Rafael.</li>
       <li><strong>Aceptación Digital:</strong> La aceptación del presente contrato mediante el sistema de reservas online equivale a la firma manuscrita y constituye plena conformidad legal por parte de EL LOCATARIO.</li>
       <li><strong>Firma y Conformidad:</strong> Ambas partes declaran haber leído y comprendido el presente contrato, aceptando las cláusulas aquí establecidas.</li>
@@ -35,23 +34,21 @@ function Confirmacion() {
   const { dateString } = useParams();
   const navigate = useNavigate();
 
-  // Control de pasos del formulario (1 = Legal, 2 = Pago)
   const [step, setStep] = useState(1);
-
   const [fechaInfo, setFechaInfo] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   
-  // Estados para validación legal
   const [contractAccepted, setContractAccepted] = useState(false);
-  const [ageAccepted, setAgeAccepted] = useState(false); // NUEVO ESTADO: Mayoría de edad
+  const [ageAccepted, setAgeAccepted] = useState(false);
   
-  // Estados para pago
+  // NUEVO ESTADO: Controla si el modal del contrato está abierto
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
   const [receiptFile, setReceiptFile] = useState(null);
   const [paymentCVU, setPaymentCVU] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  // --- FUNCIÓN PARA COPIAR AL PORTAPAPELES ---
   const handleCopyCVU = () => {
     if (paymentCVU) {
       navigator.clipboard.writeText(paymentCVU)
@@ -83,9 +80,7 @@ function Confirmacion() {
       try {
         const [fechaResponse, paymentResponse] = await Promise.all([
           fetch(`/api/v1/fecha/by-date/${dateString}`),
-          fetch('/api/v1/payment-info', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          })
+          fetch('/api/v1/payment-info', { headers: { 'Authorization': `Bearer ${token}` } })
         ]);
 
         const fechaResult = await fechaResponse.json();
@@ -111,7 +106,6 @@ function Confirmacion() {
     getPageData();
   }, [dateString, navigate]);
 
-  // --- FUNCIÓN PARA VALIDAR LA IMAGEN ---
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -155,15 +149,19 @@ function Confirmacion() {
         confirmButtonColor: '#3085d6',
         confirmButtonText: 'Genial',
         allowOutsideClick: false
-      }).then(() => {
-        navigate('/');
-      });
+      }).then(() => { navigate('/'); });
 
     } catch (err) {
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Función que tilda el contrato automáticamente al cerrarlo
+  const handleAcceptModal = () => {
+    setContractAccepted(true);
+    setIsModalOpen(false);
   };
 
   if (isLoading && !fechaInfo) return <div className="confirm-container"><p>Cargando información de la reserva...</p></div>;
@@ -180,11 +178,17 @@ function Confirmacion() {
                 <p className="confirm-text">Fecha a solicitar:</p>
                 <p className="confirm-date" style={{ marginBottom: '1.5rem' }}>{displayDate}</p>
 
-                <div className="contract-box">
-                  <ContractTerms />
-                </div>
+                {/* BOTÓN PARA ABRIR EL MODAL (Reemplaza a la caja de scroll) */}
+                <button 
+                  type="button" 
+                  className="btn-leer-contrato" 
+                  onClick={() => setIsModalOpen(true)}
+                >
+                  <i className="fa-regular fa-file-lines" style={{ marginRight: '8px' }}></i>
+                  Leer Contrato de Locación
+                </button>
                 
-                <div className="form-check" style={{ marginBottom: '10px' }}>
+                <div className="form-check" style={{ marginTop: '25px', marginBottom: '10px' }}>
                   <input 
                     type="checkbox" id="accept-contract"
                     checked={contractAccepted}
@@ -223,7 +227,6 @@ function Confirmacion() {
 
                 <div className="payment-info" style={{ marginTop: '1.5rem' }}>
                   <p>Realiza la transferencia al siguiente <strong>CVU</strong> y adjunta el comprobante:</p>
-                  
                   {paymentCVU ? (
                     <div className="cvu-copy-box">
                       <span className="cvu-number">{paymentCVU}</span>
@@ -238,7 +241,6 @@ function Confirmacion() {
                   ) : (
                     <p>Cargando datos de pago...</p>
                   )}
-                  
                   <p className="payment-seña">SEÑA: 30% del valor estimado para iniciar el proceso.</p>
                 </div>
 
@@ -256,19 +258,10 @@ function Confirmacion() {
                 </div>
 
                 <div className="button-group-wizard">
-                  <button 
-                    type="button"
-                    onClick={() => setStep(1)} 
-                    className="back-button"
-                    disabled={isLoading}
-                  >
+                  <button type="button" onClick={() => setStep(1)} className="back-button" disabled={isLoading}>
                     ⬅️ Volver
                   </button>
-                  <button 
-                    onClick={handleRequestReservation} 
-                    className="confirm-button"
-                    disabled={isLoading || !receiptFile}
-                  >
+                  <button onClick={handleRequestReservation} className="confirm-button" disabled={isLoading || !receiptFile}>
                     {isLoading ? 'Enviando...' : 'Enviar Solicitud'}
                   </button>
                 </div>
@@ -281,6 +274,29 @@ function Confirmacion() {
 
         {error && <p className="error-message">{error}</p>}
       </div>
+
+      {/* ================= MODAL FLOTANTE DEL CONTRATO ================= */}
+      {isModalOpen && (
+        <div className="contract-modal-overlay" onClick={() => setIsModalOpen(false)}>
+          <div className="contract-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="contract-modal-header">
+              <h3>Contrato de Locación</h3>
+              <button className="close-modal-btn" onClick={() => setIsModalOpen(false)}>
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <div className="contract-modal-body">
+              <ContractTerms />
+            </div>
+            <div className="contract-modal-footer">
+              <button type="button" className="btn-aceptar-modal" onClick={handleAcceptModal}>
+                Entendido y Aceptado
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
