@@ -214,7 +214,7 @@ function Confirmacion() {
                   className="confirm-button"
                   disabled={!contractAccepted || !ageAccepted}
                 >
-                  Continuar al Pago ➡️
+                  Continuar al Pago
                 </button>
               </div>
             )}
@@ -259,7 +259,7 @@ function Confirmacion() {
 
                 <div className="button-group-wizard">
                   <button type="button" onClick={() => setStep(1)} className="back-button" disabled={isLoading}>
-                    ⬅️ Volver
+                    Volver
                   </button>
                   <button onClick={handleRequestReservation} className="confirm-button" disabled={isLoading || !receiptFile}>
                     {isLoading ? 'Enviando...' : 'Enviar Solicitud'}

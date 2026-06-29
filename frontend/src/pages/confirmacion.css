@@ -15,256 +15,142 @@
 .confirm-box {
   background-color: #fff !important;
   padding: 2.5rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); /* Sombra más suave y moderna */
   text-align: center;
   width: 100%;
   max-width: 500px;
-  color: #333 !important; /* Fuerza el texto oscuro sobre fondo blanco */
+  color: #333 !important;
 }
 
 .confirm-box h2 {
-  color: var(--color-secundario) !important;
+  color: #1e293b !important;
   margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 .confirm-box .confirm-text {
-  font-size: 1.1rem;
-  color: #4a5568 !important;
+  font-size: 1rem;
+  color: #64748b !important;
+  margin-bottom: 0.5rem;
 }
 
 .confirm-box .confirm-date {
-  font-size: 2rem;
-  font-weight: bold;
-  color: var(--color-primario) !important;
-  margin: 1rem 0;
-  background-color: #eaf7ff !important;
-  padding: 0.5rem;
-  border-radius: 5px;
-}
-
-.confirm-box .confirm-note {
-  font-size: 0.9rem;
-  color: #777 !important;
-  margin-bottom: 2rem;
-}
-
-.confirm-box .confirm-button {
-  width: 100%;
-  padding: 0.8rem;
-  background-color: #27ae60 !important;
-  color: white !important;
-  border: none !important;
-  border-radius: 5px;
-  font-size: 1.1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.confirm-box .confirm-button:hover {
-  background-color: #229954 !important;
-}
-
-.confirm-box .message-area {
-  margin-top: 1.5rem;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #b48c59 !important; /* El color dorado/bronce que tenés en la captura */
+  margin: 0 0 1.5rem 0;
+  background-color: #f8fafc !important;
   padding: 1rem;
-  border-radius: 5px;
-  background-color: #eaf7ff !important;
-  color: #333 !important;
-  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
 }
 
-.confirm-box .contract-box {
-  text-align: left;
-  height: 120px;
-  overflow-y: auto;
-  border: 1px solid #e0e0e0 !important;
-  padding: 1rem;
-  margin: 1.5rem 0;
-  border-radius: 5px;
-  background-color: #f9f9f9 !important;
-  font-size: 0.8rem;
-  color: #333 !important; /* Asegurar que el texto del contrato se vea */
-}
+/* =====================================================================
+   REDISEÑO MODERNO DE LOS CHECKBOXES LEGALES
+   ===================================================================== */
 
-.confirm-box .contract-box h3 {
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-  color: #333 !important;
-}
-
+/* Contenedor tipo "tarjeta" para cada opción legal */
 .confirm-box .form-check {
+  display: flex;
+  align-items: flex-start; /* Alinea arriba para textos largos */
+  padding: 16px;
+  margin-bottom: 15px;
+  background-color: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-align: left; /* El texto vuelve a la izquierda */
+}
+
+/* Efecto hover al pasar el mouse por la tarjeta */
+.confirm-box .form-check:hover {
+  border-color: #93c5fd !important;
+  background-color: #eff6ff !important;
+}
+
+/* Cuando el checkbox está seleccionado, la tarjeta cambia de estilo */
+.confirm-box .form-check:has(input:checked) {
+  border-color: #3b82f6 !important;
+  background-color: #eff6ff !important;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
+}
+
+/* Ocultamos el checkbox feo nativo del navegador */
+.confirm-box .form-check input[type="checkbox"] {
+  appearance: none; /* Elimina el estilo del SO */
+  -webkit-appearance: none;
+  min-width: 22px;
+  width: 22px;
+  height: 22px;
+  background-color: white;
+  border: 2px solid #cbd5e1;
+  border-radius: 6px; /* Cuadradito redondeado moderno */
+  margin-right: 15px;
+  margin-top: 2px; /* Alineación fina con el texto */
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+/* Estado activo (checked) del nuevo checkbox */
+.confirm-box .form-check input[type="checkbox"]:checked {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+/* La "palomita" (tilde) dibujada con CSS */
+.confirm-box .form-check input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 6px;
+  height: 12px;
+  border: solid white;
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+}
+
+/* Texto al lado del checkbox */
+.confirm-box .form-check label {
+  color: #334155 !important;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* --- BOTÓN PARA ABRIR EL CONTRATO --- */
+.btn-leer-contrato {
+  background-color: #ffffff; 
+  color: #2563eb; 
+  border: 2px dashed #93c5fd;
+  padding: 15px 20px;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1.5rem;
-  color: #333 !important;
+  margin-bottom: 25px; /* Más espacio antes de los checkboxes */
 }
 
-.confirm-box .form-check input {
-  margin-right: 0.5rem;
-  width: 16px;
-  height: 16px;
-  accent-color: #007bff; /* Color moderno para el checkbox */
+.btn-leer-contrato:hover {
+  background-color: #eff6ff;
+  border-color: #3b82f6;
 }
 
-.confirm-box .form-group {
-  margin-bottom: 1.5rem;
-  text-align: left;
-}
-
-.confirm-box .form-group label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: #333 !important;
-}
-
-/* --- ESCUDO PARA EL INPUT DE ARCHIVO (ADIÓS DARK MODE) --- */
-.confirm-box .form-group input[type="file"] {
-  display: block;
-  width: 100%;
-  padding: 10px !important;
-  border: 2px dashed #ccc !important;
-  border-radius: 8px !important;
-  background-color: #fafafa !important; /* Fondo gris muy clarito */
-  color: #555 !important; /* Texto oscuro para el nombre del archivo */
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 0.9rem;
-  color-scheme: light; /* Fuerza a que el botón nativo de subida sea claro */
-}
-
-.confirm-box .form-group input[type="file"]:hover {
-  border-color: #3085d6 !important;
-  background-color: #f0f8ff !important;
-}
-
-/* Color para el botón nativo de "Seleccionar archivo" dentro del input */
-.confirm-box .form-group input[type="file"]::file-selector-button {
-  background-color: #e9ecef !important;
-  color: #333 !important;
-  border: 1px solid #ced4da !important;
-  border-radius: 4px;
-  padding: 4px 8px;
-  margin-right: 10px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.confirm-box .form-group input[type="file"]::file-selector-button:hover {
-  background-color: #dde0e3 !important;
-}
-
-.confirm-box .error-message {
-  color: #d32f2f !important;
-  background-color: #fdeaea !important;
-  padding: 10px 15px;
-  border-radius: 6px;
-  font-weight: 500;
-  margin-top: 15px;
-  text-align: center;
-  border: 1px solid #f5c2c7 !important;
-  animation: shake 0.4s ease-in-out;
-}
-
-/* --- INFO DE PAGO --- */
-.confirm-box .payment-info {
-  background-color: #f8f9fa !important;
-  border-radius: 12px;
-  padding: 20px;
-  margin: 20px 0;
-  border: 1px solid #e9ecef !important;
-  text-align: center;
-}
-
-.confirm-box .payment-info p {
-  margin-bottom: 10px;
-  color: #495057 !important;
-}
-
-.confirm-box .payment-alias {
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: var(--color-secundario) !important;
-  background-color: #e9ecef !important;
-  padding: 0.5rem;
-  border-radius: 4px;
-  margin-top: 0.5rem;
-  user-select: all; 
-}
-
-.confirm-box .cvu-copy-box {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #ffffff !important;
-  border: 2px dashed #007bff !important;
-  padding: 12px 15px;
-  border-radius: 8px;
-  margin: 15px 0;
-  gap: 10px;
-}
-
-.confirm-box .cvu-number {
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #212529 !important;
-  letter-spacing: 1px;
-  word-break: break-all;
-}
-
-.confirm-box .copy-button {
-  background-color: #007bff !important;
-  color: white !important;
-  border: none !important;
-  padding: 8px 15px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  white-space: nowrap;
-}
-
-.confirm-box .copy-button:hover {
-  background-color: #0056b3 !important;
-  transform: translateY(-1px);
-}
-
-.confirm-box .copy-button:active {
-  transform: translateY(0);
-}
-
-.confirm-box .copy-button.copied {
-  background-color: #28a745 !important;
-  cursor: default;
-}
-
-.confirm-box .payment-seña {
-  font-size: 0.9rem;
-  font-weight: bold;
-  color: #d63384 !important;
-  margin-top: 10px;
-}
-
-.confirm-box .message-area.success {
-  background-color: #d4edda !important;
-  color: #155724 !important;
-  padding: 15px;
-  border-radius: 8px;
-  border: 1px solid #c3e6cb !important;
-  margin-top: 20px;
-  text-align: center;
-}
-
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
-}
-
+/* =====================================================================
+   BOTONES DE ACCIÓN WIZARD
+   ===================================================================== */
 
 .button-group-wizard {
   display: flex;
@@ -276,13 +162,13 @@
   background-color: transparent;
   color: #64748b;
   border: 1px solid #cbd5e1;
-  padding: 12px 20px;
+  padding: 14px 20px;
   border-radius: 8px;
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.2s;
-  flex: 1; /* Ocupa la mitad del espacio */
+  flex: 1;
 }
 
 .back-button:hover {
@@ -290,49 +176,165 @@
   color: #334155;
 }
 
-/* Asegura que tu confirm-button existente ocupe el resto del espacio en el grupo flex */
-.button-group-wizard .confirm-button {
-  flex: 2; /* Ocupa el doble de espacio que el botón volver */
-  margin-top: 0;
+.confirm-box .confirm-button {
+  width: 100%;
+  padding: 14px 20px;
+  background-color: #10b981 !important; /* Verde esmeralda moderno */
+  color: white !important;
+  border: none !important;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 2;
 }
 
-/* --- BOTÓN PARA ABRIR EL CONTRATO --- */
-.btn-leer-contrato {
-  background-color: #eff6ff; /* Azul muy clarito */
-  color: #2563eb; /* Azul fuerte */
-  border: 2px dashed #93c5fd;
-  padding: 15px 20px;
-  border-radius: 8px;
-  font-size: 1.05rem;
-  font-weight: bold;
-  width: 100%;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.confirm-box .confirm-button:hover:not(:disabled) {
+  background-color: #059669 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.confirm-box .confirm-button:disabled {
+  background-color: #94a3b8 !important;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* =====================================================================
+   PANTALLA DE PAGO
+   ===================================================================== */
+
+.confirm-box .payment-info {
+  background-color: #f8fafc !important;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #e2e8f0 !important;
+  text-align: center;
+}
+
+.confirm-box .payment-info p {
+  margin-bottom: 10px;
+  color: #475569 !important;
+}
+
+.confirm-box .cvu-copy-box {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  background: #ffffff !important;
+  border: 2px dashed #3b82f6 !important;
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin: 15px 0;
+  gap: 10px;
 }
 
-.btn-leer-contrato:hover {
-  background-color: #dbeafe;
-  border-color: #3b82f6;
-  transform: translateY(-2px);
+.confirm-box .cvu-number {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #1e293b !important;
+  letter-spacing: 1px;
+  word-break: break-all;
 }
 
-/* --- ESTILOS DEL MODAL DE CONTRATO --- */
+.confirm-box .copy-button {
+  background-color: #3b82f6 !important;
+  color: white !important;
+  border: none !important;
+  padding: 8px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.confirm-box .copy-button:hover {
+  background-color: #2563eb !important;
+}
+
+.confirm-box .copy-button.copied {
+  background-color: #10b981 !important;
+  cursor: default;
+}
+
+.confirm-box .payment-seña {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #475569 !important;
+  margin-top: 15px;
+}
+
+/* =====================================================================
+   INPUT FILE
+   ===================================================================== */
+
+.confirm-box .form-group {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.confirm-box .form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #334155 !important;
+}
+
+.confirm-box .form-group input[type="file"] {
+  display: block;
+  width: 100%;
+  padding: 12px !important;
+  border: 2px dashed #cbd5e1 !important;
+  border-radius: 8px !important;
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.confirm-box .form-group input[type="file"]:hover {
+  border-color: #3b82f6 !important;
+  background-color: #eff6ff !important;
+}
+
+.confirm-box .form-group input[type="file"]::file-selector-button {
+  background-color: #e2e8f0 !important;
+  color: #334155 !important;
+  border: none !important;
+  border-radius: 4px;
+  padding: 6px 12px;
+  margin-right: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.confirm-box .form-group input[type="file"]::file-selector-button:hover {
+  background-color: #cbd5e1 !important;
+}
+
+/* =====================================================================
+   MODAL DE CONTRATO
+   ===================================================================== */
+
 .contract-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(15, 23, 42, 0.7); /* Fondo oscuro semitransparente */
+  background: rgba(15, 23, 42, 0.75);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 9999;
   padding: 20px;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(5px);
 }
 
 .contract-modal-content {
@@ -340,21 +342,21 @@
   border-radius: 12px;
   width: 100%;
   max-width: 650px;
-  max-height: 85vh; /* Ocupa máximo el 85% de la pantalla */
+  max-height: 85vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   animation: modalFadeIn 0.3s ease-out;
 }
 
 @keyframes modalFadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .contract-modal-header {
   padding: 20px 25px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #f1f5f9;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -362,8 +364,9 @@
 
 .contract-modal-header h3 {
   margin: 0;
-  color: #1e293b;
+  color: #0f172a;
   font-size: 1.25rem;
+  font-weight: 700;
 }
 
 .close-modal-btn {
@@ -371,18 +374,20 @@
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #64748b;
+  color: #94a3b8;
   transition: color 0.2s;
+  padding: 5px;
+  line-height: 1;
 }
 
 .close-modal-btn:hover {
-  color: #ef4444; /* Rojo al pasar el mouse */
+  color: #ef4444;
 }
 
 .contract-modal-body {
   padding: 25px;
-  overflow-y: auto; /* Acá ocurre el scroll interno, pero en pantalla completa */
-  color: #475569;
+  overflow-y: auto;
+  color: #334155;
   font-size: 0.95rem;
   line-height: 1.6;
 }
@@ -397,7 +402,7 @@
 
 .contract-modal-footer {
   padding: 20px 25px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid #f1f5f9;
   display: flex;
   justify-content: flex-end;
   background-color: #f8fafc;
@@ -405,7 +410,7 @@
 }
 
 .btn-aceptar-modal {
-  background-color: #10b981; /* Verde confirmación */
+  background-color: #10b981;
   color: white;
   border: none;
   padding: 12px 25px;
@@ -418,4 +423,16 @@
 
 .btn-aceptar-modal:hover {
   background-color: #059669;
+}
+
+.error-message {
+  color: #ef4444 !important;
+  background-color: #fef2f2 !important;
+  padding: 12px 15px;
+  border-radius: 8px;
+  font-weight: 500;
+  margin-top: 20px;
+  text-align: center;
+  border: 1px solid #fecaca !important;
+  animation: shake 0.4s ease-in-out;
 }
