@@ -322,8 +322,8 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
               <label htmlFor="valor_alquiler">Valor del Alquiler ($)</label>
               <input type="number" name="valor_alquiler" value={formData.valor_alquiler} onChange={handleChange} min="0" />
             </div>
-
-            <div className="form-group">
+        
+            {/* <div className="form-group">
               <label htmlFor="cantidad_personas">Cantidad de Personas</label>
               <input 
                 type="number" 
@@ -333,7 +333,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
                 min="1" 
                 required 
               />
-            </div>
+            </div> */}
           </div>
 
           <div className="form-group-row">
