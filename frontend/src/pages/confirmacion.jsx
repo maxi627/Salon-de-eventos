@@ -30,18 +30,24 @@ const ContractTerms = () => (
     </ol>
   </>
 );
+
 function Confirmacion() {
   const { dateString } = useParams();
   const navigate = useNavigate();
+
+  // Control de pasos del formulario (1 = Legal, 2 = Pago)
+  const [step, setStep] = useState(1);
 
   const [fechaInfo, setFechaInfo] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   
+  // Estados para validación legal
   const [contractAccepted, setContractAccepted] = useState(false);
+  const [ageAccepted, setAgeAccepted] = useState(false); // NUEVO ESTADO: Mayoría de edad
+  
+  // Estados para pago
   const [receiptFile, setReceiptFile] = useState(null);
-
-  // Estados para CVU y feedback de copiado
   const [paymentCVU, setPaymentCVU] = useState(null);
   const [copied, setCopied] = useState(false);
 
@@ -93,7 +99,6 @@ function Confirmacion() {
         const paymentResult = await paymentResponse.json();
         if (!paymentResponse.ok) throw new Error(paymentResult.message);
         
-        // Seteamos el CVU (o alias si la API aún no cambió el campo)
         setPaymentCVU(paymentResult.data.cvu || paymentResult.data.alias);
 
       } catch (err) {
@@ -110,22 +115,19 @@ function Confirmacion() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Verificamos que el tipo de archivo empiece con "image/"
       if (!file.type.startsWith('image/')) {
         setError('Por favor, sube únicamente una imagen (JPG, PNG, WEBP, etc).');
         setReceiptFile(null);
-        e.target.value = ''; // Resetea el input para que quede vacío
+        e.target.value = '';
         return;
       }
-      
-      // Si es una imagen válida, limpiamos errores y guardamos
       setError('');
       setReceiptFile(file);
     }
   };
 
   const handleRequestReservation = async () => {
-    if (!contractAccepted || !receiptFile) {
+    if (!contractAccepted || !ageAccepted || !receiptFile) {
       setError('Debes aceptar los términos y subir el comprobante.');
       return;
     }
@@ -146,16 +148,14 @@ function Confirmacion() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.message);
 
-      // --- ANIMACIÓN DE ÉXITO CON SWEETALERT2 ---
       Swal.fire({
         title: '¡Solicitud Enviada!',
         text: 'Tu fecha ya está pre-reservada. Vamos a revisar tu comprobante y te notificaremos en breve.',
         icon: 'success',
         confirmButtonColor: '#3085d6',
         confirmButtonText: 'Genial',
-        allowOutsideClick: false // Evita que se cierre si tocan afuera por accidente
+        allowOutsideClick: false
       }).then(() => {
-        // Redirige recién cuando el usuario le da click a "Genial"
         navigate('/');
       });
 
@@ -166,69 +166,114 @@ function Confirmacion() {
     }
   };
 
-  if (isLoading) return <div className="confirm-container"><p>Cargando información de la reserva...</p></div>;
+  if (isLoading && !fechaInfo) return <div className="confirm-container"><p>Cargando información de la reserva...</p></div>;
   
   return (
     <div className="confirm-container">
       <div className="confirm-box">
         {fechaInfo ? (
           <>
-            <h2>Solicitud de Reserva</h2>
-            <p className="confirm-text">Fecha a solicitar:</p>
-            <p className="confirm-date">{displayDate}</p>
+            {/* ================= PASO 1: CONTRATO Y LEGALES ================= */}
+            {step === 1 && (
+              <div className="wizard-step">
+                <h2>Paso 1 de 2: Condiciones de Reserva</h2>
+                <p className="confirm-text">Fecha a solicitar:</p>
+                <p className="confirm-date" style={{ marginBottom: '1.5rem' }}>{displayDate}</p>
 
-            <div className="payment-info">
-              <p>Realiza la transferencia al siguiente <strong>CVU</strong> y adjunta el comprobante:</p>
-              
-              {paymentCVU ? (
-                <div className="cvu-copy-box">
-                  <span className="cvu-number">{paymentCVU}</span>
+                <div className="contract-box">
+                  <ContractTerms />
+                </div>
+                
+                <div className="form-check" style={{ marginBottom: '10px' }}>
+                  <input 
+                    type="checkbox" id="accept-contract"
+                    checked={contractAccepted}
+                    onChange={() => setContractAccepted(!contractAccepted)}
+                  />
+                  <label htmlFor="accept-contract">He leído y acepto los términos base del contrato.</label>
+                </div>
+
+                <div className="form-check" style={{ marginBottom: '20px' }}>
+                  <input 
+                    type="checkbox" id="accept-age"
+                    checked={ageAccepted}
+                    onChange={() => setAgeAccepted(!ageAccepted)}
+                  />
+                  <label htmlFor="accept-age">
+                    Declaro bajo juramento ser mayor de 18 años y poseer plena capacidad legal para contratar.
+                  </label>
+                </div>
+
+                <button 
+                  type="button"
+                  onClick={() => setStep(2)} 
+                  className="confirm-button"
+                  disabled={!contractAccepted || !ageAccepted}
+                >
+                  Continuar al Pago ➡️
+                </button>
+              </div>
+            )}
+
+            {/* ================= PASO 2: PAGO Y COMPROBANTE ================= */}
+            {step === 2 && (
+              <div className="wizard-step">
+                <h2>Paso 2 de 2: Pago de Seña</h2>
+                <p className="confirm-text">Mantenemos tu fecha reservada: <strong>{displayDate}</strong></p>
+
+                <div className="payment-info" style={{ marginTop: '1.5rem' }}>
+                  <p>Realiza la transferencia al siguiente <strong>CVU</strong> y adjunta el comprobante:</p>
+                  
+                  {paymentCVU ? (
+                    <div className="cvu-copy-box">
+                      <span className="cvu-number">{paymentCVU}</span>
+                      <button 
+                        type="button" 
+                        className={`copy-button ${copied ? 'copied' : ''}`}
+                        onClick={handleCopyCVU}
+                      >
+                        {copied ? '¡Copiado!' : 'Copiar CVU'}
+                      </button>
+                    </div>
+                  ) : (
+                    <p>Cargando datos de pago...</p>
+                  )}
+                  
+                  <p className="payment-seña">SEÑA: 30% del valor estimado para iniciar el proceso.</p>
+                </div>
+
+                <div style={{ backgroundColor: '#eff6ff', borderLeft: '4px solid #3b82f6', padding: '12px', margin: '15px 0', fontSize: '0.9rem', color: '#1e40af', borderRadius: '4px' }}>
+                    <strong>Importante:</strong> Para procesar tu reserva, el pago debe coincidir con el titular del contrato. Si transferís desde otra cuenta, debés aclarar el <strong>DNI del titular</strong> en la referencia del pago.
+                </div>
+
+                <div className="form-group" style={{ marginTop: '1.5rem' }}>
+                  <label htmlFor="receipt">Subir Comprobante de Pago (Solo imágenes)</label>
+                  <input 
+                    type="file" id="receipt"
+                    onChange={handleFileChange}
+                    accept="image/jpeg, image/png, image/webp"
+                  />
+                </div>
+
+                <div className="button-group-wizard">
                   <button 
-                    type="button" 
-                    className={`copy-button ${copied ? 'copied' : ''}`}
-                    onClick={handleCopyCVU}
+                    type="button"
+                    onClick={() => setStep(1)} 
+                    className="back-button"
+                    disabled={isLoading}
                   >
-                    {copied ? '¡Copiado!' : 'Copiar CVU'}
+                    ⬅️ Volver
+                  </button>
+                  <button 
+                    onClick={handleRequestReservation} 
+                    className="confirm-button"
+                    disabled={isLoading || !receiptFile}
+                  >
+                    {isLoading ? 'Enviando...' : 'Enviar Solicitud'}
                   </button>
                 </div>
-              ) : (
-                <p>Cargando datos de pago...</p>
-              )}
-              
-              <p className="payment-seña">SEÑA: 30% del valor estimado para iniciar el proceso.</p>
-            </div>
-            <div style={{ backgroundColor: '#eff6ff', borderLeft: '4px solid #3b82f6', padding: '12px', margin: '15px 0', fontSize: '0.9rem', color: '#1e40af', borderRadius: '4px' }}>
-                <strong>Importante:</strong> Para procesar tu reserva, el pago debe coincidir con el titular del contrato. Si transferís desde otra cuenta, debés aclarar el <strong>DNI del titular</strong> en la referencia del pago.
-            </div>
-            <div className="contract-box">
-              <ContractTerms />
-            </div>
-            
-            <div className="form-check">
-              <input 
-                type="checkbox" id="accept"
-                checked={contractAccepted}
-                onChange={() => setContractAccepted(!contractAccepted)}
-              />
-              <label htmlFor="accept">He leído y acepto los términos base del contrato.</label>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="receipt">Subir Comprobante de Pago (Solo imágenes)</label>
-              <input 
-                type="file" id="receipt"
-                onChange={handleFileChange}
-                accept="image/jpeg, image/png, image/webp"
-              />
-            </div>
-
-            <button 
-              onClick={handleRequestReservation} 
-              className="confirm-button"
-              disabled={isLoading || !contractAccepted || !receiptFile}
-            >
-              {isLoading ? 'Enviando...' : 'Enviar Solicitud'}
-            </button>
+              </div>
+            )}
           </>
         ) : (
           <h2>{error || 'Fecha no disponible'}</h2>

@@ -264,3 +264,34 @@
   25% { transform: translateX(-4px); }
   75% { transform: translateX(4px); }
 }
+
+
+.button-group-wizard {
+  display: flex;
+  gap: 15px;
+  margin-top: 2rem;
+}
+
+.back-button {
+  background-color: transparent;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1; /* Ocupa la mitad del espacio */
+}
+
+.back-button:hover {
+  background-color: #f1f5f9;
+  color: #334155;
+}
+
+/* Asegura que tu confirm-button existente ocupe el resto del espacio en el grupo flex */
+.button-group-wizard .confirm-button {
+  flex: 2; /* Ocupa el doble de espacio que el botón volver */
+  margin-top: 0;
+}
