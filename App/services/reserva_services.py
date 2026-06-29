@@ -1,14 +1,17 @@
 import time
 from contextlib import contextmanager
 from datetime import date, datetime
+from app.tasks import tarea_enviar_reintegro_async
 from werkzeug.utils import secure_filename
+
 from app.extensions import cache, db, redis_client
 from app.models import Fecha, Reserva
 from app.repositories import ReservaRepository
+from app.services import NotificationService
 from app.services.fecha_services import FechaService
 from app.utils.decorators import transactional
-from app.services import NotificationService
 from app.utils.storage import upload_bytes_to_r2
+
 
 class ReservaService:
     """
@@ -238,35 +241,34 @@ class ReservaService:
         if not reserva:
             raise ValueError(f"No se encontró la reserva con ID {reserva_id}.")
             
-        # 1. Bajamos la bandera
+        # 1. Bajamos la bandera y archivamos la reserva
         reserva.requiere_reintegro = False
+        reserva.estado = 'archivada'
         
         # 2. Leer los bytes del archivo que subiste desde React en memoria
         file_bytes = comprobante_file.read()
         file_name = secure_filename(f"reintegro_{reserva_id}_{comprobante_file.filename}")
         
-        # 3. (Recomendado) Subir a R2 igual que hacés con los contratos
-        # Esto te da un comprobante en la nube por si alguna vez hay un reclamo
+        # 3. Subir a R2
         comprobante_url = upload_bytes_to_r2(file_bytes, file_name, folder="comprobantes_reintegros")
         
-        # 4. Instanciar el servicio y disparar el correo
-        notificador = NotificationService()
-        notificador.send_reintegro_email(
+        # Si la subida falla, cortamos la ejecución para no dejar datos inconsistentes
+        if not comprobante_url:
+            raise ValueError("Error al subir el comprobante a R2. Intentá nuevamente.")
+        
+        # 4. DELEGAR A CELERY usando .delay()
+        tarea_enviar_reintegro_async.delay(
             to_email=reserva.usuario.correo,
             user_name=reserva.usuario.nombre,
             event_date=str(reserva.fecha.dia),
-            file_bytes=file_bytes,
+            file_url=comprobante_url,
             file_name=file_name
         )
 
         # 5. Dejamos un registro textual por las dudas
-        if comprobante_url:
-            reserva.observaciones = f"{reserva.observaciones} | Reintegro transferido. URL Comprobante: {comprobante_url}"
-        else:
-            reserva.observaciones = f"{reserva.observaciones} | Reintegro transferido y notificado al cliente."
+        reserva.observaciones = f"{reserva.observaciones} | Reintegro transferido. URL Comprobante: {comprobante_url}"
 
         return reserva
-    
     def get_reintegros_pendientes(self):
         """
         Obtiene todas las reservas canceladas por arrepentimiento

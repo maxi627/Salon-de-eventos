@@ -2,6 +2,8 @@ import mimetypes
 import os
 from datetime import datetime, timedelta
 
+import requests
+
 import sentry_sdk
 from celery import shared_task
 from werkzeug.datastructures import FileStorage
@@ -10,7 +12,7 @@ from app.extensions import cache, db
 from app.models import Fecha, Reserva
 from app.services.push_notification_service import PushNotificationService
 from app.utils.storage import upload_file_to_r2
-
+from app.services import NotificationService
 
 @shared_task
 def check_pending_reservations():
@@ -160,3 +162,47 @@ def enviar_contrato_background(reserva_id: int):
     except Exception as e:
         sentry_sdk.capture_exception(e)
         print(f"Error al enviar contrato en background: {e}")
+
+@shared_task
+def tarea_enviar_reintegro_async(to_email: str, user_name: str, event_date: str, file_url: str, file_name: str):
+    """
+    Tarea en segundo plano: Descarga el comprobante de reintegro desde R2 
+    y ejecuta el envío del email a través de SMTP sin bloquear el panel de admin.
+    """
+    try:
+        # 1. Celery se descarga los bytes del archivo desde R2 usando la URL pública
+        respuesta = requests.get(file_url, timeout=15)
+        
+        # Verificamos que la descarga haya sido exitosa
+        if respuesta.status_code != 200:
+            print(f"Error Celery (Reintegros): No se pudo descargar el comprobante de {file_url}")
+            sentry_sdk.capture_message(f"Error Celery: Fallo al descargar {file_url} - Status: {respuesta.status_code}")
+            return False
+            
+        file_bytes = respuesta.content
+
+        # 2. Instanciamos tu servicio de notificaciones y disparamos el email
+        notificador = NotificationService()
+        resultado = notificador.send_reintegro_email(
+            to_email=to_email,
+            user_name=user_name,
+            event_date=event_date,
+            file_bytes=file_bytes,
+            file_name=file_name
+        )
+        
+        if resultado:
+            print(f"Tarea 'tarea_enviar_reintegro_async' ejecutada: Email enviado a {to_email}.")
+        else:
+            print(f"Tarea 'tarea_enviar_reintegro_async' falló al intentar enviar el correo a {to_email}.")
+            
+        return resultado
+        
+    except requests.exceptions.RequestException as req_err:
+        print(f"Error de red en tarea de Celery (reintegros): {req_err}")
+        sentry_sdk.capture_exception(req_err)
+        return False
+    except Exception as e:
+        print(f"Error crítico en la tarea de Celery (reintegros): {e}")
+        sentry_sdk.capture_exception(e)
+        return False
