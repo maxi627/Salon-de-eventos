@@ -268,7 +268,8 @@ class ReservaService:
 
         # 5. Dejamos un registro textual por las dudas
         reserva.observaciones = f"{reserva.observaciones} | Reintegro transferido. URL Comprobante: {comprobante_url}"
-
+        cache.delete('reservas')
+        
         return reserva
     def get_reintegros_pendientes(self):
         """
