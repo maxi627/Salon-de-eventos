@@ -1,7 +1,7 @@
 import DOMPurify from 'dompurify';
 import { useState } from 'react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css'; // Estilos originales de Quill
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 import './PreferencesManager.css';
 
 const PreferencesManager = () => {
