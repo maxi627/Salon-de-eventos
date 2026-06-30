@@ -2,6 +2,8 @@
   "dependencies": {
     "@tanstack/react-query": "^5.90.17",
     "axios": "^1.13.2",
+    "dompurify": "^3.4.11",
+    "react-quill": "^2.0.0",
     "recharts": "^3.9.0",
     "sweetalert2": "^11.26.25"
   }
