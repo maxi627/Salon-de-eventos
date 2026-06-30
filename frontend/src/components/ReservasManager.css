@@ -84,6 +84,52 @@
 }
 
 /* =====================================================================
+   ESTILOS PARA BOTONES SECUNDARIOS Y MODAL DE ARCHIVO
+   ===================================================================== */
+
+/* --- BOTÓN SECUNDARIO (Para el botón de Archivo) --- */
+.btn-secondary {
+  background-color: transparent !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border-dark) !important;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-secondary:hover {
+  background-color: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--text-secondary) !important;
+}
+
+/* --- MODAL AMPLIO Y CON SCROLL INTERNO --- */
+.large-modal {
+  max-width: 900px !important; /* Más ancho para que quepa la tabla */
+  width: 95%;
+  max-height: 90vh; /* Nunca será más alto que la pantalla */
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-scrollable-body {
+  overflow-y: auto; /* Agrega scroll interno solo a la tabla */
+  padding-right: 5px;
+  max-height: calc(90vh - 100px); /* Resta el espacio del header del modal */
+}
+
+/* Ajustes de scrollbar para el modal */
+.modal-scrollable-body::-webkit-scrollbar { width: 6px; }
+.modal-scrollable-body::-webkit-scrollbar-track { background: transparent; }
+.modal-scrollable-body::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 4px; }
+
+
+/* =====================================================================
    DISEÑO RESPONSIVE EXCLUSIVO PARA RESERVAS (MÓVILES)
    ===================================================================== */
 @media (max-width: 900px) {

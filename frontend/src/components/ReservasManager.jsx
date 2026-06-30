@@ -2,14 +2,17 @@ import { useState } from 'react';
 import { useReservas } from '../hooks/useAdminData';
 import ArchivedReservations from './ArchivedReservations';
 import EditReservationModal from './EditReservationModal';
-import Pagination from './Pagination'; // Importamos el nuevo componente
+import Pagination from './Pagination'; 
 import './ReservasManager.css';
+
 const ReservasManager = () => {
   const { data: reservas = {}, isLoading, error, refetch } = useReservas();
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
+  
+  // Este estado ahora controla si el Modal de Archivadas está abierto o no
   const [showArchived, setShowArchived] = useState(false);
 
   // --- FILTROS ---
@@ -103,8 +106,6 @@ const ReservasManager = () => {
         </button>
       </div>
 
-      {showArchived && <ArchivedReservations />}
-
       {/* BARRA DE FILTROS UNIFICADA */}
       <div className="filters-toolbar">
         <div className="filters-inputs">
@@ -141,14 +142,14 @@ const ReservasManager = () => {
             <span>Ver pasadas</span>
           </label>
 
-          <label className="show-past-toggle">
-            <input 
-              type="checkbox" 
-              checked={showArchived} 
-              onChange={(e) => setShowArchived(e.target.checked)} 
-            />
-            <span>Ver archivadas</span>
-          </label>
+          {/* NUEVO BOTÓN PARA ABRIR MODAL DE ARCHIVADAS */}
+          <button 
+            className="btn-secondary" 
+            onClick={() => setShowArchived(true)}
+            title="Ver el historial de reservas archivadas"
+          >
+            <i className="fa-solid fa-box-archive"></i> Archivo
+          </button>
         </div>
       </div>
 
@@ -206,6 +207,9 @@ const ReservasManager = () => {
         />
       )}
 
+      {/* --- RENDERIZADO DE MODALES --- */}
+
+      {/* 1. Modal para crear/editar una reserva */}
       {isModalOpen && (
         <EditReservationModal 
           isCreating={isCreating} 
@@ -214,6 +218,23 @@ const ReservasManager = () => {
           onUpdate={refetch} 
         />
       )}
+
+      {/* 2. Modal para ver las reservas archivadas */}
+      {showArchived && (
+        <div className="details-modal-overlay" onClick={() => setShowArchived(false)}>
+          <div className="details-modal-content large-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="details-modal-header">
+              <h3><i className="fa-solid fa-box-archive"></i> Historial de Archivadas</h3>
+              <button className="btn-close-modal" onClick={() => setShowArchived(false)}>&times;</button>
+            </div>
+            
+            <div className="details-modal-body modal-scrollable-body">
+              <ArchivedReservations />
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
