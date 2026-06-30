@@ -2,13 +2,13 @@
    🌌 MIDNIGHT TECH THEME - ULTRA DARK SAAS (AdminPanel.css)
    ===================================================================== */
 :root {
-  --bg-main: #0b1120;          /* Negro azulado profundo (Fondo general) */
-  --bg-sidebar: #0f172a;        /* Azul pizarra muy oscuro (Menú lateral) */
-  --bg-card: #1e293b;          /* Gris azulado (Tarjetas y Tablas) */
-  --border-dark: #334155;      /* Bordes tenues */
-  --text-primary: #f8fafc;      /* Blanco brillante */
-  --text-secondary: #94a3b8;    /* Gris texto secundario */
-  --accent-blue: #3b82f6;      /* Azul eléctrico (Botones y Activos) */
+  --bg-main: #0b1120;
+  --bg-sidebar: #0f172a;
+  --bg-card: #1e293b;
+  --border-dark: #334155;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --accent-blue: #3b82f6;
   --accent-hover: rgba(59, 130, 246, 0.15);
   --danger-red: #ef4444;
   --success-green: #10b981;
@@ -28,7 +28,7 @@
   width: 100vw;
   height: 100vh;
   background-color: var(--bg-main) !important;
-  background-image: none !important; /* Elimina cualquier gradiente viejo */
+  background-image: none !important;
   color: var(--text-primary);
   font-family: 'Inter', system-ui, sans-serif;
   overflow: hidden;
@@ -40,10 +40,10 @@
 .admin-sidebar {
   width: 260px !important;
   min-width: 260px !important;
-  background-color: var(--bg-sidebar) !important; /* Aplasta el beige del JSX */
+  background-color: var(--bg-sidebar) !important;
   border-right: 1px solid var(--border-dark);
   display: flex !important;
-  flex-direction: column !important; /* Arregla los botones amontonados */
+  flex-direction: column !important;
   height: 100vh;
   z-index: 100;
 }
@@ -56,7 +56,6 @@
   align-items: center;
 }
 
-/* Replicando el logo de la imagen de referencia (Cuadro azul + Texto) */
 .sidebar-logo h3 {
   color: var(--text-primary);
   font-weight: 800;
@@ -168,10 +167,8 @@
 }
 
 /* =====================================================================
-   3. MODO OSCURO FORZADO PARA COMPONENTES HIJOS (MAGIA)
+   3. ESTILOS BASE COMPARTIDOS (Tablas, inputs, modales)
    ===================================================================== */
-
-/* Tarjetas de Estadísticas (Kpis, Cajas de arriba) */
 .stat-card, 
 .resumen-contable > div,
 .kpi-card {
@@ -185,7 +182,6 @@
 .stat-card h3, .stat-card p.title { color: var(--text-secondary) !important; }
 .stat-card .value, .stat-card h2 { color: var(--text-primary) !important; }
 
-/* Fondos Blancos de los Gráficos de Recharts */
 .graficos-grid > div,
 .chart-container,
 .recharts-wrapper {
@@ -195,12 +191,11 @@
   color: var(--text-primary) !important;
 }
 
-/* Texto y líneas de los gráficos */
 .recharts-text { fill: var(--text-secondary) !important; }
 .recharts-cartesian-grid-horizontal line,
 .recharts-cartesian-grid-vertical line { stroke: var(--border-dark) !important; }
 
-/* Tablas Completas (Reservas, Gastos, Usuarios) */
+/* Tablas Completas Globales */
 .table-container, .user-table, .reservas-table {
   background-color: var(--bg-card) !important;
   border: 1px solid var(--border-dark) !important;
@@ -230,7 +225,6 @@
   background-color: rgba(255, 255, 255, 0.02) !important;
 }
 
-/* Inputs, Buscadores y Filtros */
 input, select, textarea, .toolbar-input, .toolbar-select {
   background-color: var(--bg-sidebar) !important;
   color: var(--text-primary) !important;
@@ -244,7 +238,6 @@ input:focus, select:focus {
   border-color: var(--accent-blue) !important;
 }
 
-/* Botones genéricos de acción */
 .btn-create, .btn-view-reserva, button[type="submit"] {
   background-color: var(--accent-blue) !important;
   color: white !important;
@@ -258,23 +251,19 @@ input:focus, select:focus {
 
 .btn-create:hover, .btn-view-reserva:hover { background-color: #2563eb !important; }
 
-/* Textos Generales que puedan quedar en negro */
 h1, h2, h3, h4, span, p, strong {
-  color: inherit; /* Hereda el color blanco/gris oscuro forzado arriba */
+  color: inherit; 
 }
 
 /* =====================================================================
    🚨 PARCHE DE FUERZA BRUTA: ELIMINAR FONDOS BLANCOS Y GRADIENTES
    ===================================================================== */
-
-/* 1. Matar el gradiente beige del Sidebar */
 .admin-sidebar, 
 .sidebar-nav {
   background: var(--bg-sidebar) !important;
-  background-image: none !important; /* Esto destruye cualquier gradiente */
+  background-image: none !important; 
 }
 
-/* 2. Matar el fondo blanco gigante de los componentes hijos */
 .admin-section-fade,
 .analytics-dashboard,
 .dashboard-container,
@@ -286,121 +275,28 @@ h1, h2, h3, h4, span, p, strong {
   box-shadow: none !important;
 }
 
-/* 3. Asegurar que los títulos generales (como "Resumen Contable") sean blancos */
 .admin-content-area h1,
 .admin-content-area h2,
 .admin-content-area h3 {
   color: var(--text-primary) !important;
 }
 
-/* 4. Arreglar el fondo blanco residual detrás del gráfico de barras */
 .recharts-responsive-container {
   background-color: transparent !important;
 }
 
 /* =====================================================================
-   4. ESTILOS DE GESTIÓN DE RESERVAS Y FILTROS
+   4. LAYOUT RESPONSIVE GLOBAL (MÓVILES)
    ===================================================================== */
-   
-.filters-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-  background-color: var(--bg-card);
-  padding: 1rem 1.5rem;
-  border-radius: 8px;
-  border: 1px solid var(--border-dark);
-  margin-bottom: 1.5rem;
-}
-
-.filters-inputs {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.toggle-group {
-  display: flex;
-  gap: 1.5rem;
-  background-color: rgba(0, 0, 0, 0.2);
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.show-past-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  user-select: none;
-  transition: color 0.2s;
-}
-
-.show-past-toggle:hover {
-  color: var(--text-primary);
-}
-
-.show-past-toggle input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  margin: 0;
-  accent-color: var(--accent-blue);
-  cursor: pointer;
-  background-color: var(--bg-main) !important;
-}
-
-/* Indicador sutil para filas de reservas pasadas */
-.row-past-reservation td {
-  opacity: 0.6;
-  background-color: rgba(255, 255, 255, 0.01);
-}
-
-/* --- Badges de Estado de Reserva --- */
-.status-badge {
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  text-transform: capitalize;
-}
-
-.status-badge.confirmada {
-  background-color: rgba(16, 185, 129, 0.15); 
-  color: #34d399; 
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.status-badge.pendiente {
-  background-color: rgba(245, 158, 11, 0.15); 
-  color: #fbbf24; 
-  border: 1px solid rgba(245, 158, 11, 0.3);
-}
-
-/* =====================================================================
-   5. DISEÑO RESPONSIVE Y MENÚ HAMBURGUESA
-   ===================================================================== */
-
-/* Ocultar elementos exclusivos de móvil en pantallas grandes */
 .mobile-admin-header, .mobile-close-btn, .sidebar-overlay {
   display: none;
 }
 
-/* Breakpoint para Tablets y Móviles (900px unifica la barra y las reservas) */
 @media (max-width: 900px) {
-  
-  /* Convertir el contenedor principal en columna para apilar la barra superior */
   .admin-wrapper {
     flex-direction: column !important;
   }
 
-  /* --- HEADER MÓVIL --- */
   .mobile-admin-header {
     display: flex;
     align-items: center;
@@ -427,19 +323,17 @@ h1, h2, h3, h4, span, p, strong {
     letter-spacing: 1px;
   }
 
-  /* --- SIDEBAR FLOTANTE --- */
   .admin-sidebar {
     position: fixed;
     top: 0;
     left: 0;
     height: 100vh;
     z-index: 1000;
-    transform: translateX(-100%); /* Oculto fuera de pantalla a la izquierda */
+    transform: translateX(-100%); 
     transition: transform 0.3s ease-in-out;
     box-shadow: 2px 0 15px rgba(0, 0, 0, 0.8);
   }
 
-  /* Clase dinámica que inyecta React cuando el estado es true */
   .admin-sidebar.open {
     transform: translateX(0);
   }
@@ -462,7 +356,6 @@ h1, h2, h3, h4, span, p, strong {
     color: var(--text-primary);
   }
 
-  /* --- CAPA OSCURA DE FONDO --- */
   .sidebar-overlay {
     display: block;
     position: fixed;
@@ -471,99 +364,18 @@ h1, h2, h3, h4, span, p, strong {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.7);
-    z-index: 999; /* Justo por debajo del z-index del sidebar (1000) */
+    z-index: 999; 
   }
 
-  /* --- AJUSTES DEL CONTENIDO PRINCIPAL --- */
   .admin-main-content {
     width: 100%;
   }
 
-  /* Opcional: Ocultar el título repetido del desktop en móvil para ganar espacio */
   .admin-top-header {
     display: none; 
   }
 
   .admin-content-area {
     padding: 1.5rem 1rem;
-  }
-
-  /* --- AJUSTES DE FILTROS DE RESERVAS PARA MÓVIL --- */
-  .filters-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .filters-inputs {
-    flex-direction: column;
-  }
-  
-  .toggle-group {
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  /* =====================================================================
-     ✨ MAGIA: TRANSFORMACIÓN DE TABLA A TARJETAS (MÓVIL)
-     ===================================================================== */
-  
-  /* 1. Ocultamos la cabecera tradicional de la tabla */
-  .reservas-table thead {
-    display: none;
-  }
-
-  /* 2. Forzamos a que todos los elementos de la tabla se comporten como bloques (cajas) */
-  .reservas-table, 
-  .reservas-table tbody, 
-  .reservas-table tr, 
-  .reservas-table td {
-    display: block;
-    width: 100%;
-  }
-
-  /* 3. Estilizamos cada FILA como si fuera una tarjeta independiente */
-  .reservas-table tr {
-    margin-bottom: 1.5rem;
-    background-color: var(--bg-card) !important;
-    border: 1px solid var(--border-dark) !important;
-    border-radius: 12px;
-    padding: 0.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-  }
-
-  /* 4. Estilizamos cada CELDA para separar la etiqueta del valor */
-  .reservas-table td {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.8rem !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-    text-align: right !important; /* El valor queda a la derecha */
-    font-size: 0.9rem;
-  }
-
-  /* Quitamos la línea separadora al último elemento (el botón) */
-  .reservas-table td:last-child {
-    border-bottom: none !important;
-    justify-content: center; /* Centramos el botón */
-    padding-top: 1.2rem !important;
-  }
-
-  /* 5. EL TRUCO ESTRELLA: Inyectamos el texto del data-label a la izquierda */
-  .reservas-table td::before {
-    content: attr(data-label);
-    flex: 1;
-    text-align: left;
-    font-weight: 700;
-    color: var(--text-secondary);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  
-  /* Ajuste para que el botón ocupe todo el ancho en móvil */
-  .btn-view-reserva {
-    width: 100%;
-    padding: 0.8rem !important;
   }
 }
