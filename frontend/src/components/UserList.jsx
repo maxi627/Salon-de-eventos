@@ -210,12 +210,12 @@ function UserList() {
             ) : currentUsers.length > 0 ? (
               currentUsers.map(user => (
                 <tr key={user.id}>
-                  <td>{user.id}</td>
-                  <td><strong> {user.nombre} {user.apellido}</strong></td>
-                  <td>{user.dni}</td>
-                  <td>{user.correo}</td>
-                  <td>{user.telefono || 'N/A'}</td>
-                  <td> 
+                  <td data-label="ID">{user.id}</td>
+                  <td data-label="Cliente"><strong> {user.nombre} {user.apellido}</strong></td>
+                  <td data-label="DNI">{user.dni}</td>
+                  <td data-label="Correo Electrónico">{user.correo}</td>
+                  <td data-label="Teléfono">{user.telefono || 'N/A'}</td>
+                  <td data-label="Acciones"> 
                     <div className="action-buttons">
                         {/* BOTÓN WHATSAPP: Solo si tiene teléfono */}
                         {user.telefono && (

@@ -172,3 +172,69 @@
 .btn-delete:hover {
     background-color: #c0392b; 
 }
+
+/* =========================================
+   RESPONSIVE (MÓVILES)
+   ========================================= */
+@media (max-width: 768px) {
+  /* Hacemos que el buscador ocupe todo el ancho disponible */
+  .search-bar-container {
+    max-width: 100%;
+  }
+
+  /* Ocultamos el encabezado de la tabla porque ahora cada celda tendrá su propia etiqueta */
+  .user-table thead {
+    display: none;
+  }
+
+  /* Desactivamos el comportamiento por defecto de tabla para apilar elementos */
+  .user-table, .user-table tbody, .user-table tr, .user-table td {
+    display: block;
+    width: 100%;
+  }
+
+  /* Cada fila se convierte en una "tarjeta" */
+  .user-table tr {
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Ajusta esto a tu tema (usa #ccc si tu fondo es claro) */
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.03); /* Fondo sutil para separar tarjetas */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+  }
+
+  /* Estilos de las celdas dentro de la tarjeta */
+  .user-table td {
+    display: flex;
+    justify-content: space-between; /* Texto a la derecha, etiqueta a la izquierda */
+    align-items: center;
+    text-align: right;
+    padding: 12px 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
+  }
+
+  /* Quitamos el borde inferior a la última celda de la tarjeta */
+  .user-table td:last-child {
+    border-bottom: none;
+    flex-direction: column; /* Coloca los botones debajo de la etiqueta si falta espacio */
+    align-items: flex-end;
+    gap: 10px;
+  }
+
+  /* Aquí sucede la magia: inyectamos el título de la columna usando el data-label */
+  .user-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    text-align: left;
+    color: var(--color-primario, #888); /* Color de la etiqueta */
+    padding-right: 15px;
+  }
+
+  /* Aseguramos que los botones no se rompan si el celular es muy angosto */
+  .action-buttons {
+    display: flex;
+    flex-wrap: wrap; /* Si no caben, bajan a otra línea */
+    justify-content: flex-end;
+    width: 100%;
+  }
+}
