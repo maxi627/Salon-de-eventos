@@ -103,7 +103,7 @@ function AdminPanel() {
           </button>
 
           <button className={`nav-btn ${activeTab === 'users' ? 'active' : ''}`} onClick={() => handleTabChange('users')}>
-            <i className="fa-solid fa-users-gears"></i> Usuarios
+            <i className="fa-solid fa-users"></i> Usuarios
           </button>
           
           <button className={`nav-btn ${activeTab === 'preferences' ? 'active' : ''}`} onClick={() => handleTabChange('preferences')}>
