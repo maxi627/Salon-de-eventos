@@ -196,7 +196,7 @@
 .recharts-cartesian-grid-vertical line { stroke: var(--border-dark) !important; }
 
 /* Tablas Completas Globales */
-.table-container, .user-table, .reservas-table {
+.table-container, .user-table, .reservas-table, .archivadas-table {
   background-color: var(--bg-card) !important;
   border: 1px solid var(--border-dark) !important;
   border-radius: 12px !important;
@@ -205,7 +205,7 @@
   border-collapse: collapse;
 }
 
-.user-table th, .reservas-table th {
+.user-table th, .reservas-table th, .archivadas-table th {
   background-color: var(--bg-sidebar) !important;
   color: var(--text-secondary) !important;
   padding: 1rem !important;
@@ -215,13 +215,13 @@
   border-bottom: 1px solid var(--border-dark) !important;
 }
 
-.user-table td, .reservas-table td {
+.user-table td, .reservas-table td, .archivadas-table td {
   padding: 1rem !important;
   border-bottom: 1px solid var(--border-dark) !important;
   color: var(--text-primary) !important;
 }
 
-.user-table tr:hover, .reservas-table tr:hover {
+.user-table tr:hover, .reservas-table tr:hover, .archivadas-table tr:hover {
   background-color: rgba(255, 255, 255, 0.02) !important;
 }
 
