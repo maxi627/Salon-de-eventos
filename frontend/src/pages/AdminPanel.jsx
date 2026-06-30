@@ -4,11 +4,11 @@ import { useNavigate } from 'react-router-dom';
 // Importamos todos los subcomponentes refactorizados
 import AnalyticsDashboard from '../components/AnalyticsDashboard';
 import GastosManager from '../components/GastosManager';
+import PreferencesManager from '../components/PreferencesManager';
 import PriceEditor from '../components/PriceEditor';
 import ReintegrosAdmin from '../components/ReintegrosAdmin';
 import ReservasManager from '../components/ReservasManager'; // Nuevo archivo
 import UserList from '../components/UserList';
-
 import './AdminPanel.css';
 
 function AdminPanel() {
@@ -106,6 +106,10 @@ function AdminPanel() {
             <i className="fa-solid fa-users-gears"></i> Usuarios
           </button>
           
+          <button className={`nav-btn ${activeTab === 'preferences' ? 'active' : ''}`} onClick={() => handleTabChange('preferences')}>
+            <i className="fa-solid fa-gear"></i> Preferencias
+          </button>
+          
           <div className="sidebar-footer">
             <button className="nav-btn logout-btn" onClick={handleLogout}>
               <i className="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
@@ -127,6 +131,7 @@ function AdminPanel() {
           {activeTab === 'reservations' && <ReservasManager />}
           {activeTab === 'reintegros' && <ReintegrosAdmin />}
           {activeTab === 'users' && <UserList />}
+          {activeTab === 'preferences' && <PreferencesManager />}
         </section>
       </main>
     </div>
