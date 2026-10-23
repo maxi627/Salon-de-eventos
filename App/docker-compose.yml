@@ -55,6 +55,7 @@ services:
       - "traefik.http.routers.salonapp.entrypoints=websecure"
       - "traefik.http.routers.salonapp.tls.certresolver=leresolver"
       - "traefik.http.routers.salonapp.priority=100"
+      - "traefik.http.routers.salonapp.middlewares=security-headers@docker"
       - "traefik.http.services.salonapp.loadbalancer.server.port=5000"
     volumes:
       - shared_uploads:/home/flaskapp/app/uploads
@@ -95,7 +96,19 @@ services:
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls.certresolver=leresolver"
       - "traefik.http.routers.frontend.priority=10"
+      - "traefik.http.routers.frontend.middlewares=security-headers@docker,csp-frontend@docker"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
+      # Cabeceras de seguridad (las usan también las rutas /api del servicio app)
+      - "traefik.http.middlewares.security-headers.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.security-headers.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.security-headers.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.security-headers.headers.frameDeny=true"
+      - "traefik.http.middlewares.security-headers.headers.referrerPolicy=strict-origin-when-cross-origin"
+      - "traefik.http.middlewares.security-headers.headers.permissionsPolicy=camera=(), microphone=(), geolocation=()"
+      - "traefik.http.middlewares.security-headers.headers.customResponseHeaders.Server="
+      - "traefik.http.middlewares.security-headers.headers.customResponseHeaders.X-Powered-By="
+      # CSP en modo Report-Only: no bloquea, sólo avisa en la consola. Pasar a Content-Security-Policy cuando no haya avisos.
+      - "traefik.http.middlewares.csp-frontend.headers.customResponseHeaders.Content-Security-Policy-Report-Only=default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data: blob:; connect-src 'self' https://*.ingest.de.sentry.io; frame-src https://www.google.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
     restart: unless-stopped
     
   traefik:
