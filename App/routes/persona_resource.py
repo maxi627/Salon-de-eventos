@@ -1,3 +1,4 @@
+import sentry_sdk
 from flask import Blueprint, request
 from marshmallow import ValidationError
 from flask_jwt_extended import jwt_required
@@ -26,13 +27,15 @@ def all():
         response_builder.add_message("Persona found").add_status_code(200).add_data(data)
         return response_schema.dump(response_builder.build()), 200
     except Exception as e:
-        response_builder.add_message("Error fetching Persona").add_status_code(500).add_data(str(e))
+        sentry_sdk.capture_exception(e)
+        response_builder.add_message("Error fetching Persona").add_status_code(500)
         return response_schema.dump(response_builder.build()), 500
 
 
 @Persona.route('/persona/<int:id>', methods=['GET'])
 @limiter.limit("50 per minute")
 @jwt_required()
+@admin_required()
 def one(id):
     service = PersonaService()
     persona_schema = PersonaSchema()
@@ -49,39 +52,15 @@ def one(id):
             response_builder.add_message("Persona not found").add_status_code(404).add_data({'id': id})
             return response_schema.dump(response_builder.build()), 404
     except Exception as e:
-        response_builder.add_message("Error fetching Persona").add_status_code(500).add_data(str(e))
-        return response_schema.dump(response_builder.build()), 500
-
-
-@Persona.route('/persona', methods=['POST'])
-@limiter.limit("50 per minute")
-# Pública: No lleva jwt_required para que los usuarios puedan registrarse
-def add():
-    service = PersonaService()
-    persona_schema = PersonaSchema()
-    response_schema = ResponseSchema()
-    response_builder = ResponseBuilder()
-    
-    try:
-        json_data = request.json
-        if not json_data:
-            raise ValidationError("No data provided")
-
-        persona = persona_schema.load(json_data)
-        data = persona_schema.dump(service.add(persona))
-        response_builder.add_message("Persona created").add_status_code(201).add_data(data)
-        return response_schema.dump(response_builder.build()), 201
-    except ValidationError as err:
-        response_builder.add_message("Validation error").add_status_code(422).add_data(err.messages)
-        return response_schema.dump(response_builder.build()), 422
-    except Exception as e:
-        response_builder.add_message("Error creating Persona").add_status_code(500).add_data(str(e))
+        sentry_sdk.capture_exception(e)
+        response_builder.add_message("Error fetching Persona").add_status_code(500)
         return response_schema.dump(response_builder.build()), 500
 
 
 @Persona.route('/persona/<int:id>', methods=['PUT'])
 @limiter.limit("50 per minute")
 @jwt_required()
+@admin_required()
 def update(id):
     service = PersonaService()
     persona_schema = PersonaSchema()
@@ -106,7 +85,8 @@ def update(id):
         response_builder.add_message("Validation error").add_status_code(422).add_data(err.messages)
         return response_schema.dump(response_builder.build()), 422
     except Exception as e:
-        response_builder.add_message("Error updating Persona").add_status_code(500).add_data(str(e))
+        sentry_sdk.capture_exception(e)
+        response_builder.add_message("Error updating Persona").add_status_code(500)
         return response_schema.dump(response_builder.build()), 500
 
 
@@ -127,5 +107,6 @@ def delete(id):
             response_builder.add_message("Persona not found").add_status_code(404).add_data({'id': id})
             return response_schema.dump(response_builder.build()), 404
     except Exception as e:
-        response_builder.add_message("Error deleting Persona").add_status_code(500).add_data(str(e))
+        sentry_sdk.capture_exception(e)
+        response_builder.add_message("Error deleting Persona").add_status_code(500)
         return response_schema.dump(response_builder.build()), 500

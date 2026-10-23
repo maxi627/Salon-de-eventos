@@ -5,14 +5,21 @@ from flask import Blueprint, request
 from flask_jwt_extended import create_access_token
 
 from app.config.response_builder import ResponseBuilder
-from app.extensions import db
+from app.extensions import db, limiter
 from app.models import Persona
 from app.repositories import PersonaRepository
 from app.services import NotificationService
 
 Auth = Blueprint('Auth', __name__)
 
+def correo_del_body():
+    """Clave de rate limit por cuenta: frena ataques a un mismo correo aunque roten IPs."""
+    data = request.get_json(silent=True) or {}
+    return f"correo:{str(data.get('correo', '')).strip().lower()}"
+
 @Auth.route('/login', methods=['POST'])
+@limiter.limit("5 per minute")
+@limiter.limit("10 per hour", key_func=correo_del_body)
 def login():
     # Instanciamos dentro para evitar RuntimeError de contexto
     repo = PersonaRepository()
@@ -31,14 +38,15 @@ def login():
 
         user = repo.get_by_email(correo)
 
-        #VALIDACIÓN: Revisar si el usuario existe pero está inactivo (Soft Delete)
-        if user and hasattr(user, 'activo') and not user.activo:
-            return response_builder.add_message("Tu cuenta ha sido desactivada. Por favor, regístrate de nuevo para reactivarla.").add_status_code(403).build(), 403
-
-        # Si el usuario existe, está activo y la contraseña es correcta
+        # Si el usuario existe y la contraseña es correcta
         if user and user.check_password(password):
+            # VALIDACIÓN: cuenta inactiva (Soft Delete). Se informa sólo con la contraseña correcta
+            # para que el login no sirva para averiguar qué correos están registrados.
+            if not user.activo:
+                return response_builder.add_message("Tu cuenta ha sido desactivada. Por favor, regístrate de nuevo para reactivarla.").add_status_code(403).build(), 403
+
             # Configuramos el usuario en Sentry para rastreo de errores
-            sentry_sdk.set_user({"id": user.id, "email": user.correo, "role": user.tipo})
+            sentry_sdk.set_user({"id": user.id, "role": user.tipo})
 
             additional_claims = {
                 "role": user.tipo,
@@ -58,9 +66,12 @@ def login():
         return response_builder.add_message("Credenciales inválidas").add_status_code(401).build(), 401
 
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback() # Limpia la conexión si algo falló en la consulta
-        return response_builder.add_message("Error interno en el login").add_status_code(500).add_data(str(e)).build(), 500
+        return response_builder.add_message("Error interno en el login").add_status_code(500).build(), 500
 @Auth.route('/forgot-password', methods=['POST'])
+@limiter.limit("3 per 10 minutes")
+@limiter.limit("3 per hour", key_func=correo_del_body)
 def forgot_password():
     repo = PersonaRepository()
     notification_service = NotificationService()
@@ -92,10 +103,12 @@ def forgot_password():
         ).add_status_code(200).build(), 200
         
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback()
-        return response_builder.add_message("Error procesando solicitud de contraseña").add_status_code(500).add_data(str(e)).build(), 500
+        return response_builder.add_message("Error procesando solicitud de contraseña").add_status_code(500).build(), 500
 
 @Auth.route('/reset-password', methods=['POST'])
+@limiter.limit("5 per minute")
 def reset_password():
     repo = PersonaRepository()
     response_builder = ResponseBuilder()
@@ -120,5 +133,6 @@ def reset_password():
         return response_builder.add_message("Tu contraseña ha sido actualizada con éxito.").add_status_code(200).build(), 200
         
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback()
-        return response_builder.add_message("Error al actualizar la contraseña").add_status_code(500).add_data(str(e)).build(), 500
+        return response_builder.add_message("Error al actualizar la contraseña").add_status_code(500).build(), 500

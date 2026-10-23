@@ -1,3 +1,6 @@
+import hashlib
+import hmac
+import os
 from dataclasses import dataclass
 from time import time
 from datetime import datetime
@@ -41,11 +44,27 @@ class Persona(db.Model):
         return sha256.verify(password, self.password_hash)
 
   
+    @staticmethod
+    def _reset_secret() -> str:
+        """
+        Clave exclusiva para tokens de reseteo (separada de la de sesión).
+        Usa PASSWORD_RESET_SECRET si está definida; si no, la deriva de JWT_SECRET_KEY.
+        """
+        secret = os.getenv('PASSWORD_RESET_SECRET')
+        if secret:
+            return secret
+        base = current_app.config['JWT_SECRET_KEY'].encode()
+        return hmac.new(base, b'password-reset', hashlib.sha256).hexdigest()
+
+    def _password_fingerprint(self) -> str:
+        """Huella del hash actual: al cambiar la contraseña, los tokens anteriores dejan de servir."""
+        return hashlib.sha256(self.password_hash.encode()).hexdigest()[:32]
+
     def get_reset_token(self, expires_in=600):
-        """Genera un token de reseteo con tiempo de expiración (600s = 10 min)."""
+        """Genera un token de reseteo de un solo uso con tiempo de expiración (600s = 10 min)."""
         return jwt.encode(
-            {'reset_password': self.id, 'exp': time() + expires_in},
-            current_app.config['JWT_SECRET_KEY'],
+            {'reset_password': self.id, 'pwd': self._password_fingerprint(), 'exp': time() + expires_in},
+            Persona._reset_secret(),
             algorithm='HS256'
         )
 
@@ -53,11 +72,14 @@ class Persona(db.Model):
     def verify_reset_token(token):
         """Verifica el token de reseteo y devuelve la instancia de Persona si es válido."""
         try:
-            user_id = jwt.decode(
-                token,
-                current_app.config['JWT_SECRET_KEY'],
-                algorithms=['HS256']
-            )['reset_password']
-            return Persona.query.get(user_id)
-        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+            payload = jwt.decode(token, Persona._reset_secret(), algorithms=['HS256'])
+            user = Persona.query.get(payload['reset_password'])
+        except (jwt.InvalidTokenError, KeyError, TypeError):
             return None
+
+        if not user or not user.activo:
+            return None
+        # Si la contraseña ya cambió (ej. el token ya se usó), el token queda invalidado
+        if not hmac.compare_digest(str(payload.get('pwd', '')), user._password_fingerprint()):
+            return None
+        return user
