@@ -10,11 +10,12 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
     JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(hours=2)
+    MAX_CONTENT_LENGTH = 10 * 1024 * 1024  # Tope de 10 MB por request (comprobantes)
     GOOGLE_CREDENTIALS = {
     "type": os.getenv("GOOGLE_TYPE"),
     "project_id": os.getenv("GOOGLE_PROJECT_ID"),
     "private_key_id": os.getenv("GOOGLE_PRIVATE_KEY_ID"),
-    "private_key": os.getenv("GOOGLE_PRIVATE_KEY").replace('\\n', '\n'),
+    "private_key": (os.getenv("GOOGLE_PRIVATE_KEY") or "").replace('\\n', '\n'),
     "client_email": os.getenv("GOOGLE_CLIENT_EMAIL"),
     "client_id": os.getenv("GOOGLE_CLIENT_ID"),
     "auth_uri": os.getenv("GOOGLE_AUTH_URI"),
@@ -68,6 +69,7 @@ class TestingConfig(Config):
 
 
 class ProductionConfig(Config):
+    DEBUG = False
     SQLALCHEMY_DATABASE_URI = os.getenv("PROD_DATABASE_URI")
     CACHE_TYPE = "RedisCache"
     CACHE_REDIS_HOST = os.getenv('REDIS_HOST')
@@ -79,7 +81,9 @@ class ProductionConfig(Config):
     @staticmethod
     def init_app(app):
         """Valida las variables de entorno críticas para producción."""
-        Config.validate_required_env_vars(['PROD_DATABASE_URI'])
+        Config.validate_required_env_vars(['PROD_DATABASE_URI', 'JWT_SECRET_KEY', 'REDIS_PASSWORD'])
+        if len(os.getenv('JWT_SECRET_KEY')) < 32:
+            raise ValueError("JWT_SECRET_KEY debe tener al menos 32 caracteres en producción.")
 
 def factory(env):
     """Devuelve la configuración adecuada según el entorno."""
