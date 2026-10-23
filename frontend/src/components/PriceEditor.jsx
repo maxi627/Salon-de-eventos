@@ -59,7 +59,9 @@ function PriceEditor() {
     try {
       setIsLoading(true);
       setError('');
-      const response = await fetch(`/api/v1/fecha/by-date/${date}`);
+      const response = await fetch(`/api/v1/fecha/by-date/${date}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+      });
       const result = await response.json();
       
       if (response.ok && result.data) {
@@ -138,7 +140,9 @@ function PriceEditor() {
     try {
       let count = 0;
       for (const d of targetDates) {
-        const getOrCreateRes = await fetch(`/api/v1/fecha/by-date/${d}`);
+        const getOrCreateRes = await fetch(`/api/v1/fecha/by-date/${d}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
         const getOrCreateResult = await getOrCreateRes.json();
         
         if (getOrCreateRes.ok && getOrCreateResult.data) {

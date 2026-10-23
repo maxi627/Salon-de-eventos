@@ -6,6 +6,8 @@ import boto3
 from botocore.exceptions import ClientError
 from werkzeug.utils import secure_filename
 
+from app.utils.file_validation import detectar_tipo_archivo
+
 # Inicializamos el cliente de S3 apuntando a Cloudflare R2
 s3_client = boto3.client(
     's3',
@@ -20,7 +22,10 @@ def upload_file_to_r2(file, folder="uploads"):
     Sube un archivo a Cloudflare R2 y retorna la URL pública.
     """
     try:
-        # 1. Limpiamos el nombre original (quita espacios y caracteres raros)
+        # 1. Tipo real por magic bytes: el Content-Type sale de la whitelist, nunca del nombre
+        _, content_type = detectar_tipo_archivo(file)
+
+        # Limpiamos el nombre original (quita espacios y caracteres raros)
         filename = secure_filename(file.filename)
         
         # 2. Generamos un nombre único para evitar que se sobreescriban archivos
@@ -34,7 +39,7 @@ def upload_file_to_r2(file, folder="uploads"):
             unique_filename,
             # Esto es VITAL para que el navegador muestre las imágenes/PDFs 
             # en lugar de forzar su descarga automáticamente.
-            ExtraArgs={"ContentType": file.content_type} 
+            ExtraArgs={"ContentType": content_type}
         )
         
         # 4. Construimos la URL final que guardaremos en PostgreSQL
@@ -42,10 +47,10 @@ def upload_file_to_r2(file, folder="uploads"):
         
         return public_url
 
-    except ClientError as e:
+    except (ClientError, ValueError) as e:
         print(f"Error crítico subiendo archivo a R2: {e}")
         return None
-def upload_bytes_to_r2(file_bytes, filename, folder="contratos_definitivos"):
+def upload_bytes_to_r2(file_bytes, filename, folder="contratos_definitivos", content_type="application/pdf"):
     """
     Sube un archivo a Cloudflare R2 directamente desde la memoria RAM (bytes).
     """
@@ -61,7 +66,7 @@ def upload_bytes_to_r2(file_bytes, filename, folder="contratos_definitivos"):
             file_obj,
             os.getenv('R2_BUCKET_NAME'),
             unique_filename,
-            ExtraArgs={"ContentType": "application/pdf"} 
+            ExtraArgs={"ContentType": content_type}
         )
         
         # Retornamos la URL pública

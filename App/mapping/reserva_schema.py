@@ -34,4 +34,11 @@ class ArrepentimientoSchema(Schema):
     identificacion = fields.String(required=True, validate=validate.Length(min=5))
     fecha_evento = fields.Date(required=True, error_messages={"required": "La fecha del evento es obligatoria."})
     # Campo opcional
-    motivo = fields.String(allow_none=True)
+    motivo = fields.String(allow_none=True, validate=validate.Length(max=500))
+
+
+class ConfirmarArrepentimientoSchema(Schema):
+
+    identificacion = fields.String(required=True, validate=validate.Length(min=5))
+    fecha_evento = fields.Date(required=True, error_messages={"required": "La fecha del evento es obligatoria."})
+    codigo = fields.String(required=True, validate=validate.Regexp(r'^\d{6}$', error="El código debe tener 6 dígitos."))

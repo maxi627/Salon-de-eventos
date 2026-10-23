@@ -1,3 +1,4 @@
+import html
 import os
 import smtplib
 import ssl
@@ -6,6 +7,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 from weasyprint import HTML
+from werkzeug.utils import secure_filename
 
 from app.utils.storage import upload_bytes_to_r2
 
@@ -42,7 +44,8 @@ class NotificationService:
             pdf_bytes = HTML(string=html_contract).write_pdf()
 
             # 2. Respaldo legal en LA NUBE (Adiós KVM local)
-            safe_user_name = user_name.replace(" ", "_")
+            # secure_filename evita que el nombre del usuario altere la ruta del objeto en R2 (ej. "../")
+            safe_user_name = secure_filename(user_name.replace(" ", "_")) or "cliente"
             file_name = f"contrato_confirmado_{safe_user_name}_{event_date.replace('/', '-')}.pdf"
             
             # Mandamos los bytes a Cloudflare R2
@@ -65,8 +68,8 @@ class NotificationService:
             <html>
                 <body style="font-family: sans-serif; color: #333; line-height: 1.5;">
                     <h2 style="color: #2c3e50;">¡Tu reserva ha sido confirmada satisfactoriamente!</h2>
-                    <p>Hola, <strong>{user_name}</strong>,</p>
-                    <p>Nos complace informarte que tu reserva para el día <strong>{event_date}</strong> ha sido confirmada por la administración.</p>
+                    <p>Hola, <strong>{html.escape(user_name)}</strong>,</p>
+                    <p>Nos complace informarte que tu reserva para el día <strong>{html.escape(event_date)}</strong> ha sido confirmada por la administración.</p>
                     <p>Adjuntamos el <strong>Contrato de Alquiler Definitivo</strong>, el cual incluye la capacidad acordada y las cláusulas legales aceptadas. Este documento sirve como comprobante legal de tu evento.</p>
                     <p>Recordá que podés contactarnos por WhatsApp 24 o 48 horas antes para coordinar el ingreso al salón.</p>
                     <br>
@@ -110,10 +113,10 @@ class NotificationService:
         <html>
             <body style="font-family: sans-serif;">
                 <h2 style="color: #2c3e50;">Solicitud de cambio de contraseña</h2>
-                <p>Hola, {user_name},</p>
+                <p>Hola, {html.escape(user_name)},</p>
                 <p>Hemos recibido una solicitud para restablecer tu contraseña. Haz clic en el siguiente botón para continuar:</p>
                 <p style="margin: 30px 0;">
-                    <a href="{reset_link}" style="padding: 12px 25px; background-color: #3498db; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+                    <a href="{html.escape(reset_link)}" style="padding: 12px 25px; background-color: #3498db; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
                         Restablecer Contraseña
                     </a>
                 </p>
@@ -134,6 +137,56 @@ class NotificationService:
         except Exception as e:
             print(f"ERROR al enviar email de reseteo: {e}")
             return False
+    def send_arrepentimiento_code_email(self, to_email: str, user_name: str, event_date: str, codigo: str = None, motivo_rechazo: str = None):
+        """
+        Envía el código para confirmar la cancelación por arrepentimiento,
+        o el motivo por el que la cancelación automática no corresponde.
+        """
+        if not self.is_configured:
+            print("ERROR: El servicio de email no está configurado.")
+            return False
+
+        message = MIMEMultipart("alternative")
+        message["Subject"] = f"Solicitud de cancelación - Reserva del {event_date}"
+        message["From"] = self.sender_email
+        message["To"] = to_email
+
+        if codigo:
+            cuerpo = f"""
+                <p>Recibimos una solicitud para cancelar tu reserva del <strong>{html.escape(event_date)}</strong> mediante el botón de arrepentimiento.</p>
+                <p>Para confirmarla, ingresá este código en la página de cancelación:</p>
+                <p style="font-size: 2em; font-weight: bold; letter-spacing: 6px; margin: 25px 0;">{html.escape(codigo)}</p>
+                <p style="color: #e74c3c; font-size: 0.9em;"><em>El código vence en 15 minutos.</em></p>
+            """
+        else:
+            cuerpo = f"""
+                <p>Recibimos una solicitud para cancelar tu reserva del <strong>{html.escape(event_date)}</strong> mediante el botón de arrepentimiento, pero no es posible procesarla automáticamente:</p>
+                <p><em>{html.escape(motivo_rechazo or '')}</em></p>
+            """
+
+        email_body_html = f"""
+        <html>
+            <body style="font-family: sans-serif;">
+                <h2 style="color: #2c3e50;">Cancelación de reserva</h2>
+                <p>Hola, {html.escape(user_name)},</p>
+                {cuerpo}
+                <p style="color: #7f8c8d; font-size: 0.9em;">Si no hiciste esta solicitud, ignorá este correo: tu reserva sigue vigente.</p>
+            </body>
+        </html>
+        """
+        message.attach(MIMEText(email_body_html, "html"))
+
+        context = ssl.create_default_context()
+        try:
+            with smtplib.SMTP_SSL(self.smtp_server, int(self.smtp_port), context=context) as server:
+                server.login(self.sender_email, self.sender_password)
+                server.sendmail(self.sender_email, to_email, message.as_string())
+            print(f"ÉXITO: Email de arrepentimiento enviado a {to_email}")
+            return True
+        except Exception as e:
+            print(f"ERROR al enviar email de arrepentimiento: {e}")
+            return False
+
     def send_reintegro_email(self, to_email: str, user_name: str, event_date: str, file_bytes: bytes, file_name: str):
         if not self.is_configured:
             print("ERROR: El servicio de email no está configurado.")
@@ -150,8 +203,8 @@ class NotificationService:
             <html>
                 <body style="font-family: sans-serif; color: #333; line-height: 1.5;">
                     <h2 style="color: #2c3e50;">Comprobante de Devolución de Seña</h2>
-                    <p>Hola, <strong>{user_name}</strong>,</p>
-                    <p>Te informamos que hemos procesado correctamente la devolución correspondiente a la cancelación de tu reserva para el día <strong>{event_date}</strong>.</p>
+                    <p>Hola, <strong>{html.escape(user_name)}</strong>,</p>
+                    <p>Te informamos que hemos procesado correctamente la devolución correspondiente a la cancelación de tu reserva para el día <strong>{html.escape(event_date)}</strong>.</p>
                     <p>Adjunto a este correo encontrarás el comprobante de la transferencia.</p>
                     <br>
                     <p>Esperamos poder acompañarte en futuros eventos.</p>

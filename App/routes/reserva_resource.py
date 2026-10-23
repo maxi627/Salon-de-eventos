@@ -1,19 +1,20 @@
 import os
+import uuid
 from datetime import date, datetime
 
 import sentry_sdk
 from flask import Blueprint, render_template, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from marshmallow import ValidationError
-from werkzeug.utils import secure_filename
 
 from app.config.response_builder import ResponseBuilder
 from app.extensions import db, limiter
 from app.mapping import ReservaSchema, ResponseSchema
-from app.mapping.reserva_schema import ArrepentimientoSchema
+from app.mapping.reserva_schema import ArrepentimientoSchema, ConfirmarArrepentimientoSchema
 from app.services import NotificationService, ReservaService
 from app.tasks import enviar_contrato_background, procesar_reserva_background
-from app.utils.decorators import admin_required
+from app.utils.decorators import active_user_required, admin_required
+from app.utils.file_validation import detectar_tipo_archivo
 
 Reserva = Blueprint('Reserva', __name__)
 
@@ -60,7 +61,7 @@ def all():
     except Exception as e:
         db.session.rollback()
         sentry_sdk.capture_exception(e)
-        return response_builder.add_message(f"Error al obtener reservas: {str(e)}").add_status_code(500).build(), 500
+        return response_builder.add_message("Error al obtener reservas").add_status_code(500).build(), 500
 
 @Reserva.route('/reserva/<int:id>', methods=['GET'])
 @limiter.limit("100 per minute")
@@ -80,12 +81,14 @@ def one(id):
             response_builder.add_message("Reserva no encontrada").add_status_code(404).add_data({'id': id})
             return response_builder.build(), 404
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback()
-        return response_builder.add_message(f"Error: {str(e)}").add_status_code(500).build(), 500
+        return response_builder.add_message("Error interno del servidor").add_status_code(500).build(), 500
 
 @Reserva.route('/reserva/solicitar', methods=['POST'])
 @limiter.limit("20 per minute")
 @jwt_required()
+@active_user_required()
 def request_by_user():
     service = ReservaService()
     reserva_schema = ReservaSchema()
@@ -105,8 +108,13 @@ def request_by_user():
         if archivo.filename == '':
             return response_builder.add_message("Archivo sin nombre").add_status_code(400).build(), 400
 
-        filename = secure_filename(archivo.filename)
-        nombre_seguro = f"{int(datetime.utcnow().timestamp())}_{filename}"
+        try:
+            extension, _ = detectar_tipo_archivo(archivo)
+        except ValueError as err:
+            return response_builder.add_message(str(err)).add_status_code(422).build(), 422
+
+        # El nombre lo genera el servidor; el original del cliente se descarta
+        nombre_seguro = f"{int(datetime.utcnow().timestamp())}_{uuid.uuid4().hex}.{extension}"
         
         ruta_local = os.path.join('/home/flaskapp/app/uploads', nombre_seguro)
         archivo.save(ruta_local)
@@ -138,17 +146,26 @@ def request_by_user():
     except ValidationError as err:
         db.session.rollback()
         return response_builder.add_message("Error de validación").add_status_code(422).add_data(err.messages).build(), 422
+    except ValueError as e:
+        # Reglas de negocio (ej. la fecha ya no está disponible)
+        db.session.rollback()
+        if 'ruta_local' in locals() and os.path.exists(ruta_local):
+            try:
+                os.remove(ruta_local)
+            except Exception:
+                pass
+        return response_builder.add_message(str(e)).add_status_code(409).build(), 409
     except Exception as e:
         db.session.rollback()
         sentry_sdk.capture_exception(e)
-        
+
         if 'ruta_local' in locals() and os.path.exists(ruta_local):
             try:
                 os.remove(ruta_local)
             except Exception:
                 pass
                 
-        return response_builder.add_message(f"Error al procesar reserva: {str(e)}").add_status_code(500).build(), 500
+        return response_builder.add_message("Error al procesar reserva").add_status_code(500).build(), 500
 
 @Reserva.route('/reserva/crear', methods=['POST'])
 @limiter.limit("50 per minute")
@@ -191,11 +208,14 @@ def create_for_admin():
     except ValidationError as err:
         db.session.rollback()
         return response_builder.add_message("Error de validación").add_status_code(422).add_data(err.messages).build(), 422
+    except ValueError as e:
+        db.session.rollback()
+        return response_builder.add_message(str(e)).add_status_code(409).build(), 409
     except Exception as e:
         db.session.rollback()
         sentry_sdk.capture_exception(e)
-        
-        return response_builder.add_message(f"Error en creación admin: {str(e)}").add_status_code(500).build(), 500
+
+        return response_builder.add_message("Error en creación admin").add_status_code(500).build(), 500
     
 @Reserva.route('/reserva/<int:id>', methods=['PUT'])
 @limiter.limit("50 per minute")
@@ -228,8 +248,9 @@ def update(id):
         return response_builder.build(), 200
         
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback()
-        return response_builder.add_message(f"Error al actualizar: {str(e)}").add_status_code(500).build(), 500
+        return response_builder.add_message("Error al actualizar").add_status_code(500).build(), 500
     
 @Reserva.route('/reserva/<int:id>', methods=['DELETE'])
 @limiter.limit("20 per minute")
@@ -246,8 +267,9 @@ def delete(id):
             response_builder.add_message("Reserva no encontrada").add_status_code(404).add_data({'id': id})
             return response_builder.build(), 404
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback()
-        return response_builder.add_message(f"Error al archivar: {str(e)}").add_status_code(500).build(), 500
+        return response_builder.add_message("Error al archivar").add_status_code(500).build(), 500
 
 @Reserva.route('/reserva/archivadas', methods=['GET'])
 @jwt_required()
@@ -262,8 +284,9 @@ def all_archived():
         response_builder.add_message("Reservas archivadas encontradas").add_status_code(200).add_data(data)
         return response_builder.build(), 200
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback()
-        return response_builder.add_message(f"Error: {str(e)}").add_status_code(500).build(), 500
+        return response_builder.add_message("Error interno del servidor").add_status_code(500).build(), 500
 
 @Reserva.route('/reserva/mis-reservas', methods=['GET'])
 @jwt_required()
@@ -278,8 +301,9 @@ def get_user_reservations():
         response_builder.add_data(data).add_status_code(200).add_message("Reservas encontradas")
         return response_builder.build(), 200
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback()
-        return response_builder.add_message(str(e)).add_status_code(500).build(), 500
+        return response_builder.add_message("Error interno del servidor").add_status_code(500).build(), 500
 
 @Reserva.route('/reserva/buscar', methods=['GET'])
 @jwt_required()
@@ -305,46 +329,73 @@ def search_live():
     except Exception as e:
         db.session.rollback()
         sentry_sdk.capture_exception(e) 
-        return response_builder.add_message(f"Error en búsqueda en vivo: {str(e)}").add_status_code(500).build(), 500
+        return response_builder.add_message("Error en búsqueda en vivo").add_status_code(500).build(), 500
     
 @Reserva.route('/reservas/arrepentimiento', methods=['POST'])
 @limiter.limit("5 per minute") # Límite estricto para evitar abuso/spam
 def solicitar_arrepentimiento():
+    """
+    Paso 1: si los datos coinciden con una reserva, envía un código al correo registrado.
+    La respuesta es siempre la misma para no revelar qué reservas existen.
+    """
     service = ReservaService()
     arrepentimiento_schema = ArrepentimientoSchema()
     response_builder = ResponseBuilder()
-    
+
     try:
-        # 1. Validación de entrada
         json_data = request.get_json()
         if not json_data:
             return response_builder.add_message("No se enviaron datos").add_status_code(400).build(), 400
 
-        # Validación con Marshmallow
         datos_validados = arrepentimiento_schema.load(json_data)
-        
-        # 2. Lógica de negocio (Lanza ValueError si falla alguna regla)
-        reserva_cancelada = service.procesar_arrepentimiento(datos_validados)
-        
-        # 3. Respuesta de éxito
+        service.solicitar_codigo_arrepentimiento(datos_validados)
+
+        response_builder.add_message(
+            "Si los datos coinciden con una reserva activa, enviamos un código de confirmación al correo registrado."
+        ).add_status_code(200)
+        return response_builder.build(), 200
+
+    except ValidationError as e:
+        return response_builder.add_message("Datos inválidos").add_status_code(422).add_data(e.messages).build(), 422
+
+    except Exception as e:
+        sentry_sdk.capture_exception(e)
+        return response_builder.add_message("Error interno al procesar la solicitud.").add_status_code(500).build(), 500
+
+@Reserva.route('/reservas/arrepentimiento/confirmar', methods=['POST'])
+@limiter.limit("5 per minute")
+def confirmar_arrepentimiento():
+    """
+    Paso 2: verifica el código recibido por correo y cancela la reserva.
+    """
+    service = ReservaService()
+    confirmar_schema = ConfirmarArrepentimientoSchema()
+    response_builder = ResponseBuilder()
+
+    try:
+        json_data = request.get_json()
+        if not json_data:
+            return response_builder.add_message("No se enviaron datos").add_status_code(400).build(), 400
+
+        datos_validados = confirmar_schema.load(json_data)
+        reserva_cancelada = service.confirmar_arrepentimiento(datos_validados)
+
         response_builder.add_message("Solicitud registrada. Reserva cancelada exitosamente.") \
                         .add_status_code(200) \
                         .add_data({"reserva_id": reserva_cancelada.id})
         return response_builder.build(), 200
 
     except ValidationError as e:
-        # Errores de formato (marshmallow)
         return response_builder.add_message("Datos inválidos").add_status_code(422).add_data(e.messages).build(), 422
 
     except ValueError as e:
-        # Errores de reglas de negocio (fechas, plazos, no encontrada)
+        # Código inválido/expirado o plazos legales vencidos
         return response_builder.add_message(str(e)).add_status_code(400).build(), 400
 
     except Exception as e:
-        # Errores de servidor
         db.session.rollback()
         sentry_sdk.capture_exception(e)
-        return response_builder.add_message(f"Error interno: {str(e)}").add_status_code(500).build(), 500
+        return response_builder.add_message("Error interno al procesar la solicitud.").add_status_code(500).build(), 500
 
 @Reserva.route('/reserva/reintegros-pendientes', methods=['GET'])
 @jwt_required()
@@ -369,7 +420,7 @@ def get_reintegros_pendientes():
         
     except Exception as e:
         sentry_sdk.capture_exception(e) 
-        return response_builder.add_message(f"Error al obtener reintegros: {str(e)}") \
+        return response_builder.add_message("Error al obtener reintegros") \
                                .add_status_code(500) \
                                .build(), 500
 @Reserva.route('/reserva/<int:reserva_id>/reintegro', methods=['PATCH'])
@@ -400,4 +451,4 @@ def marcar_reintegro_pagado(reserva_id):
     except Exception as e:
         db.session.rollback()
         sentry_sdk.capture_exception(e) 
-        return response_builder.add_message(f"Error interno: {str(e)}").add_status_code(500).build(), 500
+        return response_builder.add_message("Error interno").add_status_code(500).build(), 500

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import sentry_sdk
 from flask import Blueprint, request
@@ -12,6 +12,8 @@ from app.services import FechaService
 from app.utils.decorators import admin_required
 
 Fecha = Blueprint('Fecha', __name__)
+
+FECHA_MAX_DIAS_ADELANTE = 730  # Horizonte máximo para crear fechas (2 años)
 
 @Fecha.route('/fecha', methods=['GET'])
 @limiter.limit("100 per minute") 
@@ -28,8 +30,9 @@ def all():
         response_builder.add_message("Fechas encontradas").add_status_code(200).add_data(data)
         return response_builder.build(), 200
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback() # Limpia la conexión
-        response_builder.add_message("Error al obtener fechas").add_status_code(500).add_data(str(e))
+        response_builder.add_message("Error al obtener fechas").add_status_code(500)
         return response_builder.build(), 500
 
 @Fecha.route('/fecha/<int:id>', methods=['GET'])
@@ -50,8 +53,9 @@ def one(id):
             response_builder.add_message("Fecha no encontrada").add_status_code(404).add_data({'id': id})
             return response_builder.build(), 404
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback()
-        response_builder.add_message("Error al obtener la fecha").add_status_code(500).add_data(str(e))
+        response_builder.add_message("Error al obtener la fecha").add_status_code(500)
         return response_builder.build(), 500
 
 @Fecha.route('/fecha', methods=['POST'])
@@ -79,8 +83,9 @@ def add():
         response_builder.add_message("Error de validación").add_status_code(422).add_data(err.messages)
         return response_builder.build(), 422
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback()
-        response_builder.add_message("Error al crear la fecha").add_status_code(500).add_data(str(e))
+        response_builder.add_message("Error al crear la fecha").add_status_code(500)
         return response_builder.build(), 500
 
 @Fecha.route('/fecha/<int:id>', methods=['PUT'])
@@ -125,8 +130,9 @@ def update(id):
         response_builder.add_message("Error de validación").add_status_code(422).add_data(str(err))
         return response_builder.build(), 422
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback()
-        response_builder.add_message("Error al actualizar la fecha").add_status_code(500).add_data(str(e))
+        response_builder.add_message("Error al actualizar la fecha").add_status_code(500)
         return response_builder.build(), 500
 
 @Fecha.route('/fecha/<int:id>', methods=['DELETE'])
@@ -147,19 +153,29 @@ def delete(id):
             response_builder.add_message("Fecha no encontrada").add_status_code(404).add_data({'id': id})
             return response_builder.build(), 404
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback()
-        response_builder.add_message("Error al eliminar la fecha").add_status_code(500).add_data(str(e))
+        response_builder.add_message("Error al eliminar la fecha").add_status_code(500)
         return response_builder.build(), 500
 
 @Fecha.route('/fecha/by-date/<string:date_string>', methods=['GET'])
 @limiter.limit("100 per minute")
+@jwt_required()
 def get_or_create_by_date(date_string):
     service = FechaService()
     fecha_schema = FechaSchema()
     response_builder = ResponseBuilder()
-    
+
     try:
         dia = datetime.strptime(date_string, '%Y-%m-%d').date()
+
+        # Acotamos el rango para que no se puedan crear filas arbitrarias.
+        # Se tolera 1 día hacia atrás por la diferencia horaria (servidor UTC, clientes UTC-3).
+        hoy = datetime.utcnow().date()
+        if not (hoy - timedelta(days=1) <= dia <= hoy + timedelta(days=FECHA_MAX_DIAS_ADELANTE)):
+            response_builder.add_message("La fecha debe estar entre hoy y los próximos 2 años.").add_status_code(400)
+            return response_builder.build(), 400
+
         fecha_obj = service.get_or_create(dia)
         serialized_data = fecha_schema.dump(fecha_obj)
         response_builder.add_message("Fecha encontrada o creada").add_status_code(200).add_data(serialized_data)
@@ -169,6 +185,7 @@ def get_or_create_by_date(date_string):
         response_builder.add_message("Formato de fecha inválido. Usar YYYY-MM-DD.").add_status_code(400)
         return response_builder.build(), 400
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback()
-        response_builder.add_message("Error procesando la fecha").add_status_code(500).add_data(str(e))
+        response_builder.add_message("Error procesando la fecha").add_status_code(500)
         return response_builder.build(), 500

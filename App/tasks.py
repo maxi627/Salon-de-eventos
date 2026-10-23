@@ -208,6 +208,25 @@ def tarea_enviar_reintegro_async(to_email: str, user_name: str, event_date: str,
         return False
 
 @shared_task
+def enviar_codigo_arrepentimiento_async(to_email: str, user_name: str, event_date: str, codigo: str = None, motivo_rechazo: str = None):
+    """
+    Tarea en segundo plano: envía el código de confirmación del botón de arrepentimiento.
+    Se ejecuta fuera del request para que el tiempo de respuesta no revele si la reserva existe.
+    """
+    try:
+        return NotificationService().send_arrepentimiento_code_email(
+            to_email=to_email,
+            user_name=user_name,
+            event_date=event_date,
+            codigo=codigo,
+            motivo_rechazo=motivo_rechazo
+        )
+    except Exception as e:
+        sentry_sdk.capture_exception(e)
+        print(f"Error Celery al enviar código de arrepentimiento: {e}")
+        return False
+
+@shared_task
 def notificar_arrepentimiento_async(nombre_cliente: str, fecha_evento: str, motivo: str):
     """
     Tarea en segundo plano: Envía una notificación a Telegram cuando 

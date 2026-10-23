@@ -79,7 +79,7 @@ function Confirmacion() {
 
       try {
         const [fechaResponse, paymentResponse] = await Promise.all([
-          fetch(`/api/v1/fecha/by-date/${dateString}`),
+          fetch(`/api/v1/fecha/by-date/${dateString}`, { headers: { 'Authorization': `Bearer ${token}` } }),
           fetch('/api/v1/payment-info', { headers: { 'Authorization': `Bearer ${token}` } })
         ]);
 
