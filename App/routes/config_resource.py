@@ -1,3 +1,4 @@
+import sentry_sdk
 import os
 
 from flask import Blueprint
@@ -31,5 +32,6 @@ def get_payment_info():
         return response_schema.dump(response_builder.build()), 200
 
     except Exception as e:
-        response_builder.add_message("Error interno del servidor").add_status_code(500).add_data(str(e))
+        sentry_sdk.capture_exception(e)
+        response_builder.add_message("Error interno del servidor").add_status_code(500)
         return response_schema.dump(response_builder.build()), 500

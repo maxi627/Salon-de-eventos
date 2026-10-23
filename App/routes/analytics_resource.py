@@ -221,7 +221,7 @@ def get_analytics():
     except Exception as e:
         db.session.rollback() 
         sentry_sdk.capture_exception(e)
-        response_builder.add_message(f"Error al generar analíticas: {str(e)}").add_status_code(500)
+        response_builder.add_message("Error al generar analíticas").add_status_code(500)
         return response_schema.dump(response_builder.build()), 500
 
 
@@ -287,4 +287,4 @@ def download_report():
     except Exception as e:
         db.session.rollback()
         sentry_sdk.capture_exception(e)
-        return {"message": f"Error al generar el reporte: {str(e)}"}, 500
+        return {"message": "Error al generar el reporte"}, 500

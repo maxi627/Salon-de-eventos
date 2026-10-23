@@ -1,3 +1,4 @@
+import sentry_sdk
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
@@ -26,8 +27,9 @@ def all():
         response_builder.add_message("Usuarios encontrados").add_status_code(200).add_data(data)
         return response_schema.dump(response_builder.build()), 200
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback() # Limpia la conexión para que no se bloquee el servidor
-        response_builder.add_message("Error al obtener usuarios").add_status_code(500).add_data(str(e))
+        response_builder.add_message("Error al obtener usuarios").add_status_code(500)
         return response_schema.dump(response_builder.build()), 500
 
 @Usuario.route('/usuario/<int:id>', methods=['GET'])
@@ -50,8 +52,9 @@ def one(id):
             response_builder.add_message("Usuario no encontrado").add_status_code(404).add_data({'id': id})
             return response_schema.dump(response_builder.build()), 404
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback()
-        response_builder.add_message("Error al obtener usuario").add_status_code(500).add_data(str(e))
+        response_builder.add_message("Error al obtener usuario").add_status_code(500)
         return response_schema.dump(response_builder.build()), 500
 
 @Usuario.route('/usuario', methods=['POST'])
@@ -77,9 +80,15 @@ def add():
         db.session.rollback()
         response_builder.add_message("Error de validación").add_status_code(422).add_data(err.messages)
         return response_schema.dump(response_builder.build()), 422
-    except Exception as e:
+    except ValueError as ve:
+        # Ej: "Este correo ya está registrado en el sistema."
         db.session.rollback()
-        response_builder.add_message("Error al crear usuario").add_status_code(500).add_data(str(e))
+        response_builder.add_message(str(ve)).add_status_code(409)
+        return response_schema.dump(response_builder.build()), 409
+    except Exception as e:
+        sentry_sdk.capture_exception(e)
+        db.session.rollback()
+        response_builder.add_message("Error al crear usuario").add_status_code(500)
         return response_schema.dump(response_builder.build()), 500
 
 @Usuario.route('/usuario/<int:id>', methods=['PUT'])
@@ -112,8 +121,9 @@ def update(id):
         response_builder.add_message("Error de validación").add_status_code(422).add_data(err.messages)
         return response_schema.dump(response_builder.build()), 422
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback()
-        response_builder.add_message("Error al actualizar usuario").add_status_code(500).add_data(str(e))
+        response_builder.add_message("Error al actualizar usuario").add_status_code(500)
         return response_schema.dump(response_builder.build()), 500
 
 @Usuario.route('/usuario/<int:id>', methods=['DELETE'])
@@ -139,8 +149,9 @@ def delete(id):
         return response_schema.dump(response_builder.build()), 400
         
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback()
-        response_builder.add_message("Error al eliminar usuario").add_status_code(500).add_data(str(e))
+        response_builder.add_message("Error al eliminar usuario").add_status_code(500)
         return response_schema.dump(response_builder.build()), 500
 
     
@@ -168,6 +179,7 @@ def search_live():
         return response_schema.dump(response_builder.build()), 200
         
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback()
-        response_builder.add_message("Error en búsqueda en vivo").add_status_code(500).add_data(str(e))
+        response_builder.add_message("Error en búsqueda en vivo").add_status_code(500)
         return response_schema.dump(response_builder.build()), 500

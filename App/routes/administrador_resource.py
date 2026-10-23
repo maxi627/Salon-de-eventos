@@ -1,3 +1,4 @@
+import sentry_sdk
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
@@ -24,7 +25,8 @@ def all():
         response_builder.add_message("Administrador found").add_status_code(200).add_data(data)
         return response_schema.dump(response_builder.build()), 200
     except Exception as e:
-        response_builder.add_message("Error fetching Administrador").add_status_code(500).add_data(str(e))
+        sentry_sdk.capture_exception(e)
+        response_builder.add_message("Error fetching Administrador").add_status_code(500)
         return response_schema.dump(response_builder.build()), 500
 
 @Administrador.route('/administrador/<int:id>', methods=['GET'])
@@ -42,7 +44,8 @@ def one(id):
             response_builder.add_message("Administrador not found").add_status_code(404).add_data({'id': id})
             return response_schema.dump(response_builder.build()), 404
     except Exception as e:
-        response_builder.add_message("Error fetching Administrador").add_status_code(500).add_data(str(e))
+        sentry_sdk.capture_exception(e)
+        response_builder.add_message("Error fetching Administrador").add_status_code(500)
         return response_schema.dump(response_builder.build()), 500
 
 @Administrador.route('/administrador', methods=['POST'])
@@ -63,7 +66,8 @@ def add():
         response_builder.add_message("Validation error").add_status_code(422).add_data(err.messages)
         return response_schema.dump(response_builder.build()), 422
     except Exception as e:
-        response_builder.add_message("Error creating Administrador").add_status_code(500).add_data(str(e))
+        sentry_sdk.capture_exception(e)
+        response_builder.add_message("Error creating Administrador").add_status_code(500)
         return response_schema.dump(response_builder.build()), 500
 
 @Administrador.route('/administrador/<int:id>', methods=['PUT'])
@@ -89,7 +93,8 @@ def update(id):
         response_builder.add_message("Validation error").add_status_code(422).add_data(err.messages)
         return response_schema.dump(response_builder.build()), 422
     except Exception as e:
-        response_builder.add_message("Error updating Administrador").add_status_code(500).add_data(str(e))
+        sentry_sdk.capture_exception(e)
+        response_builder.add_message("Error updating Administrador").add_status_code(500)
         return response_schema.dump(response_builder.build()), 500
 
 @Administrador.route('/administrador/<int:id>', methods=['DELETE'])
@@ -105,7 +110,8 @@ def delete(id):
             response_builder.add_message("Administrador not found").add_status_code(404).add_data({'id': id})
             return response_schema.dump(response_builder.build()), 404
     except Exception as e:
-        response_builder.add_message("Error deleting Administrador").add_status_code(500).add_data(str(e))
+        sentry_sdk.capture_exception(e)
+        response_builder.add_message("Error deleting Administrador").add_status_code(500)
         return response_schema.dump(response_builder.build()), 500
     
     
