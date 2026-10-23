@@ -1,1 +1,13 @@
 guía_backups.txt
+
+AUDITORIA_SEGURIDAD.md
+
+# Secretos y certificados (nunca versionar)
+.env
+acme.json
+*.pem
+*.key
+**/certs/
+
+# Dependencias
+node_modules/
