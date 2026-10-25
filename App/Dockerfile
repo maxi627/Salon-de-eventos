@@ -17,8 +17,7 @@ RUN sed -i -e 's/# es_AR.UTF-8 UTF-8/es_AR.UTF-8 UTF-8/' /etc/locale.gen && \
 ENV LANG es_AR.UTF-8
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir "setuptools<58.0.0"
-RUN pip install --no-cache-dir --no-build-isolation -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . ./app
 
