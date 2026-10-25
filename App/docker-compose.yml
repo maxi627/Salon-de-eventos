@@ -127,20 +127,44 @@ services:
       - "--certificatesresolvers.leresolver.acme.tlschallenge=true"
       - "--certificatesresolvers.leresolver.acme.email=eulamaxi1@gmail.com"
       - "--certificatesresolvers.leresolver.acme.storage=/letsencrypt/acme.json"
+      # Traefik lee Docker a través del proxy de sólo lectura (ya no monta el socket)
+      - "--providers.docker.endpoint=tcp://socket-proxy:2375"
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "traefik_certs:/letsencrypt"
       - "../letsencrypt:/letsencrypt"
     networks:
       - red1
+      - socket_proxy
+    depends_on:
+      - socket-proxy
+    restart: always
+
+  # Expone a Traefik sólo la lectura de contenedores y redes; bloquea cualquier escritura en la API de Docker
+  socket-proxy:
+    image: tecnativa/docker-socket-proxy:v0.5.0
+    container_name: socket_proxy
+    environment:
+      - CONTAINERS=1
+      - NETWORKS=1
+      - POST=0
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - socket_proxy
+    security_opt:
+      - no-new-privileges:true
     restart: always
 
 networks:
   red1:
     driver: bridge
+  # Red interna sin salida a Internet: sólo Traefik y el socket-proxy
+  socket_proxy:
+    driver: bridge
+    internal: true
 
 volumes:
   postgres_data:
