@@ -55,7 +55,8 @@ services:
       - "traefik.http.routers.salonapp.entrypoints=websecure"
       - "traefik.http.routers.salonapp.tls.certresolver=leresolver"
       - "traefik.http.routers.salonapp.priority=100"
-      - "traefik.http.routers.salonapp.middlewares=security-headers@docker"
+      # CLOUDFLARE_ORIGIN_LOCK=",cloudflare-only@docker" en el .env restringe el origen a Cloudflare (vacío = desactivado)
+      - "traefik.http.routers.salonapp.middlewares=security-headers@docker${CLOUDFLARE_ORIGIN_LOCK:-}"
       - "traefik.http.services.salonapp.loadbalancer.server.port=5000"
     volumes:
       - shared_uploads:/home/flaskapp/app/uploads
@@ -96,8 +97,20 @@ services:
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls.certresolver=leresolver"
       - "traefik.http.routers.frontend.priority=10"
-      - "traefik.http.routers.frontend.middlewares=security-headers@docker,csp-frontend@docker"
+      - "traefik.http.routers.frontend.middlewares=security-headers@docker,csp-frontend@docker${CLOUDFLARE_ORIGIN_LOCK:-}"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
+      # www.saloneventos.cloud -> saloneventos.cloud (301, conserva la ruta)
+      - "traefik.http.routers.www-redirect.rule=Host(`www.saloneventos.cloud`)"
+      - "traefik.http.routers.www-redirect.entrypoints=websecure"
+      - "traefik.http.routers.www-redirect.tls.certresolver=leresolver"
+      - "traefik.http.routers.www-redirect.service=frontend"
+      - "traefik.http.routers.www-redirect.middlewares=www-to-apex@docker,security-headers@docker${CLOUDFLARE_ORIGIN_LOCK:-}"
+      - "traefik.http.middlewares.www-to-apex.redirectregex.regex=^https?://www.saloneventos.cloud(:[0-9]+)?/(.*)"
+      - "traefik.http.middlewares.www-to-apex.redirectregex.replacement=https://saloneventos.cloud/$${2}"
+      - "traefik.http.middlewares.www-to-apex.redirectregex.permanent=true"
+      # Sólo acepta conexiones desde los rangos de Cloudflare (https://www.cloudflare.com/ips/, revisado 2026-10-25).
+      # Se activa con CLOUDFLARE_ORIGIN_LOCK; evita que se acceda directo a la IP del VPS salteando el WAF.
+      - "traefik.http.middlewares.cloudflare-only.ipallowlist.sourcerange=173.245.48.0/20,103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,141.101.64.0/18,108.162.192.0/18,190.93.240.0/20,188.114.96.0/20,197.234.240.0/22,198.41.128.0/17,162.158.0.0/15,104.16.0.0/13,104.24.0.0/14,172.64.0.0/13,131.0.72.0/22,2400:cb00::/32,2606:4700::/32,2803:f800::/32,2405:b500::/32,2405:8100::/32,2a06:98c0::/29,2c0f:f248::/32"
       # Cabeceras de seguridad (las usan también las rutas /api del servicio app)
       - "traefik.http.middlewares.security-headers.headers.stsSeconds=31536000"
       - "traefik.http.middlewares.security-headers.headers.stsIncludeSubdomains=true"
