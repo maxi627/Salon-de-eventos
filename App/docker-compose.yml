@@ -116,6 +116,8 @@ services:
     container_name: traefik
     environment:
       - DOCKER_API_VERSION=1.44
+      # Token de Cloudflare (sólo permiso Zone:DNS:Edit) para el desafío DNS-01. Se define en el .env del servidor.
+      - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
     command:
       - "--api.insecure=false"
       - "--providers.docker=true"
@@ -124,7 +126,10 @@ services:
       - "--entrypoints.websecure.address=:443"
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-      - "--certificatesresolvers.leresolver.acme.tlschallenge=true"
+      # DNS-01 vía API de Cloudflare: funciona con el proxy de Cloudflare activo (TLS-ALPN no)
+      - "--certificatesresolvers.leresolver.acme.dnschallenge=true"
+      - "--certificatesresolvers.leresolver.acme.dnschallenge.provider=cloudflare"
+      - "--certificatesresolvers.leresolver.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53"
       - "--certificatesresolvers.leresolver.acme.email=eulamaxi1@gmail.com"
       - "--certificatesresolvers.leresolver.acme.storage=/letsencrypt/acme.json"
       # Traefik lee Docker a través del proxy de sólo lectura (ya no monta el socket)
