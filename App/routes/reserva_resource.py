@@ -13,6 +13,7 @@ from app.mapping import ReservaSchema, ResponseSchema
 from app.mapping.reserva_schema import ArrepentimientoSchema, ConfirmarArrepentimientoSchema
 from app.services import NotificationService, ReservaService
 from app.tasks import enviar_contrato_background, procesar_reserva_background
+from app.utils.client_ip import get_client_ip
 from app.utils.decorators import active_user_required, admin_required
 from app.utils.file_validation import detectar_tipo_archivo
 
@@ -132,7 +133,7 @@ def request_by_user():
         reserva = reserva_schema.load(reserva_data)
         
         # --- CORRECCIÓN DE SEGURIDAD AQUÍ ---
-        reserva.ip_aceptacion = request.remote_addr or "IP Desconocida"
+        reserva.ip_aceptacion = get_client_ip()
         reserva.fecha_aceptacion = datetime.utcnow()
 
         reserva_creada = service.add(reserva)
@@ -193,7 +194,7 @@ def create_for_admin():
         reserva = reserva_schema.load(json_data)
         
         # --- CORRECCIÓN DE SEGURIDAD AQUÍ ---
-        reserva.ip_aceptacion = request.remote_addr or "IP Desconocida"
+        reserva.ip_aceptacion = get_client_ip()
         reserva.fecha_aceptacion = datetime.utcnow()
 
         reserva_creada = service.add(reserva)
