@@ -110,7 +110,6 @@ def forgot_password():
 @Auth.route('/reset-password', methods=['POST'])
 @limiter.limit("5 per minute")
 def reset_password():
-    repo = PersonaRepository()
     response_builder = ResponseBuilder()
     
     try:
@@ -121,6 +120,10 @@ def reset_password():
         if not token or not new_password:
             return response_builder.add_message("El token y la nueva contraseña son requeridos.").add_status_code(400).build(), 400
 
+        # Misma regla que en el registro (UsuarioSchema)
+        if not isinstance(new_password, str) or len(new_password) < 8:
+            return response_builder.add_message("La nueva contraseña debe tener al menos 8 caracteres.").add_status_code(400).build(), 400
+
         # Verificamos la validez del token
         user = Persona.verify_reset_token(token)
         if not user:
@@ -128,7 +131,7 @@ def reset_password():
 
         # Actualizamos y confirmamos cambios
         user.set_password(new_password)
-        repo.commit() # Guardamos los cambios en la base de datos
+        db.session.commit() # Guardamos los cambios en la base de datos
 
         return response_builder.add_message("Tu contraseña ha sido actualizada con éxito.").add_status_code(200).build(), 200
         
