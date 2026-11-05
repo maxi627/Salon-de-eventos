@@ -11,3 +11,6 @@ acme.json
 
 # Dependencias
 node_modules/
+
+# Configuración local de Claude Code (permisos personales)
+.claude/settings.local.json
