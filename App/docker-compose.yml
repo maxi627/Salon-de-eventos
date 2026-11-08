@@ -138,7 +138,6 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - "traefik_certs:/letsencrypt"
       - "../letsencrypt:/letsencrypt"
       - "./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro"
     networks:
@@ -174,5 +173,4 @@ networks:
 
 volumes:
   postgres_data:
-  traefik_certs:
   shared_uploads:
