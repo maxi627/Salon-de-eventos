@@ -4,45 +4,162 @@
     <meta charset="UTF-8">
     <title>Contrato de Locación - Salón de Usos Múltiples (SUM)</title>
     <style>
-        body { font-family: sans-serif; line-height: 1.6; color: #333; margin: 30px; }
-        h1, h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px; }
-        h1 { font-size: 24px; }
-        h2 { font-size: 20px; margin-top: 30px; }
-        strong { font-weight: bold; }
-        ol { padding-left: 25px; }
-        li { margin-bottom: 12px; }
-        .header-info { margin-bottom: 20px; padding: 15px; background-color: #f4f7f6; border-radius: 5px; border: 1px solid #e1e1e1;}
-        .footer { margin-top: 40px; padding-top: 15px; border-top: 1px solid #ccc; font-size: 0.9em; color: #777; }
+        @page {
+            size: A4;
+            margin: 22mm 20mm 22mm 20mm;
+            @top-right {
+                content: "Contrato de Locación — SUM";
+                font-family: "DejaVu Sans", sans-serif;
+                font-size: 8pt;
+                color: #8a94a0;
+            }
+            @bottom-center {
+                content: "Página " counter(page) " de " counter(pages);
+                font-family: "DejaVu Sans", sans-serif;
+                font-size: 8pt;
+                color: #8a94a0;
+            }
+        }
+
+        body {
+            font-family: "DejaVu Sans", sans-serif;
+            font-size: 10pt;
+            line-height: 1.5;
+            color: #2b2f33;
+            margin: 0;
+        }
+
+        /* Título */
+        h1 {
+            font-size: 17pt;
+            line-height: 1.25;
+            color: #1f3a5a;
+            text-align: center;
+            margin: 0 0 6mm 0;
+            padding-bottom: 4mm;
+            border-bottom: 2px solid #1f3a5a;
+        }
+
+        /* Datos del evento */
+        .header-info {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0 0 7mm 0;
+            border: 1px solid #c9d3de;
+        }
+        .header-info th,
+        .header-info td {
+            padding: 2.2mm 3.5mm;
+            border-bottom: 1px solid #e3e8ee;
+            text-align: left;
+            vertical-align: top;
+        }
+        .header-info tr:last-child th,
+        .header-info tr:last-child td { border-bottom: none; }
+        .header-info th {
+            width: 1%;
+            white-space: nowrap;
+            background-color: #f1f5f9;
+            color: #1f3a5a;
+            font-weight: bold;
+        }
+
+        /* Términos y condiciones */
+        h2 {
+            font-size: 12.5pt;
+            color: #1f3a5a;
+            margin: 0 0 3mm 0;
+            padding-bottom: 1.5mm;
+            border-bottom: 1px solid #c9d3de;
+            page-break-after: avoid;
+        }
+        .preambulo {
+            text-align: justify;
+            hyphens: auto;
+            margin: 0 0 4mm 0;
+        }
+
+        ol.clausulas {
+            list-style: none;
+            counter-reset: clausula;
+            margin: 0;
+            padding: 0;
+        }
+        ol.clausulas > li {
+            counter-increment: clausula;
+            position: relative;
+            padding-left: 9mm;
+            margin-bottom: 3.2mm;
+            text-align: justify;
+            hyphens: auto;
+            page-break-inside: avoid;
+        }
+        ol.clausulas > li::before {
+            content: counter(clausula) ".";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 7mm;
+            text-align: right;
+            font-weight: bold;
+            color: #1f3a5a;
+        }
+        ol.clausulas strong { color: #1f3a5a; }
+
+        /* Constancia de aceptación digital (respaldo legal) */
+        .footer {
+            margin-top: 8mm;
+            padding: 3.5mm 4.5mm;
+            border: 1px solid #c9d3de;
+            border-left: 4px solid #1f3a5a;
+            background-color: #f7f9fb;
+            font-size: 9pt;
+            color: #44505c;
+            page-break-inside: avoid;
+        }
+        .footer p { margin: 0; }
     </style>
 </head>
 <body>
     <h1>Contrato de Locación - Salón de Usos Múltiples (SUM)</h1>
-    
-    <div class="header-info">
-        <p><strong>Fecha del Evento:</strong> {{ event_date }}</p>
-        <p><strong>Horario Pactado:</strong> 
+
+    <table class="header-info">
+        <tr>
+            <th>Fecha del Evento:</th>
+            <td>{{ event_date }}</td>
+        </tr>
+        <tr>
+            <th>Horario Pactado:</th>
+            <td>
             {% if hora_inicio and hora_fin %}
                 de {{ hora_inicio }} a {{ hora_fin }} hs.
             {% else %}
                 de 11:00 a 20:00 hs (Horario Base).
             {% endif %}
-        </p>
-        <p><strong>Cliente (LOCATARIO):</strong> {{ user_name }} (DNI: {{ user_dni }})</p>
-        <p><strong>Capacidad Máxima Autorizada:</strong> 50 Personas (Límite Estricto)</p>
-    </div>
-    
+            </td>
+        </tr>
+        <tr>
+            <th>Cliente (LOCATARIO):</th>
+            <td>{{ user_name }} (DNI: {{ user_dni }})</td>
+        </tr>
+        <tr>
+            <th>Capacidad Máxima Autorizada:</th>
+            <td>50 Personas (Límite Estricto)</td>
+        </tr>
+    </table>
+
     <h2>Términos y Condiciones</h2>
-    <p>
-      El presente contrato de locación temporal se celebra entre EL LOCADOR (propietario/administrador del espacio) y EL LOCATARIO 
+    <p class="preambulo">
+      El presente contrato de locación temporal se celebra entre EL LOCADOR (propietario/administrador del espacio) y EL LOCATARIO
       (usuario que realiza la reserva a través de la página web, cuyos datos personales se registran en el formulario de reserva), sujeto a las siguientes cláusulas:
     </p>
-    
-    <ol>
+
+    <ol class="clausulas">
         <li>
             <strong>Objeto:</strong> EL LOCADOR cede temporalmente a EL LOCATARIO el uso del Salón de Usos Múltiples (SUM) / ubicado en Bolivar 1425, para el desarrollo de un evento de carácter estrictamente privado en la fecha y horario acordados en la reserva.
         </li>
         <li>
-            <strong>Uso, Restricciones y Responsabilidad:</strong> El inmueble se alquila exclusivamente bajo la modalidad de reunión privada a puertas cerradas. Queda **estrictamente prohibida la venta de entradas o taquilla, la comercialización o venta de bebidas alcohólicas dentro del predio**, el suministro de alcohol a menores de edad, el consumo de sustancias ilegales y la instalación de equipos de sonido profesionales de alta potencia (subwoofers de piso o estructuras comerciales). EL LOCATARIO asume la total responsabilidad civil y penal por cualquier daño material, accidente o hecho ocurrido durante el evento, así como por las acciones de los invitados y terceros que ingresen al establecimiento.
+            <strong>Uso, Restricciones y Responsabilidad:</strong> El inmueble se alquila exclusivamente bajo la modalidad de reunión privada a puertas cerradas. Queda <strong>estrictamente prohibida la venta de entradas o taquilla, la comercialización o venta de bebidas alcohólicas dentro del predio</strong>, el suministro de alcohol a menores de edad, el consumo de sustancias ilegales y la instalación de equipos de sonido profesionales de alta potencia (subwoofers de piso o estructuras comerciales). EL LOCATARIO asume la total responsabilidad civil y penal por cualquier daño material, accidente o hecho ocurrido durante el evento, así como por las acciones de los invitados y terceros que ingresen al establecimiento.
         </li>
         <li>
             <strong>Cumplimiento Legal y Ruidos Molestos:</strong> EL LOCATARIO asume toda responsabilidad por cumplir con las normativas vigentes en materia de seguridad, salubridad y la Ordenanza Municipal de San Rafael sobre ruidos molestos. El volumen de la música deberá mantenerse dentro de los decibeles permitidos para un entorno residencial, y queda estrictamente prohibido generar disturbios en la vía pública o alterar el orden del vecindario. En caso de multas, quejas formales o clausuras derivadas del incumplimiento de estas normas o del exceso de ruido, EL LOCADOR queda exento de toda responsabilidad, debiendo EL LOCATARIO responder económica y legalmente por las sanciones aplicadas.
@@ -57,7 +174,7 @@
             <strong>Penalidades:</strong> En caso de constatarse el incumplimiento de alguna cláusula (como la comercialización de entradas/bebidas o disturbios graves), EL LOCADOR podrá suspender el evento de forma inmediata sin derecho a reclamo o reembolso por parte del LOCATARIO, además de iniciar las acciones legales correspondientes.
         </li>
         <li>
-            <strong>Capacidad Máxima Infranqueable:</strong> Conforme a las normativas de seguridad y la habilitación del espacio como SUM, se establece un límite de capacidad máximo y estricto de **50 personas en total** dentro del establecimiento. Bajo ninguna circunstancia se permitirá el ingreso de un flujo superior de asistentes. El incumplimiento de esta norma facultará al LOCADOR a dar por finalizado el evento de forma inmediata por razones de seguridad.
+            <strong>Capacidad Máxima Infranqueable:</strong> Conforme a las normativas de seguridad y la habilitación del espacio como SUM, se establece un límite de capacidad máximo y estricto de <strong>50 personas en total</strong> dentro del establecimiento. Bajo ninguna circunstancia se permitirá el ingreso de un flujo superior de asistentes. El incumplimiento de esta norma facultará al LOCADOR a dar por finalizado el evento de forma inmediata por razones de seguridad.
         </li>
         <li>
             <strong>Exceso de Horario y Finalización:</strong> El evento contempla exclusivamente la franja horaria pactada en la reserva. Cualquier extensión del horario deberá solicitarse con anticipación, quedando sujeta a la disponibilidad del salón y al abono de la tarifa de "hora extra" vigente. De excederse el límite horario sin autorización previa, se aplicará de forma automática el cobro del tiempo excedido. Si el salón no tuviera disponibilidad para extender el turno, EL LOCATARIO se compromete a finalizar el evento y desocupar las instalaciones a la hora acordada, facultando a EL LOCADOR a dar por concluido el servicio para iniciar las tareas de acondicionamiento.
