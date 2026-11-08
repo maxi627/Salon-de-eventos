@@ -6,3 +6,21 @@ __pycache__/
 .gitignore
 .venv
 venv/
+
+# Secretos y copias de configuración (ej. una copia vieja "env" del .env)
+env
+.env*
+*.env
+certs/
+
+# Datos y archivos sueltos que el backend no necesita en la imagen
+*.sql
+*.sql.gz*
+*.js
+frontend/
+
+# Archivos de infraestructura y documentación
+docker-compose.yml
+Dockerfile
+.dockerignore
+README.MD
