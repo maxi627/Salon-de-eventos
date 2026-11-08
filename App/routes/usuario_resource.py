@@ -8,6 +8,7 @@ from app.extensions import db, limiter
 from app.mapping import ResponseSchema, UsuarioSchema
 from app.services import UsuarioService
 from app.utils.decorators import admin_required
+from app.utils.turnstile import turnstile_required
 
 Usuario = Blueprint('Usuario', __name__)
 
@@ -59,6 +60,7 @@ def one(id):
 
 @Usuario.route('/usuario', methods=['POST'])
 @limiter.limit("40 per minute")
+@turnstile_required
 def add():
     service = UsuarioService()
     usuario_schema = UsuarioSchema()

@@ -82,7 +82,7 @@ class ProductionConfig(Config):
     @staticmethod
     def init_app(app):
         """Valida las variables de entorno críticas para producción."""
-        Config.validate_required_env_vars(['PROD_DATABASE_URI', 'JWT_SECRET_KEY', 'REDIS_PASSWORD'])
+        Config.validate_required_env_vars(['PROD_DATABASE_URI', 'JWT_SECRET_KEY', 'REDIS_PASSWORD', 'TURNSTILE_SECRET_KEY'])
         if len(os.getenv('JWT_SECRET_KEY')) < 32:
             raise ValueError("JWT_SECRET_KEY debe tener al menos 32 caracteres en producción.")
 

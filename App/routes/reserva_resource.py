@@ -15,6 +15,7 @@ from app.services import NotificationService, ReservaService
 from app.tasks import enviar_contrato_background, procesar_reserva_background
 from app.utils.client_ip import get_client_ip
 from app.utils.decorators import active_user_required, admin_required
+from app.utils.turnstile import turnstile_required
 from app.utils.file_validation import detectar_tipo_archivo
 
 Reserva = Blueprint('Reserva', __name__)
@@ -334,6 +335,7 @@ def search_live():
     
 @Reserva.route('/reservas/arrepentimiento', methods=['POST'])
 @limiter.limit("5 per minute") # Límite estricto para evitar abuso/spam
+@turnstile_required
 def solicitar_arrepentimiento():
     """
     Paso 1: si los datos coinciden con una reserva, envía un código al correo registrado.

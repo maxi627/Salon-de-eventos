@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Turnstile from '../components/Turnstile';
 import './register.css';
 
 function Register() {
@@ -17,6 +18,8 @@ function Register() {
   
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const turnstileRef = useRef(null);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -45,7 +48,7 @@ function Register() {
     try {
       const response = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-Turnstile-Token': turnstileToken },
         body: JSON.stringify(userData),
       });
 
@@ -65,6 +68,9 @@ function Register() {
 
     } catch (err) {
       setError(err.message);
+    } finally {
+      // Cada token de Turnstile sirve una sola vez
+      turnstileRef.current?.reset();
     }
   };
 
@@ -154,9 +160,10 @@ function Register() {
           </label>
         </div>
         
+        <Turnstile ref={turnstileRef} onToken={setTurnstileToken} />
         {error && <p className="error-message">{error}</p>}
 
-        <button type="submit" className="register-button" disabled={success}>
+        <button type="submit" className="register-button" disabled={success || !turnstileToken}>
           {success ? 'Registrado' : 'Registrarse'}
         </button>
       </form>

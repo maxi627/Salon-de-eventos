@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import Turnstile from '../components/Turnstile';
 import './arrepentimiento.css'; // Crearemos este archivo ahora
 
 function Arrepentimiento() {
@@ -13,11 +14,13 @@ function Arrepentimiento() {
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState(null);
   const [error, setError] = useState(null);
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const turnstileRef = useRef(null);
 
-  const postJson = async (url, payload) => {
+  const postJson = async (url, payload, extraHeaders = {}) => {
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...extraHeaders },
       body: JSON.stringify(payload),
     });
 
@@ -41,7 +44,7 @@ function Arrepentimiento() {
         identificacion, // Puede ser DNI o Correo
         fecha_evento: fechaEvento,
         motivo
-      });
+      }, { 'X-Turnstile-Token': turnstileToken });
 
       setMensaje(data.message);
       setPaso('codigo');
@@ -50,6 +53,8 @@ function Arrepentimiento() {
       setError(err.message);
     } finally {
       setLoading(false);
+      // Cada token de Turnstile sirve una sola vez
+      turnstileRef.current?.reset();
     }
   };
 
@@ -139,7 +144,9 @@ function Arrepentimiento() {
               <small>La ley no exige un motivo, pero nos ayuda a mejorar.</small>
             </div>
 
-            <button type="submit" className="submit-button" disabled={loading}>
+            <Turnstile ref={turnstileRef} onToken={setTurnstileToken} />
+
+            <button type="submit" className="submit-button" disabled={loading || !turnstileToken}>
               {loading ? 'Procesando...' : 'Solicitar Cancelación'}
             </button>
           </form>

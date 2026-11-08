@@ -9,6 +9,7 @@ from app.extensions import db, limiter
 from app.models import Persona
 from app.repositories import PersonaRepository
 from app.services import NotificationService
+from app.utils.turnstile import turnstile_required
 
 Auth = Blueprint('Auth', __name__)
 
@@ -20,6 +21,7 @@ def correo_del_body():
 @Auth.route('/login', methods=['POST'])
 @limiter.limit("5 per minute")
 @limiter.limit("10 per hour", key_func=correo_del_body)
+@turnstile_required
 def login():
     # Instanciamos dentro para evitar RuntimeError de contexto
     repo = PersonaRepository()
@@ -72,6 +74,7 @@ def login():
 @Auth.route('/forgot-password', methods=['POST'])
 @limiter.limit("3 per 10 minutes")
 @limiter.limit("3 per hour", key_func=correo_del_body)
+@turnstile_required
 def forgot_password():
     repo = PersonaRepository()
     notification_service = NotificationService()
