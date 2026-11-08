@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import api from '../api/client';
 
 export const useReservas = () => {
@@ -36,12 +36,5 @@ export const useMisReservas = () => {
     queryKey: ['mis-reservas'],
     queryFn: () => api.get('/reserva/mis-reservas'),
     enabled: !!localStorage.getItem('authToken'),
-  });
-};
-
-// Hook del Chatbot: Llama a /api/v1/chatbot/query
-export const useChatbot = () => {
-  return useMutation({
-    mutationFn: (message) => api.post('/chatbot/query', { message }),
   });
 };

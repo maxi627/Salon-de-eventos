@@ -1,61 +1,197 @@
+import json
 import os
+from datetime import date, datetime, timedelta
+from pathlib import Path
 
-from flask import current_app
-from google.cloud import dialogflow
-from google.oauth2 import service_account
+import anthropic
+import pytz
+import sentry_sdk
+
+from app.models import Fecha
+
+MODELO = os.getenv("CHATBOT_MODEL", "claude-sonnet-5-5")
+ZONA_HORARIA = pytz.timezone("America/Argentina/Buenos_Aires")
+DIAS_MAXIMOS_ANTICIPACION = 90  # mismas reglas que el calendario de reservas
+MAX_ITERACIONES = 4  # tope de vueltas modelo -> herramienta por mensaje (chat público)
+
+MENSAJE_NO_DISPONIBLE = (
+    "En este momento no puedo responder. Escribinos por WhatsApp al 260 411-9865 y te atendemos."
+)
+
+# El manual se lee una vez: es el prefijo estable que queda en la caché de prompts
+MANUAL = (Path(__file__).resolve().parent.parent / "chatbot" / "manual_salon.md").read_text(encoding="utf-8")
+
+DIAS_SEMANA = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
+
+HERRAMIENTAS = [
+    {
+        "name": "consultar_fecha",
+        "description": (
+            "Devuelve si una fecha está disponible para alquilar el salón y su precio estimado. "
+            "Usala cada vez que pregunten por una fecha concreta."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "fecha": {"type": "string", "description": "Fecha en formato AAAA-MM-DD."},
+            },
+            "required": ["fecha"],
+            "additionalProperties": False,
+        },
+        "strict": True,
+    },
+    {
+        "name": "fechas_disponibles",
+        "description": (
+            "Lista las fechas disponibles (con precio estimado si está cargado) de un mes. "
+            "Usala para sugerir fechas cuando pregunten qué hay libre en un mes."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "mes": {"type": "string", "description": "Mes en formato AAAA-MM."},
+            },
+            "required": ["mes"],
+            "additionalProperties": False,
+        },
+        "strict": True,
+    },
+]
+
+
+class ChatbotNoDisponible(Exception):
+    """El asistente no está configurado o la API no respondió."""
+
+
+def _hoy() -> date:
+    return datetime.now(ZONA_HORARIA).date()
+
+
+def _evaluar_fecha(dia: date, fecha_db, hoy: date) -> dict:
+    """Aplica las reglas del calendario del sitio. No expone datos de clientes."""
+    resultado = {"fecha": dia.isoformat(), "dia_semana": DIAS_SEMANA[dia.weekday()]}
+    if dia < hoy:
+        return {**resultado, "disponible": False, "motivo": "La fecha ya pasó."}
+    if dia > hoy + timedelta(days=DIAS_MAXIMOS_ANTICIPACION):
+        return {**resultado, "disponible": False,
+                "motivo": f"Sólo se reserva con hasta {DIAS_MAXIMOS_ANTICIPACION} días de anticipación."}
+    if dia.weekday() == 6:
+        return {**resultado, "disponible": False, "motivo": "Los domingos el salón no se alquila."}
+    if fecha_db is not None and fecha_db.estado != "disponible":
+        return {**resultado, "disponible": False, "motivo": "La fecha ya está reservada o tiene una reserva en curso."}
+    precio = fecha_db.valor_estimado if fecha_db is not None and fecha_db.valor_estimado > 0 else None
+    return {**resultado, "disponible": True, "precio_estimado_ars": precio}
+
+
+def consultar_fecha(fecha: str) -> dict:
+    dia = datetime.strptime(fecha, "%Y-%m-%d").date()
+    fecha_db = Fecha.query.filter_by(dia=dia).first()
+    return _evaluar_fecha(dia, fecha_db, _hoy())
+
+
+def fechas_disponibles(mes: str) -> dict:
+    inicio = datetime.strptime(mes, "%Y-%m").date()
+    fin = (inicio.replace(day=28) + timedelta(days=4)).replace(day=1)  # primer día del mes siguiente
+    hoy = _hoy()
+    filas = {f.dia: f for f in Fecha.query.filter(Fecha.dia >= inicio, Fecha.dia < fin).all()}
+
+    disponibles = []
+    dia = inicio
+    while dia < fin:
+        evaluacion = _evaluar_fecha(dia, filas.get(dia), hoy)
+        if evaluacion["disponible"]:
+            disponibles.append(evaluacion)
+        dia += timedelta(days=1)
+
+    respuesta = {"mes": mes, "fechas_disponibles": disponibles}
+    if not disponibles:
+        respuesta["nota"] = (
+            "No hay fechas disponibles en ese mes (puede estar fuera del plazo de "
+            f"{DIAS_MAXIMOS_ANTICIPACION} días o ya pasó)."
+        )
+    return respuesta
+
+
+FUNCIONES = {"consultar_fecha": consultar_fecha, "fechas_disponibles": fechas_disponibles}
+
+
+def _ejecutar_herramienta(bloque) -> dict:
+    funcion = FUNCIONES.get(bloque.name)
+    if funcion is None:
+        return {"type": "tool_result", "tool_use_id": bloque.id, "is_error": True,
+                "content": f"Herramienta desconocida: {bloque.name}"}
+    try:
+        resultado = funcion(**bloque.input)
+        return {"type": "tool_result", "tool_use_id": bloque.id,
+                "content": json.dumps(resultado, ensure_ascii=False)}
+    except (ValueError, TypeError) as e:
+        # Fecha mal formada u otro argumento inválido: el modelo puede corregirlo
+        return {"type": "tool_result", "tool_use_id": bloque.id, "is_error": True,
+                "content": f"Argumento inválido: {e}. Usá AAAA-MM-DD para fechas y AAAA-MM para meses."}
 
 
 class ChatbotService:
-    def __init__(self):
-        """
-        Constructor ligero. 
-        No accedemos a current_app aquí para evitar el RuntimeError de contexto.
-        """
-        self.language_code = 'es'
+    def __init__(self, client=None):
+        # El cliente se puede inyectar (tests); si no, se crea con ANTHROPIC_API_KEY
+        self.client = client
 
-    def _get_credentials(self):
-        """
-        Método privado para obtener credenciales solo cuando se necesitan.
-        """
-        credentials_info = current_app.config.get('GOOGLE_CREDENTIALS')
-        
-        if not credentials_info or not credentials_info.get('project_id'):
-            raise ValueError("Las credenciales de Google Cloud no están configuradas en la App.")
-            
-        project_id = credentials_info.get('project_id')
-        credentials = service_account.Credentials.from_service_account_info(credentials_info)
-        
-        return project_id, credentials
+    def _cliente(self):
+        if self.client is None:
+            if not os.getenv("ANTHROPIC_API_KEY"):
+                raise ChatbotNoDisponible("ANTHROPIC_API_KEY no está configurada")
+            self.client = anthropic.Anthropic(timeout=30.0, max_retries=2)
+        return self.client
 
-    def get_response(self, user_message: str, user_id: str = "usuario_anonimo") -> str:
+    def _system(self) -> list:
+        hoy = _hoy()
+        return [
+            # Prefijo estable (herramientas + manual) en caché; la fecha va después para no invalidarla
+            {"type": "text", "text": MANUAL, "cache_control": {"type": "ephemeral"}},
+            {"type": "text", "text": f"Fecha de hoy en San Rafael: {DIAS_SEMANA[hoy.weekday()]} {hoy:%d/%m/%Y}."},
+        ]
+
+    def responder(self, historial: list) -> str:
         """
-        Envía el mensaje a Dialogflow y retorna la respuesta.
+        historial: lista validada de {"role": "user"|"assistant", "content": str},
+        que empieza y termina con un mensaje del usuario.
         """
+        cliente = self._cliente()
+        messages = [{"role": m["role"], "content": m["content"]} for m in historial]
+        system = self._system()
+
         try:
-            # Obtenemos las credenciales dentro del contexto de la petición
-            project_id, credentials = self._get_credentials()
+            for _ in range(MAX_ITERACIONES):
+                respuesta = cliente.beta.messages.create(
+                    model=MODELO,
+                    max_tokens=2048,
+                    system=system,
+                    tools=HERRAMIENTAS,
+                    messages=messages,
+                    output_config={"effort": "low"},
+                    betas=["server-side-fallback-2026-07-01"],
+                    fallbacks="default",
+                )
 
-            # Inicializamos el cliente con las credenciales cargadas
-            session_client = dialogflow.SessionsClient(credentials=credentials)
-            session = session_client.session_path(project_id, user_id)
+                if respuesta.stop_reason == "refusal":
+                    return ("No puedo ayudarte con eso. Si tenés una consulta sobre el salón, "
+                            "escribinos por WhatsApp al 260 411-9865.")
 
-            # Preparar la entrada de texto
-            text_input = dialogflow.TextInput(
-                text=user_message, 
-                language_code=self.language_code
-            )
-            query_input = dialogflow.QueryInput(text=text_input)
+                if respuesta.stop_reason in ("tool_use", "pause_turn"):
+                    # Se devuelve el turno completo (incluidos bloques de razonamiento) sin modificar
+                    messages.append({"role": "assistant", "content": respuesta.content})
+                    if respuesta.stop_reason == "tool_use":
+                        resultados = [_ejecutar_herramienta(b) for b in respuesta.content if b.type == "tool_use"]
+                        messages.append({"role": "user", "content": resultados})
+                    continue
 
-            # Petición a Dialogflow
-            response = session_client.detect_intent(
-                request={"session": session, "query_input": query_input}
-            )
+                texto = "\n".join(b.text for b in respuesta.content if b.type == "text").strip()
+                return texto or MENSAJE_NO_DISPONIBLE
 
-            return response.query_result.fulfillment_text
+            return MENSAJE_NO_DISPONIBLE
 
-        except ValueError as ve:
-            print(f"Error de configuración: {ve}")
-            return "El servicio de chat no está disponible en este momento."
-        except Exception as e:
-            print(f"Error conectando con Dialogflow: {e}")
-            return "Lo siento, tuve un problema conectando con mi servidor de inteligencia artificial."
+        except anthropic.APIConnectionError as e:
+            sentry_sdk.capture_exception(e)
+            raise ChatbotNoDisponible("No se pudo conectar con la API") from e
+        except anthropic.APIStatusError as e:
+            sentry_sdk.capture_exception(e)
+            raise ChatbotNoDisponible(f"La API respondió {e.status_code}") from e

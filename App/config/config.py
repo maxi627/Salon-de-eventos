@@ -11,19 +11,6 @@ class Config:
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
     JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(hours=2)
     MAX_CONTENT_LENGTH = 10 * 1024 * 1024  # Tope de 10 MB por request (comprobantes)
-    GOOGLE_CREDENTIALS = {
-    "type": os.getenv("GOOGLE_TYPE"),
-    "project_id": os.getenv("GOOGLE_PROJECT_ID"),
-    "private_key_id": os.getenv("GOOGLE_PRIVATE_KEY_ID"),
-    "private_key": (os.getenv("GOOGLE_PRIVATE_KEY") or "").replace('\\n', '\n'),
-    "client_email": os.getenv("GOOGLE_CLIENT_EMAIL"),
-    "client_id": os.getenv("GOOGLE_CLIENT_ID"),
-    "auth_uri": os.getenv("GOOGLE_AUTH_URI"),
-    "token_uri": os.getenv("GOOGLE_TOKEN_URI"),
-    "auth_provider_x509_cert_url": os.getenv("GOOGLE_AUTH_PROVIDER_CERT_URL"),
-    "client_x509_cert_url": os.getenv("GOOGLE_CLIENT_CERT_URL"),
-    "universe_domain": os.getenv("GOOGLE_UNIVERSE_DOMAIN")
-    }
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_size": 20,          # Máximo de conexiones fijas
         "max_overflow": 10,       # Conexiones extra si hay picos
