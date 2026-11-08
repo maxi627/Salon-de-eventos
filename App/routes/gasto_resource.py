@@ -1,3 +1,4 @@
+import sentry_sdk
 from datetime import datetime
 
 from flask import Blueprint, request
@@ -32,8 +33,9 @@ def all():
         response_builder.add_data(data).add_status_code(200).add_message("Gastos encontrados")
         return response_builder.build(), 200
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback()
-        response_builder.add_message(f"Error al obtener gastos: {str(e)}").add_status_code(500)
+        response_builder.add_message("Error al obtener gastos").add_status_code(500)
         return response_builder.build(), 500
 
 @GastoBP.route('/gasto', methods=['POST'])
@@ -59,8 +61,9 @@ def add():
         db.session.rollback()
         return response_builder.add_message("Error de validación").add_data(err.messages).add_status_code(422).build(), 422
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback()
-        return response_builder.add_message(str(e)).add_status_code(500).build(), 500
+        return response_builder.add_message("Error interno del servidor").add_status_code(500).build(), 500
 
 @GastoBP.route('/gasto/<int:id>', methods=['DELETE'])
 @jwt_required()
@@ -77,5 +80,6 @@ def delete(id):
             response_builder.add_message("Gasto no encontrado").add_status_code(404)
             return response_builder.build(), 404
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback()
-        return response_builder.add_message(str(e)).add_status_code(500).build(), 500
+        return response_builder.add_message("Error interno del servidor").add_status_code(500).build(), 500

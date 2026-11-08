@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import Turnstile from '../components/Turnstile';
 import './login.css'; // Reutilizamos los estilos del login
 
 function ForgotPassword() {
@@ -7,6 +8,8 @@ function ForgotPassword() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const turnstileRef = useRef(null);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -17,7 +20,7 @@ function ForgotPassword() {
     try {
       const response = await fetch('/api/v1/forgot-password', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-Turnstile-Token': turnstileToken },
         body: JSON.stringify({ correo }),
       });
 
@@ -32,6 +35,8 @@ function ForgotPassword() {
       setError(err.message);
     } finally {
       setIsLoading(false);
+      // Cada token de Turnstile sirve una sola vez
+      turnstileRef.current?.reset();
     }
   };
 
@@ -57,11 +62,12 @@ function ForgotPassword() {
           </div>
         )}
 
+        {!message && <Turnstile ref={turnstileRef} onToken={setTurnstileToken} />}
         {message && <p className="success-message">{message}</p>}
         {error && <p className="error-message">{error}</p>}
 
         {!message && (
-            <button type="submit" className="login-button" disabled={isLoading}>
+            <button type="submit" className="login-button" disabled={isLoading || !turnstileToken}>
                 {isLoading ? 'Enviando...' : 'Enviar Enlace de Recuperación'}
             </button>
         )}

@@ -15,10 +15,15 @@ else
     exit 1
 fi
 
+# Todo lo que cree este script (dump temporal, backups, hash) queda legible sólo por su dueño
+umask 077
+
 # 3. Definir variables dinámicas
 FECHA=$(date +%Y-%m-%d_%H-%M-%S)
 DIRECTORIO_BACKUP="$DIR/backups_locales" # Se creará al lado del script
-TEMP_DUMP="/tmp/salon_temp_dump.sql"
+# Nombre impredecible y permisos 600; se borra siempre al salir, aunque el script falle
+TEMP_DUMP=$(mktemp /tmp/salon_dump.XXXXXXXX.sql)
+trap 'rm -f "$TEMP_DUMP"' EXIT
 ARCHIVO_HASH="$DIRECTORIO_BACKUP/ultimo_hash.txt"
 NOMBRE_ARCHIVO="salon_backup_$FECHA.sql.gz.enc"
 RUTA_COMPLETA="$DIRECTORIO_BACKUP/$NOMBRE_ARCHIVO"
@@ -28,10 +33,10 @@ mkdir -p "$DIRECTORIO_BACKUP"
 
 # 4. Extraer la base de datos a un archivo temporal
 echo "Extrayendo base de datos..."
-docker exec salon_db pg_dump -U "$POSTGRES_USER" "$POSTGRES_DEV_DB" > $TEMP_DUMP
+docker exec salon_db pg_dump -U "$POSTGRES_USER" "$POSTGRES_DEV_DB" > "$TEMP_DUMP"
 
 # 5. Calcular el hash (Ignorando las líneas de comentarios)
-HASH_ACTUAL=$(grep -v "^--" $TEMP_DUMP | md5sum | awk '{print $1}')
+HASH_ACTUAL=$(grep -v "^--" "$TEMP_DUMP" | md5sum | awk '{print $1}')
 
 # 6. Leer el hash del backup anterior (si existe)
 HASH_ANTERIOR=""
@@ -42,24 +47,24 @@ fi
 # 7. Comparar hashes para ver si hubo cambios
 if [ "$HASH_ACTUAL" == "$HASH_ANTERIOR" ]; then
     echo "No se detectaron cambios en la base de datos. Se omite el backup."
-    rm $TEMP_DUMP
     exit 0
 fi
 
 echo "Cambios detectados. Procediendo con el cifrado..."
 
 # 8. Comprimir y cifrar el archivo
-gzip -c $TEMP_DUMP | openssl enc -aes-256-cbc -salt -pbkdf2 -pass pass:"$PASSWORD_CIFRADO" > $RUTA_COMPLETA
+# "env:" lee la contraseña de la variable de entorno (exportada por "set -a"), así no aparece en "ps".
+# El resultado es idéntico a "-pass pass:", los backups existentes se descifran igual.
+gzip -c "$TEMP_DUMP" | openssl enc -aes-256-cbc -salt -pbkdf2 -pass env:PASSWORD_CIFRADO > "$RUTA_COMPLETA"
 
 # 9. Subir a Google Drive usando Rclone
 echo "Subiendo a Google Drive..."
-rclone copy $RUTA_COMPLETA "$RCLONE_DESTINO"
+rclone copy "$RUTA_COMPLETA" "$RCLONE_DESTINO"
 
 # 10. Guardar el nuevo hash y Limpiar
 echo $HASH_ACTUAL > $ARCHIVO_HASH
 echo "Limpiando archivos antiguos..."
 find "$DIRECTORIO_BACKUP" -type f -name "*.sql.gz.enc" -mtime +7 -exec rm {} \;
-rm $TEMP_DUMP
 
 echo "Proceso finalizado exitosamente."
 

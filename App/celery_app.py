@@ -3,11 +3,16 @@ from celery import Celery
 from celery.schedules import crontab
 from flask import has_app_context
 
-# 1. Creamos la instancia principal de Celery apuntando a Docker
+# 1. Creamos la instancia principal de Celery apuntando a Docker.
+# Sin CELERY_BROKER_URL se arma con las mismas variables que usa app/extensions.py (sin contraseñas por defecto)
+_redis_url = (
+    f"redis://:{os.getenv('REDIS_PASSWORD', '')}@{os.getenv('REDIS_HOST', 'redis')}"
+    f":{os.getenv('REDIS_PORT', '6379')}/{os.getenv('REDIS_DB', '0')}"
+)
 celery = Celery(
     "app",
-    broker=os.getenv("CELERY_BROKER_URL", "redis://:1234@redis:6379/0"),
-    backend=os.getenv("CELERY_RESULT_BACKEND", "redis://:1234@redis:6379/0"),
+    broker=os.getenv("CELERY_BROKER_URL", _redis_url),
+    backend=os.getenv("CELERY_RESULT_BACKEND", _redis_url),
     include=['app.tasks'] # Le decimos dónde buscar las tareas
 )
 

@@ -1,4 +1,7 @@
+import hmac
 import os
+
+import sentry_sdk
 
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required
@@ -51,8 +54,9 @@ def add_pago(reserva_id):
         db.session.rollback() # Limpia la transacción fallida
         return response_builder.add_message("Error de validación").add_status_code(422).add_data(err.messages).build(), 422
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback() # Vital para que no se trabe el servidor
-        return response_builder.add_message("Error al registrar el pago").add_status_code(500).add_data(str(e)).build(), 500
+        return response_builder.add_message("Error al registrar el pago").add_status_code(500).build(), 500
     
 @PagoBP.route('/pago/<int:pago_id>', methods=['DELETE'])
 @jwt_required()
@@ -67,9 +71,14 @@ def delete_pago(pago_id):
         return response_builder.add_message("Faltan datos de seguridad").add_status_code(400).build(), 400
         
     master_password = json_data.get('master_password')
+    expected_password = os.getenv('MASTER_DELETE_PASSWORD')
 
-    # 1. Verificamos la contraseña maestra
-    if master_password != os.getenv('MASTER_DELETE_PASSWORD'):
+    # 1. Verificamos la contraseña maestra (si no está configurada, nunca se permite borrar)
+    if (
+        not expected_password
+        or not isinstance(master_password, str)
+        or not hmac.compare_digest(master_password.encode(), expected_password.encode())
+    ):
         return response_builder.add_message("Contraseña maestra incorrecta").add_status_code(403).build(), 403
 
     try:
@@ -80,5 +89,6 @@ def delete_pago(pago_id):
             return response_builder.add_message("Pago no encontrado").add_status_code(404).build(), 404
             
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         db.session.rollback() # Asegura que la sesión quede limpia si el servicio falla
-        return response_builder.add_message(str(e)).add_status_code(500).build(), 500
+        return response_builder.add_message("Error interno del servidor").add_status_code(500).build(), 500

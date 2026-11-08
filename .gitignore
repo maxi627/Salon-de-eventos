@@ -1,1 +1,21 @@
 guía_backups.txt
+
+AUDITORIA_SEGURIDAD.md
+
+# Secretos y certificados (nunca versionar)
+.env
+acme.json
+*.pem
+*.key
+**/certs/
+
+# Dependencias
+node_modules/
+
+# Configuración local de Claude Code (permisos personales)
+.claude/settings.local.json
+
+# Backups de la base (cifrados o no) y su log: nunca versionar
+opt/backups_locales/
+opt/backup.log
+*.sql.gz.enc

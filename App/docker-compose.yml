@@ -55,6 +55,9 @@ services:
       - "traefik.http.routers.salonapp.entrypoints=websecure"
       - "traefik.http.routers.salonapp.tls.certresolver=leresolver"
       - "traefik.http.routers.salonapp.priority=100"
+      # Los middlewares están en traefik/dynamic.yml (file provider).
+      # CLOUDFLARE_ORIGIN_LOCK=",cloudflare-only@file" en el .env restringe el origen a Cloudflare (vacío = desactivado)
+      - "traefik.http.routers.salonapp.middlewares=security-headers@file${CLOUDFLARE_ORIGIN_LOCK:-}"
       - "traefik.http.services.salonapp.loadbalancer.server.port=5000"
     volumes:
       - shared_uploads:/home/flaskapp/app/uploads
@@ -95,14 +98,23 @@ services:
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls.certresolver=leresolver"
       - "traefik.http.routers.frontend.priority=10"
+      - "traefik.http.routers.frontend.middlewares=security-headers@file,csp-frontend@file${CLOUDFLARE_ORIGIN_LOCK:-}"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
+      # www.saloneventos.cloud -> saloneventos.cloud (301, conserva la ruta)
+      - "traefik.http.routers.www-redirect.rule=Host(`www.saloneventos.cloud`)"
+      - "traefik.http.routers.www-redirect.entrypoints=websecure"
+      - "traefik.http.routers.www-redirect.tls.certresolver=leresolver"
+      - "traefik.http.routers.www-redirect.service=frontend"
+      - "traefik.http.routers.www-redirect.middlewares=www-to-apex@file,security-headers@file${CLOUDFLARE_ORIGIN_LOCK:-}"
     restart: unless-stopped
     
   traefik:
-    image: traefik:v2.11
+    image: traefik:v3.7.14
     container_name: traefik
     environment:
       - DOCKER_API_VERSION=1.44
+      # Token de Cloudflare (sólo permiso Zone:DNS:Edit) para el desafío DNS-01. Se define en el .env del servidor.
+      - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
     command:
       - "--api.insecure=false"
       - "--providers.docker=true"
@@ -111,25 +123,54 @@ services:
       - "--entrypoints.websecure.address=:443"
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-      - "--certificatesresolvers.leresolver.acme.tlschallenge=true"
+      # DNS-01 vía API de Cloudflare: funciona con el proxy de Cloudflare activo (TLS-ALPN no)
+      - "--certificatesresolvers.leresolver.acme.dnschallenge=true"
+      - "--certificatesresolvers.leresolver.acme.dnschallenge.provider=cloudflare"
+      - "--certificatesresolvers.leresolver.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53"
       - "--certificatesresolvers.leresolver.acme.email=eulamaxi1@gmail.com"
       - "--certificatesresolvers.leresolver.acme.storage=/letsencrypt/acme.json"
+      # Traefik lee Docker a través del proxy de sólo lectura (ya no monta el socket)
+      - "--providers.docker.endpoint=tcp://socket-proxy:2375"
+      # Middlewares compartidos (cabeceras, CSP, www, origen Cloudflare) en un archivo propio (B14)
+      - "--providers.file.filename=/etc/traefik/dynamic.yml"
+      - "--providers.file.watch=true"
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "traefik_certs:/letsencrypt"
       - "../letsencrypt:/letsencrypt"
+      - "./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro"
     networks:
       - red1
+      - socket_proxy
+    depends_on:
+      - socket-proxy
+    restart: always
+
+  # Expone a Traefik sólo la lectura de contenedores y redes; bloquea cualquier escritura en la API de Docker
+  socket-proxy:
+    image: tecnativa/docker-socket-proxy:v0.5.0
+    container_name: socket_proxy
+    environment:
+      - CONTAINERS=1
+      - NETWORKS=1
+      - POST=0
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - socket_proxy
+    security_opt:
+      - no-new-privileges:true
     restart: always
 
 networks:
   red1:
     driver: bridge
+  # Red interna sin salida a Internet: sólo Traefik y el socket-proxy
+  socket_proxy:
+    driver: bridge
+    internal: true
 
 volumes:
   postgres_data:
-  traefik_certs:
   shared_uploads:

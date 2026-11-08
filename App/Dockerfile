@@ -1,4 +1,4 @@
-FROM python:3.10-slim-bullseye
+FROM python:3.12-slim-bookworm
 
 ENV FLASK_ENV=production \
     PYTHONUNBUFFERED=1 \
@@ -17,8 +17,7 @@ RUN sed -i -e 's/# es_AR.UTF-8 UTF-8/es_AR.UTF-8 UTF-8/' /etc/locale.gen && \
 ENV LANG es_AR.UTF-8
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir "setuptools<58.0.0"
-RUN pip install --no-cache-dir --no-build-isolation -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . ./app
 

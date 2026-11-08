@@ -1,11 +1,16 @@
+import sentry_sdk
 from flask import Blueprint, jsonify
+from flask_jwt_extended import jwt_required
 
 from app.tasks import check_pending_reservations, check_upcoming_reservations
+from app.utils.decorators import admin_required
 
-# Creamos un nuevo Blueprint para las rutas de prueba
+# Creamos un nuevo Blueprint para las rutas de prueba (sólo administradores)
 TestNotifications = Blueprint('TestNotifications', __name__)
 
 @TestNotifications.route('/test/pending', methods=['GET'])
+@jwt_required()
+@admin_required()
 def test_pending():
     """
     Endpoint para ejecutar manualmente la tarea que revisa reservas pendientes.
@@ -15,10 +20,13 @@ def test_pending():
         check_pending_reservations()
         return jsonify(message="Tarea de reservas pendientes ejecutada. Revisa tu celular."), 200
     except Exception as e:
-        return jsonify(message=f"Error al ejecutar la tarea: {str(e)}"), 500
+        sentry_sdk.capture_exception(e)
+        return jsonify(message="Error al ejecutar la tarea"), 500
 
 
 @TestNotifications.route('/test/upcoming', methods=['GET'])
+@jwt_required()
+@admin_required()
 def test_upcoming():
     """
     Endpoint para ejecutar manually la tarea que revisa reservas próximas.
@@ -28,4 +36,5 @@ def test_upcoming():
         check_upcoming_reservations()
         return jsonify(message="Tarea de reservas próximas ejecutada. Revisa tu celular."), 200
     except Exception as e:
-        return jsonify(message=f"Error al ejecutar la tarea: {str(e)}"), 500
+        sentry_sdk.capture_exception(e)
+        return jsonify(message="Error al ejecutar la tarea"), 500

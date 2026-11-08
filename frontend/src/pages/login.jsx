@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link, useNavigate, useOutletContext } from 'react-router-dom';
+import Turnstile from '../components/Turnstile';
 import './login.css';
 
 function Login() {
@@ -9,6 +10,8 @@ function Login() {
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const turnstileRef = useRef(null);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -17,7 +20,7 @@ function Login() {
     try {
       const response = await fetch('/api/v1/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-Turnstile-Token': turnstileToken },
         body: JSON.stringify({ correo, password }),
       });
 
@@ -34,6 +37,9 @@ function Login() {
 
     } catch (err) {
       setError(err.message);
+    } finally {
+      // Cada token de Turnstile sirve una sola vez
+      turnstileRef.current?.reset();
     }
   };
 
@@ -61,8 +67,9 @@ function Login() {
             required
           />
         </div>
+        <Turnstile ref={turnstileRef} onToken={setTurnstileToken} />
         {error && <p className="error-message">{error}</p>}
-        <button type="submit" className="login-button">Ingresar</button>
+        <button type="submit" className="login-button" disabled={!turnstileToken}>Ingresar</button>
 
         {/* --- ENLACE AÑADIDO --- */}
         <div className="forgot-password-link">

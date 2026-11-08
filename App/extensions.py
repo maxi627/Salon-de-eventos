@@ -6,7 +6,6 @@ import redis
 from flask_caching import Cache
 from flask_jwt_extended import JWTManager
 from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
@@ -26,8 +25,14 @@ redis_client = redis.StrictRedis(
 )
 
 redis_uri = f"redis://:{redis_password}@{redis_host}:{redis_port}/{redis_db}"
+
+def _rate_limit_key():
+    # Importación diferida para evitar el ciclo app -> extensions -> utils -> app
+    from app.utils.client_ip import get_client_ip
+    return get_client_ip()
+
 limiter = Limiter(
-    key_func=get_remote_address,
+    key_func=_rate_limit_key,
     default_limits=["50 per minute"],
     storage_uri=redis_uri
 )
