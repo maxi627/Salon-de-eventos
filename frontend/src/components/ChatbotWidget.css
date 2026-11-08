@@ -151,21 +151,34 @@
   height: 48px !important;       /* Círculo un poco más grande */
   border-radius: 50% !important; 
   color: white !important;
-  font-size: 1.5rem !important;  /* Restauramos el tamaño original del ícono */
+  padding: 0 !important;
+  margin: 0 !important;
+  line-height: 0 !important;
   cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
   transition: all 0.2s ease;
   flex-shrink: 0;
-  /* Pequeño ajuste porque los iconos de 'enviar' suelen verse descentrados visualmente en los círculos */
-  padding-right: 4px !important; 
-  padding-top: 2px !important;
 }
 
-.chat-footer button:hover {
+/* Tamaño fijo del ícono, independiente del font-size heredado */
+.chat-footer button svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+  /* El avión apunta arriba a la derecha: se corre un poco abajo a la izquierda para que se vea centrado */
+  transform: translate(-1px, 1px);
+}
+
+.chat-footer button:hover:not(:disabled) {
   background-color: #2563eb !important;
   transform: scale(1.08);
+}
+
+.chat-footer button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* --- ANIMACIONES --- */
