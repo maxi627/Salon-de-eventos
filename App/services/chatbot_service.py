@@ -9,7 +9,7 @@ import sentry_sdk
 
 from app.models import Fecha
 
-MODELO = os.getenv("CHATBOT_MODEL", "claude-sonnet-5-5")
+MODELO = os.getenv("CHATBOT_MODEL", "claude-haiku-5-5")
 ZONA_HORARIA = pytz.timezone("America/Argentina/Buenos_Aires")
 DIAS_MAXIMOS_ANTICIPACION = 90  # mismas reglas que el calendario de reservas
 MAX_ITERACIONES = 4  # tope de vueltas modelo -> herramienta por mensaje (chat público)
@@ -57,6 +57,13 @@ HERRAMIENTAS = [
         "strict": True,
     },
 ]
+
+
+def _opciones_fallback(modelo: str) -> dict:
+    # Haiku no tiene fallback del lado del servidor: no se le manda el parámetro
+    if modelo.startswith("claude-haiku"):
+        return {}
+    return {"betas": ["server-side-fallback-2026-07-01"], "fallbacks": "default"}
 
 
 class ChatbotNoDisponible(Exception):
@@ -168,8 +175,7 @@ class ChatbotService:
                     tools=HERRAMIENTAS,
                     messages=messages,
                     output_config={"effort": "low"},
-                    betas=["server-side-fallback-2026-07-01"],
-                    fallbacks="default",
+                    **_opciones_fallback(MODELO),
                 )
 
                 if respuesta.stop_reason == "refusal":
