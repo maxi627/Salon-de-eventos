@@ -1,0 +1,72 @@
+# Middlewares compartidos de Traefik (file provider).
+# Viven acá y no en las labels de un contenedor para que recrear el frontend o la app
+# no deje a los otros routers sin ellos (B14). Traefik recarga este archivo al guardarlo.
+http:
+  middlewares:
+    # Cabeceras de seguridad para el frontend, la API y la redirección de www
+    security-headers:
+      headers:
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true
+        contentTypeNosniff: true
+        frameDeny: true
+        referrerPolicy: "strict-origin-when-cross-origin"
+        permissionsPolicy: "camera=(), microphone=(), geolocation=()"
+        customResponseHeaders:
+          Server: ""
+          X-Powered-By: ""
+
+    # CSP en modo obligatorio (sólo frontend). 'unsafe-inline' en script-src es necesario porque
+    # Cloudflare inyecta scripts inline (detección de bots de Bot Fight Mode) que cambian en cada
+    # visita; static.cloudflareinsights.com es Web Analytics.
+    csp-frontend:
+      headers:
+        customResponseHeaders:
+          Content-Security-Policy: >-
+            default-src 'self';
+            script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://static.cloudflareinsights.com;
+            style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+            font-src 'self' https://cdnjs.cloudflare.com;
+            img-src 'self' data: blob:;
+            connect-src 'self' https://*.ingest.de.sentry.io https://challenges.cloudflare.com https://cloudflareinsights.com;
+            frame-src https://www.google.com https://challenges.cloudflare.com;
+            worker-src 'self' blob:;
+            frame-ancestors 'none';
+            base-uri 'self';
+            form-action 'self';
+            object-src 'none'
+
+    # www.saloneventos.cloud -> saloneventos.cloud (301, conserva la ruta)
+    www-to-apex:
+      redirectRegex:
+        regex: "^https?://www.saloneventos.cloud(:[0-9]+)?/(.*)"
+        replacement: "https://saloneventos.cloud/${2}"
+        permanent: true
+
+    # Sólo acepta conexiones desde los rangos de Cloudflare (https://www.cloudflare.com/ips/, revisado 2026-10-25).
+    # Se activa con CLOUDFLARE_ORIGIN_LOCK=",cloudflare-only@file" en el .env.
+    cloudflare-only:
+      ipAllowList:
+        sourceRange:
+          - "173.245.48.0/20"
+          - "103.21.244.0/22"
+          - "103.22.200.0/22"
+          - "103.31.4.0/22"
+          - "141.101.64.0/18"
+          - "108.162.192.0/18"
+          - "190.93.240.0/20"
+          - "188.114.96.0/20"
+          - "197.234.240.0/22"
+          - "198.41.128.0/17"
+          - "162.158.0.0/15"
+          - "104.16.0.0/13"
+          - "104.24.0.0/14"
+          - "172.64.0.0/13"
+          - "131.0.72.0/22"
+          - "2400:cb00::/32"
+          - "2606:4700::/32"
+          - "2803:f800::/32"
+          - "2405:b500::/32"
+          - "2405:8100::/32"
+          - "2a06:98c0::/29"
+          - "2c0f:f248::/32"
