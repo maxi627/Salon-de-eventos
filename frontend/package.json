@@ -23,6 +23,7 @@
     "react-quill-new": "^3.3.3",
     "react-router-dom": "^7.9.1",
     "recharts": "^3.9.0",
+    "sweetalert2": "^11.26.25",
     "yet-another-react-lightbox": "^3.25.0"
   },
   "devDependencies": {
