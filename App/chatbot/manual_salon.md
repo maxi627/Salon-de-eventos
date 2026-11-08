@@ -36,11 +36,16 @@ Ejemplos del largo esperado:
 
 - Capacidad máxima: 50 personas en total. Es un límite estricto por normas de seguridad y habilitación; no se permite superarlo bajo ninguna circunstancia.
 - El salón incluye 25 sillas y 4 mesones. Si necesitan más, pueden llevar las suyas; el salón no tiene sillas ni mesas extra para alquilar ni prestar.
-- Cocina completa con heladera, freezer y pava eléctrica.
+- Cocina completa con heladera, freezer y pava eléctrica (la cocina funciona con garrafa, que provee el salón).
+- Parrillas.
+- El salón no tiene vajilla, utensilios ni ollas: hay que llevar todo lo necesario.
 - 4 baños.
 - Amplio espacio interior.
-- Gran parque, pileta (en verano) y cocheras privadas.
+- Gran parque y pileta (en verano).
+- Cocheras: 4 lugares techados para autos. Hay más espacio para estacionar, pero descubierto (conviene tenerlo en cuenta si hay pronóstico de tormenta).
 - Entretenimiento: mesa de pool, ping pong, metegol y máquinas de videojuegos arcade.
+- No hay wifi, aire acondicionado ni calefacción.
+- Por el momento el salón no tiene equipo de música.
 
 ## Precios y disponibilidad
 
@@ -58,6 +63,35 @@ Ejemplos del largo esperado:
 4. Transferir la seña: el 30% del valor estimado, a la cuenta que muestra el sitio en ese paso. La transferencia debe hacerse desde una cuenta del titular de la reserva; si se transfiere desde otra cuenta, hay que aclararlo en la referencia del pago.
 5. Subir el comprobante de la transferencia (una imagen).
 6. La fecha queda pre-reservada. La administración revisa el comprobante, confirma la reserva y el cliente recibe por correo el contrato definitivo.
+7. El saldo restante (70%) se puede pagar en cualquier momento por transferencia, avisando por WhatsApp. Cada cliente ve en su cuenta del sitio el estado de su reserva y lo que lleva pagado.
+
+- Para ir a conocer el salón antes de reservar, se coordina una visita por WhatsApp.
+- Si el evento es de un tipo particular (por ejemplo, egresados, despedidas o eventos sólo de adolescentes), se confirma por WhatsApp si se acepta.
+
+## Llegada, uso del salón y cierre
+
+- Al llegar, alguien del salón los recibe. Al terminar el evento, esa persona retira la llave.
+- Al irse, el salón tiene que quedar ordenado; de la limpieza se encarga el salón.
+- Decoración: está prohibido usar papel picado, clavos y pirotecnia. Lo demás está permitido.
+- Música: pueden llevar su propio equipo, siempre que no sea un equipo profesional que supere el sonido ambiente (ver normas del salón).
+- Servicios externos: se pueden contratar libremente (catering, inflables, DJ, etc.).
+- Los servicios de personas ajenas a la organización (inflables, alquiler de mobiliario, etc.) tienen que retirar sus cosas el mismo día. El salón no se hace responsable por nada que quede.
+- Parrilla: el carbón o la leña lo lleva el cliente.
+- Bebidas alcohólicas: se pueden llevar y tomar (lo que está prohibido es venderlas y darles alcohol a menores).
+- Se puede fumar tanto adentro como afuera.
+- Baños: el salón pone el papel higiénico; el resto de los insumos (jabón, etc.) lo lleva el cliente.
+- Accesibilidad: se puede entrar en silla de ruedas sin problema.
+- Mascotas: están permitidas, aunque no se recomienda llevarlas.
+
+## Durante el evento
+
+- Ante cualquier urgencia o problema durante el evento, el contacto es el mismo WhatsApp: 260 411-9865.
+- Corte de luz: el salón no tiene grupo electrógeno. Antes que nada, revisar el tablero principal (está a la izquierda de la puerta que da a la calle, detrás de las máquinas arcade) por si saltó una térmica, y verificar si es un corte programado de EDEMSA. Si es un corte programado o general de la zona, el salón no puede hacer nada. Si no es ninguna de las dos cosas, avisar por WhatsApp.
+- Gas: la cocina funciona con garrafa, que provee el salón. Se revisa que estén cargadas antes de cada evento, pero si se agota durante el evento, avisar por WhatsApp para que la administración lo revise.
+- Si algo se rompe o no funciona (un baño, la heladera, un juego, etc.), avisar por WhatsApp.
+- Horas extra: se pueden agregar consultando antes con la administración por WhatsApp, para que no se superpongan con otro turno. El valor de referencia es de aproximadamente $10.000 por hora y se confirma en esa consulta. Hasta qué hora se puede extender también se consulta por WhatsApp. Si se excede el horario sin autorización, se cobra el tiempo excedido.
+- Pileta: en verano se puede usar libremente.
+- Lluvia o mal tiempo: el evento se hace igual, no cambia nada. Se puede reprogramar sólo si se llega a un acuerdo con la administración por WhatsApp; en ningún caso se devuelve la seña.
 
 ## Cancelaciones y devoluciones
 
