@@ -1,0 +1,183 @@
+/* Contrato, seña y confirmación */
+.sv-reserva { max-width: 640px; padding-top: 24px; padding-bottom: 104px; }
+@media (min-width: 720px) { .sv-reserva { padding-bottom: 56px; } }
+
+.sv-indicador-pasos {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+  display: flex;
+  gap: 8px;
+}
+.sv-indicador-pasos__paso {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-top: 7px;
+  border-top: 3px solid var(--sv-borde);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sv-tinta-suave);
+}
+.sv-indicador-pasos__paso--actual { color: var(--sv-terracota); border-color: var(--sv-terracota); }
+.sv-indicador-pasos__paso--hecho { color: var(--sv-verde); border-color: var(--sv-verde); }
+
+.sv-reserva__paso h1 { font-size: clamp(1.7rem, 5vw, 2.3rem); }
+.sv-reserva__fecha { color: var(--sv-tinta-suave); margin-bottom: 16px !important; }
+.sv-reserva__aviso { text-align: left; }
+.sv-reserva__aviso h1 { font-size: clamp(1.5rem, 4.5vw, 2rem); }
+.sv-reserva__aviso p { color: var(--sv-tinta-suave); }
+
+.sv-reserva__leer.sv-boton { width: 100%; margin-bottom: 14px; }
+
+.sv-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  cursor: pointer;
+  font-size: 15px;
+}
+.sv-check input {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin: 1px 0 0;
+  accent-color: var(--sv-terracota);
+}
+
+.sv-reserva__botones { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+@media (max-width: 719px) {
+  .sv-reserva__botones .sv-boton { width: 100%; }
+}
+
+.sv-reserva__etiqueta { font-size: 13px; color: var(--sv-tinta-suave); margin: 0 0 2px !important; }
+.sv-reserva__monto {
+  font-family: var(--sv-fuente-titulo);
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 16px !important;
+  line-height: 1.1;
+}
+.sv-reserva__sin-precio {
+  background: var(--sv-terracota-50);
+  border-radius: var(--sv-radio-chico);
+  padding: 12px;
+  margin-bottom: 16px;
+}
+.sv-reserva__sin-precio p { color: #6E3418; font-size: 14px; }
+
+.sv-alias {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--sv-crema);
+  border: 1.5px dashed #D9C4AA;
+  border-radius: var(--sv-radio-chico);
+  padding: 8px 8px 8px 12px;
+}
+.sv-alias__valor {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+.sv-alias__copiar.sv-boton { min-height: 40px; padding: 6px 14px; font-size: 13.5px; flex: none; }
+
+.sv-reserva__nota {
+  background: var(--sv-terracota-50);
+  color: #6E3418;
+  border-radius: var(--sv-radio-chico);
+  padding: 10px 12px;
+  font-size: 13.5px;
+  margin: 14px 0 !important;
+}
+
+.sv-subir {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  padding: 22px 14px;
+  border: 2px dashed #D9C4AA;
+  border-radius: 14px;
+  background: var(--sv-superficie);
+  color: var(--sv-tinta-suave);
+  font-size: 13.5px;
+  cursor: pointer;
+}
+.sv-subir:hover,
+.sv-subir:focus-within { border-color: var(--sv-terracota); }
+.sv-subir:focus-within { box-shadow: var(--sv-foco); }
+.sv-subir strong { color: var(--sv-terracota); font-size: 15px; }
+.sv-subir__icono { font-size: 28px; color: var(--sv-terracota); }
+.sv-subir--con-archivo { border-style: solid; border-color: var(--sv-verde-borde); }
+.sv-subir__previa { max-height: 180px; max-width: 100%; border-radius: 10px; object-fit: contain; }
+.sv-subir__nombre { color: var(--sv-tinta); font-weight: 600; overflow-wrap: anywhere; }
+.sv-subir__cambiar { color: var(--sv-terracota); }
+
+.sv-error {
+  color: #9B2C12;
+  background: #FBE9E3;
+  border-radius: var(--sv-radio-chico);
+  padding: 10px 12px;
+  font-size: 14px;
+  margin: 14px 0 0 !important;
+}
+
+.sv-reserva__listo { text-align: left; }
+.sv-reserva__icono-listo { font-size: 44px; color: var(--sv-verde); margin-bottom: 10px; }
+.sv-reserva__listo p { color: var(--sv-tinta-suave); max-width: 52ch; }
+
+.sv-reserva__carga { min-height: 220px; }
+
+/* Modal del contrato */
+.sv-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(30, 20, 10, 0.55);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  font-family: var(--sv-fuente-texto);
+}
+@media (min-width: 720px) { .sv-modal { align-items: center; padding: 24px; } }
+.sv-modal__contenido {
+  background: var(--sv-superficie);
+  width: 100%;
+  max-width: 720px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px 18px 0 0;
+  color: var(--sv-tinta);
+}
+@media (min-width: 720px) { .sv-modal__contenido { border-radius: 18px; } }
+.sv-modal__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--sv-borde);
+}
+.sv-modal__cabecera h2 { font-family: var(--sv-fuente-titulo); font-size: 20px; margin: 0; }
+.sv-modal__cerrar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--sv-crema);
+  color: var(--sv-tinta);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+}
+.sv-modal__cuerpo { padding: 16px 18px; overflow-y: auto; font-size: 14.5px; line-height: 1.6; }
+.sv-modal__cuerpo p { margin: 0 0 10px; }
+.sv-modal__cuerpo ol { padding-left: 20px; margin: 0; }
+.sv-modal__cuerpo li { margin-bottom: 10px; }
+.sv-modal__pie { padding: 12px 18px; border-top: 1px solid var(--sv-borde); }
+.sv-modal__pie .sv-boton { width: 100%; }

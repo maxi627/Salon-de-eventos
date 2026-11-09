@@ -1,7 +1,14 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import Swal from 'sweetalert2';
-import './confirmacion.css';
+import { FaCheck, FaCircleCheck, FaCopy, FaFileLines, FaWhatsapp, FaXmark } from 'react-icons/fa6';
+import { Navigate, useParams } from 'react-router-dom';
+import Pasos from '../components/sitio/Pasos';
+import '../components/sitio/reserva-pasos.css';
+import SubirComprobante from '../components/sitio/SubirComprobante';
+import Button from '../components/ui/Button';
+import { SALON, whatsappConTexto } from '../content/salon';
+import { esReservable, formatoFechaLarga, formatoPesos, hoyLocal, montoSena, precioDe } from '../lib/fechas';
+import { sesionValida } from '../lib/sesion';
 
 // Componente con el contrato original
 const ContractTerms = () => (
@@ -32,22 +39,84 @@ const ContractTerms = () => (
 
 function Confirmacion() {
   const { dateString } = useParams();
-  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const hoy = hoyLocal();
+  const fechaValida = esReservable(dateString, undefined, hoy);
+  const sesion = sesionValida(localStorage.getItem('authToken'));
 
   const [step, setStep] = useState(1);
   const [fechaInfo, setFechaInfo] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSending, setIsSending] = useState(false);
+  const [loadError, setLoadError] = useState('');
   const [error, setError] = useState('');
-  
   const [contractAccepted, setContractAccepted] = useState(false);
   const [ageAccepted, setAgeAccepted] = useState(false);
-  
-  // NUEVO ESTADO: Controla si el modal del contrato está abierto
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
   const [receiptFile, setReceiptFile] = useState(null);
   const [paymentCVU, setPaymentCVU] = useState(null);
   const [copied, setCopied] = useState(false);
+
+  const debeCargar = fechaValida && Boolean(sesion);
+
+  useEffect(() => {
+    if (!debeCargar) return;
+    const getPageData = async () => {
+      setIsLoading(true);
+      const token = localStorage.getItem('authToken');
+      try {
+        const [fechaResponse, paymentResponse] = await Promise.all([
+          fetch(`/api/v1/fecha/by-date/${dateString}`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch('/api/v1/payment-info', { headers: { 'Authorization': `Bearer ${token}` } })
+        ]);
+        const fechaResult = await fechaResponse.json();
+        if (!fechaResponse.ok) throw new Error(fechaResult.message);
+        if (fechaResult.data.estado !== 'disponible') {
+          throw new Error('Esta fecha ya no está disponible.');
+        }
+        setFechaInfo(fechaResult.data);
+        const paymentResult = await paymentResponse.json();
+        if (!paymentResponse.ok) throw new Error(paymentResult.message);
+        setPaymentCVU(paymentResult.data.cvu || paymentResult.data.alias);
+      } catch (err) {
+        setLoadError(err.message || 'No pudimos cargar la fecha.');
+        setFechaInfo(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    getPageData();
+  }, [dateString, debeCargar]);
+
+  // Cerrar el contrato con Escape
+  useEffect(() => {
+    if (!isModalOpen) return undefined;
+    const alPresionar = (e) => {
+      if (e.key === 'Escape') setIsModalOpen(false);
+    };
+    window.addEventListener('keydown', alPresionar);
+    return () => window.removeEventListener('keydown', alPresionar);
+  }, [isModalOpen]);
+
+  if (!fechaValida) {
+    return (
+      <div className="sv-contenedor sv-reserva">
+        <div className="sv-tarjeta sv-reserva__aviso">
+          <h1>Esta fecha no se puede reservar</h1>
+          <p>Puede ser domingo, una fecha pasada o estar a más de 90 días.</p>
+          <Button to="/reservar">Elegir otra fecha</Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!sesion) {
+    return <Navigate to={`/login?volver=${encodeURIComponent(`/reservar/${dateString}`)}`} replace />;
+  }
+
+  const fechaLarga = formatoFechaLarga(dateString);
+  const precio = precioDe(fechaInfo);
+  const sena = montoSena(precio);
 
   const handleCopyCVU = () => {
     if (paymentCVU) {
@@ -60,79 +129,29 @@ function Confirmacion() {
     }
   };
 
-  const formatDisplayDate = (isoDate) => {
-    if (!isoDate) return '';
-    const dateParts = isoDate.split('-');
-    const date = new Date(Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2]));
-    return date.toLocaleDateString('es-ES', {
-      day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC'
-    });
-  };
-
-  const displayDate = formatDisplayDate(dateString);
-
-  useEffect(() => {
-    const getPageData = async () => {
-      setIsLoading(true);
-      const token = localStorage.getItem('authToken');
-      if (!token) { navigate('/login'); return; }
-
-      try {
-        const [fechaResponse, paymentResponse] = await Promise.all([
-          fetch(`/api/v1/fecha/by-date/${dateString}`, { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch('/api/v1/payment-info', { headers: { 'Authorization': `Bearer ${token}` } })
-        ]);
-
-        const fechaResult = await fechaResponse.json();
-        if (!fechaResponse.ok) throw new Error(fechaResult.message);
-        
-        if (fechaResult.data.estado !== 'disponible') {
-          throw new Error('Esta fecha ya no está disponible.');
-        }
-        setFechaInfo(fechaResult.data);
-
-        const paymentResult = await paymentResponse.json();
-        if (!paymentResponse.ok) throw new Error(paymentResult.message);
-        
-        setPaymentCVU(paymentResult.data.cvu || paymentResult.data.alias);
-
-      } catch (err) {
-        setError(err.message);
-        setFechaInfo(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    getPageData();
-  }, [dateString, navigate]);
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (!file.type.startsWith('image/')) {
-        setError('Por favor, sube únicamente una imagen (JPG, PNG, WEBP, etc).');
-        setReceiptFile(null);
-        e.target.value = '';
-        return;
-      }
-      setError('');
-      setReceiptFile(file);
+  const handleFileChange = (file) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setError('Subí únicamente una imagen (JPG, PNG o WEBP).');
+      setReceiptFile(null);
+      return;
     }
+    setError('');
+    setReceiptFile(file);
   };
 
   const handleRequestReservation = async () => {
     if (!contractAccepted || !ageAccepted || !receiptFile) {
-      setError('Debes aceptar los términos y subir el comprobante.');
+      setError('Tenés que aceptar los términos y subir el comprobante.');
       return;
     }
     const token = localStorage.getItem('authToken');
-    setIsLoading(true);
-
+    setIsSending(true);
+    setError('');
     const formData = new FormData();
     formData.append('fecha_id', fechaInfo.id);
     formData.append('comprobante', receiptFile);
     formData.append('capacidad_declarada', 40);
-
     try {
       const response = await fetch('/api/v1/reserva/solicitar', {
         method: 'POST',
@@ -141,162 +160,172 @@ function Confirmacion() {
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.message);
-
-      Swal.fire({
-        title: '¡Solicitud Enviada!',
-        text: 'Tu fecha ya está pre-reservada. Vamos a revisar tu comprobante y te notificaremos en breve.',
-        icon: 'success',
-        confirmButtonColor: '#3085d6',
-        confirmButtonText: 'Genial',
-        allowOutsideClick: false
-      }).then(() => { navigate('/'); });
-
+      // El calendario y "Mis reservas" tienen que reflejar la pre-reserva.
+      queryClient.invalidateQueries({ queryKey: ['fechas'] });
+      queryClient.invalidateQueries({ queryKey: ['mis-reservas'] });
+      setStep(3);
+      window.scrollTo({ top: 0 });
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'No pudimos enviar el comprobante. Probá de nuevo.');
     } finally {
-      setIsLoading(false);
+      setIsSending(false);
     }
   };
 
-  // Función que tilda el contrato automáticamente al cerrarlo
+  // Al cerrar el contrato con "Entendido y aceptado" se tilda solo
   const handleAcceptModal = () => {
     setContractAccepted(true);
     setIsModalOpen(false);
   };
 
-  if (isLoading && !fechaInfo) return <div className="confirm-container"><p>Cargando información de la reserva...</p></div>;
-  
-  return (
-    <div className="confirm-container">
-      <div className="confirm-box">
-        {fechaInfo ? (
-          <>
-            {/* ================= PASO 1: CONTRATO Y LEGALES ================= */}
-            {step === 1 && (
-              <div className="wizard-step">
-                <h2>Paso 1 de 2: Condiciones de Reserva</h2>
-                <p className="confirm-text">Fecha a solicitar:</p>
-                <p className="confirm-date" style={{ marginBottom: '1.5rem' }}>{displayDate}</p>
-
-                {/* BOTÓN PARA ABRIR EL MODAL (Reemplaza a la caja de scroll) */}
-                <button 
-                  type="button" 
-                  className="btn-leer-contrato" 
-                  onClick={() => setIsModalOpen(true)}
-                >
-                  <i className="fa-regular fa-file-lines" style={{ marginRight: '8px' }}></i>
-                  Leer Contrato de Locación
-                </button>
-                
-                <div className="form-check" style={{ marginTop: '25px', marginBottom: '10px' }}>
-                  <input 
-                    type="checkbox" id="accept-contract"
-                    checked={contractAccepted}
-                    onChange={() => setContractAccepted(!contractAccepted)}
-                  />
-                  <label htmlFor="accept-contract">He leído y acepto los términos base del contrato.</label>
-                </div>
-
-                <div className="form-check" style={{ marginBottom: '20px' }}>
-                  <input 
-                    type="checkbox" id="accept-age"
-                    checked={ageAccepted}
-                    onChange={() => setAgeAccepted(!ageAccepted)}
-                  />
-                  <label htmlFor="accept-age">
-                    Declaro bajo juramento ser mayor de 18 años y poseer plena capacidad legal para contratar.
-                  </label>
-                </div>
-
-                <button 
-                  type="button"
-                  onClick={() => setStep(2)} 
-                  className="confirm-button"
-                  disabled={!contractAccepted || !ageAccepted}
-                >
-                  Continuar al Pago
-                </button>
-              </div>
-            )}
-
-            {/* ================= PASO 2: PAGO Y COMPROBANTE ================= */}
-            {step === 2 && (
-              <div className="wizard-step">
-                <h2>Paso 2 de 2: Pago de Seña</h2>
-                <p className="confirm-text">Mantenemos tu fecha reservada: <strong>{displayDate}</strong></p>
-
-                <div className="payment-info" style={{ marginTop: '1.5rem' }}>
-                  <p>Realiza la transferencia al siguiente <strong>CVU</strong> y adjunta el comprobante:</p>
-                  {paymentCVU ? (
-                    <div className="cvu-copy-box">
-                      <span className="cvu-number">{paymentCVU}</span>
-                      <button 
-                        type="button" 
-                        className={`copy-button ${copied ? 'copied' : ''}`}
-                        onClick={handleCopyCVU}
-                      >
-                        {copied ? '¡Copiado!' : 'Copiar CVU'}
-                      </button>
-                    </div>
-                  ) : (
-                    <p>Cargando datos de pago...</p>
-                  )}
-                  <p className="payment-seña">SEÑA: 30% del valor estimado para iniciar el proceso.</p>
-                </div>
-
-                <div style={{ backgroundColor: '#eff6ff', borderLeft: '4px solid #3b82f6', padding: '12px', margin: '15px 0', fontSize: '0.9rem', color: '#1e40af', borderRadius: '4px' }}>
-                    <strong>Importante:</strong> Para procesar tu reserva, el pago debe coincidir con el titular del contrato. Si transferís desde otra cuenta, debés aclarar el <strong>DNI del titular</strong> en la referencia del pago.
-                </div>
-
-                <div className="form-group" style={{ marginTop: '1.5rem' }}>
-                  <label htmlFor="receipt">Subir Comprobante de Pago (Solo imágenes)</label>
-                  <input 
-                    type="file" id="receipt"
-                    onChange={handleFileChange}
-                    accept="image/jpeg, image/png, image/webp"
-                  />
-                </div>
-
-                <div className="button-group-wizard">
-                  <button type="button" onClick={() => setStep(1)} className="back-button" disabled={isLoading}>
-                    Volver
-                  </button>
-                  <button onClick={handleRequestReservation} className="confirm-button" disabled={isLoading || !receiptFile}>
-                    {isLoading ? 'Enviando...' : 'Enviar Solicitud'}
-                  </button>
-                </div>
-              </div>
-            )}
-          </>
-        ) : (
-          <h2>{error || 'Fecha no disponible'}</h2>
-        )}
-
-        {error && <p className="error-message">{error}</p>}
+  if (isLoading) {
+    return (
+      <div className="sv-contenedor sv-reserva">
+        <div className="sv-tarjeta sv-reserva__carga" aria-busy="true">
+          <div className="sv-fantasma" style={{ height: 28, width: '60%' }} />
+          <div className="sv-fantasma" style={{ height: 16, width: '40%', marginTop: 12 }} />
+          <div className="sv-fantasma" style={{ height: 120, marginTop: 20 }} />
+        </div>
       </div>
+    );
+  }
 
-      {/* ================= MODAL FLOTANTE DEL CONTRATO ================= */}
+  if (!fechaInfo) {
+    return (
+      <div className="sv-contenedor sv-reserva">
+        <div className="sv-tarjeta sv-reserva__aviso" role="alert">
+          <h1>{loadError || 'Fecha no disponible'}</h1>
+          <p>Elegí otra fecha del calendario o escribinos por WhatsApp.</p>
+          <Button to="/reservar">Elegir otra fecha</Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="sv-contenedor sv-reserva">
+      <Pasos actual={step} etiquetas={['Contrato', 'Seña', 'Listo']} />
+
+      {step === 1 && (
+        <section className="sv-reserva__paso">
+          <h1>Leé y aceptá el contrato</h1>
+          <p className="sv-reserva__fecha">{fechaLarga.charAt(0).toUpperCase() + fechaLarga.slice(1)}</p>
+
+          <div className="sv-tarjeta">
+            <Button variant="secundario" onClick={() => setIsModalOpen(true)} className="sv-reserva__leer">
+              <FaFileLines aria-hidden="true" /> Leer el contrato de locación
+            </Button>
+
+            <label className="sv-check">
+              <input type="checkbox" checked={contractAccepted} onChange={() => setContractAccepted(!contractAccepted)} />
+              <span>Leí y acepto los términos del contrato.</span>
+            </label>
+            <label className="sv-check">
+              <input type="checkbox" checked={ageAccepted} onChange={() => setAgeAccepted(!ageAccepted)} />
+              <span>Declaro bajo juramento ser mayor de 18 años y tener plena capacidad legal para contratar.</span>
+            </label>
+          </div>
+
+          <div className="sv-reserva__botones">
+            <Button onClick={() => setStep(2)} disabled={!contractAccepted || !ageAccepted}>Continuar al pago</Button>
+          </div>
+        </section>
+      )}
+
+      {step === 2 && (
+        <section className="sv-reserva__paso">
+          <h1>Transferí la seña</h1>
+          <p className="sv-reserva__fecha">
+            {fechaLarga.charAt(0).toUpperCase() + fechaLarga.slice(1)}
+            {precio ? ` · precio estimado ${formatoPesos(precio)}` : ''}
+          </p>
+
+          <div className="sv-tarjeta">
+            {sena ? (
+              <>
+                <p className="sv-reserva__etiqueta">Monto de la seña (30%)</p>
+                <p className="sv-reserva__monto">{formatoPesos(sena)}</p>
+              </>
+            ) : (
+              <div className="sv-reserva__sin-precio">
+                <p>Esta fecha todavía no tiene precio cargado. Te confirmamos el monto de la seña por WhatsApp.</p>
+                <Button variant="secundario" href={whatsappConTexto(`Hola, quiero reservar el ${fechaLarga}. ¿Cuál es el monto de la seña?`)} target="_blank" rel="noopener noreferrer">
+                  <FaWhatsapp aria-hidden="true" /> Consultar por WhatsApp
+                </Button>
+              </div>
+            )}
+
+            <p className="sv-reserva__etiqueta">Transferí al alias</p>
+            {paymentCVU ? (
+              <div className="sv-alias">
+                <span className="sv-alias__valor">{paymentCVU}</span>
+                <Button onClick={handleCopyCVU} className="sv-alias__copiar">
+                  {copied ? <><FaCheck aria-hidden="true" /> ¡Copiado!</> : <><FaCopy aria-hidden="true" /> Copiar</>}
+                </Button>
+              </div>
+            ) : (
+              <p>Cargando datos de pago…</p>
+            )}
+
+            <p className="sv-reserva__nota">
+              Transferí desde una cuenta a tu nombre. Si usás otra, poné tu <strong>DNI</strong> en la referencia del pago.
+            </p>
+
+            <SubirComprobante archivo={receiptFile} onElegir={handleFileChange} />
+          </div>
+
+          {error && <p className="sv-error" role="alert">{error}</p>}
+
+          <div className="sv-reserva__botones">
+            <Button onClick={handleRequestReservation} disabled={isSending || !receiptFile}>
+              {isSending ? 'Enviando…' : 'Enviar comprobante'}
+            </Button>
+            <Button variant="secundario" onClick={() => setStep(1)} disabled={isSending}>Volver</Button>
+          </div>
+        </section>
+      )}
+
+      {step === 3 && (
+        <section className="sv-reserva__paso sv-reserva__listo">
+          <FaCircleCheck className="sv-reserva__icono-listo" aria-hidden="true" />
+          <h1>¡Listo! Tu fecha quedó pre-reservada</h1>
+          <p>
+            Vamos a revisar tu comprobante y te va a llegar el contrato por correo cuando confirmemos la reserva
+            del {fechaLarga}.
+          </p>
+          <div className="sv-reserva__botones">
+            <Button to="/mis-reservas">Ver mis reservas</Button>
+            <Button variant="secundario" href={SALON.whatsappUrl} target="_blank" rel="noopener noreferrer">
+              <FaWhatsapp aria-hidden="true" /> WhatsApp
+            </Button>
+          </div>
+        </section>
+      )}
+
       {isModalOpen && (
-        <div className="contract-modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="contract-modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="contract-modal-header">
-              <h3>Contrato de Locación</h3>
-              <button className="close-modal-btn" onClick={() => setIsModalOpen(false)}>
-                <i className="fa-solid fa-xmark"></i>
+        <div className="sv-modal" onClick={() => setIsModalOpen(false)}>
+          <div
+            className="sv-modal__contenido"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="titulo-contrato"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sv-modal__cabecera">
+              <h2 id="titulo-contrato">Contrato de locación</h2>
+              <button type="button" className="sv-modal__cerrar" onClick={() => setIsModalOpen(false)} aria-label="Cerrar">
+                <FaXmark aria-hidden="true" />
               </button>
             </div>
-            <div className="contract-modal-body">
+            <div className="sv-modal__cuerpo">
               <ContractTerms />
             </div>
-            <div className="contract-modal-footer">
-              <button type="button" className="btn-aceptar-modal" onClick={handleAcceptModal}>
-                Entendido y Aceptado
-              </button>
+            <div className="sv-modal__pie">
+              <Button onClick={handleAcceptModal}>Entendido y aceptado</Button>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 }
