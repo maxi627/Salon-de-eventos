@@ -79,6 +79,7 @@
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
 .sv-fechas li { flex: 0 0 140px; scroll-snap-align: start; }
 .sv-fecha {

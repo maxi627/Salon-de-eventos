@@ -74,3 +74,17 @@
 }
 
 .sitio a:hover { color: var(--sv-terracota-osc); }
+
+/* Barras de scroll del sitio público. AdminPanel.css define ::-webkit-scrollbar para todo el
+   documento con los colores oscuros del panel; acá se reemplazan solo cuando la página es pública
+   (hay un main.sitio). El panel no tiene main.sitio, así que sigue igual. */
+html:has(main.sitio)::-webkit-scrollbar,
+html:has(main.sitio) *::-webkit-scrollbar { width: 10px; height: 6px; }
+html:has(main.sitio)::-webkit-scrollbar-track,
+html:has(main.sitio) *::-webkit-scrollbar-track { background: var(--sv-crema); }
+html:has(main.sitio) *::-webkit-scrollbar-track { background: transparent; }
+html:has(main.sitio)::-webkit-scrollbar-thumb,
+html:has(main.sitio) *::-webkit-scrollbar-thumb { background: #D9C4AA; border-radius: 999px; }
+html:has(main.sitio)::-webkit-scrollbar-thumb:hover,
+html:has(main.sitio) *::-webkit-scrollbar-thumb:hover { background: var(--sv-terracota); }
+html:has(main.sitio) { scrollbar-color: #D9C4AA var(--sv-crema); }
