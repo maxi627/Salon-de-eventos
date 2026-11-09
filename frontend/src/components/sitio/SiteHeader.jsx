@@ -54,7 +54,7 @@ export default function SiteHeader({ user, onLogout }) {
         </Link>
 
         <nav className="sv-encabezado__enlaces" aria-label="Principal">
-          {SECCIONES.map((s) => <a key={s.href} href={s.href}>{s.texto}</a>)}
+          {SECCIONES.map((s) => <Link key={s.href} to={s.href}>{s.texto}</Link>)}
           {enlacesCuenta}
           <Button to="/reservar" className="sv-encabezado__reservar">Reservar</Button>
         </nav>
@@ -72,7 +72,7 @@ export default function SiteHeader({ user, onLogout }) {
       </div>
 
       <nav id="sv-menu-movil" className="sv-menu-movil" hidden={!abierto} aria-label="Menú">
-        {SECCIONES.map((s) => <a key={s.href} href={s.href} onClick={() => setAbierto(false)}>{s.texto}</a>)}
+        {SECCIONES.map((s) => <Link key={s.href} to={s.href} onClick={() => setAbierto(false)}>{s.texto}</Link>)}
         {enlacesCuenta}
         <Button to="/reservar">Reservar</Button>
       </nav>

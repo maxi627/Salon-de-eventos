@@ -16,7 +16,7 @@ export const SALON = {
   direccion: 'Bolívar 1425',
   ciudad: 'San Rafael, Mendoza',
   whatsappTexto: '260 411-9865',
-  whatsappUrl: 'https://wa.me/542604119865',
+  whatsappUrl: 'https://wa.me/5492604119865', // 54 + 9 (celular) + 260 + número
   horario: 'Lunes a sábado de 11 a 20 hs',
   capacidad: 50,
   redes: {

@@ -11,4 +11,10 @@ describe('volverSeguro', () => {
       expect(volverSeguro(malo)).toBeNull();
     }
   });
+  it('rechaza caracteres de control y espacios, que el navegador descarta al armar la URL', () => {
+    // "/\t/x.com" el navegador lo resuelve como "//x.com" → https://x.com/
+    for (const malo of ['/\t/x.com', '/\n/x.com', '/\r/x.com', '/ /x.com', '/\u0000x']) {
+      expect(volverSeguro(malo)).toBeNull();
+    }
+  });
 });

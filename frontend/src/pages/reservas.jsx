@@ -21,7 +21,8 @@ function Reservas() {
 
   const pedida = params.get('fecha');
   // Una fecha inválida, pasada, de domingo u ocupada en la URL se ignora sin error.
-  const seleccionada = pedida && esReservable(pedida, porDia[pedida], hoy) ? pedida : null;
+  // Mientras cargan las fechas no se sabe si está ocupada: recién después se acepta.
+  const seleccionada = !isLoading && !isError && pedida && esReservable(pedida, porDia[pedida], hoy) ? pedida : null;
 
   const [mes, setMes] = useState(() => mesDe(pedida && esReservable(pedida, undefined, hoy) ? pedida : hoy));
 
