@@ -24,6 +24,8 @@ import Privacidad from './pages/Privacidad';
 import Register from './pages/register.jsx';
 import Reservas from './pages/reservas.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
+// Reglas heredadas que usa el panel (ver el archivo)
+import './styles/legado-panel.css';
 
 // 1. Configuración de Sentry
 Sentry.init({

@@ -1,0 +1,51 @@
+/* Reglas que el panel de administración usaba sin saberlo: estaban en CSS de páginas públicas
+   (arrepentimiento.css, confirmacion.css, PhotoGallery.css, home.css) que el rediseño eliminó.
+   Se copian tal cual y en el mismo orden para que el panel se vea idéntico.
+   Las usan: .error-message (AnalyticsDashboard, ArchivedReservations, EditReservationModal,
+   GastosManager, ReservasManager, UserList), .error-alert (ReintegrosAdmin),
+   .section-title (PreferencesManager, ReservasManager). */
+
+/* de arrepentimiento.css */
+.error-alert {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  border: 1px solid #f5c2c7;
+}
+
+/* de confirmacion.css */
+.error-message {
+  color: #ef4444 !important;
+  background-color: #fef2f2 !important;
+  padding: 12px 15px;
+  border-radius: 8px;
+  font-weight: 500;
+  margin-top: 20px;
+  text-align: center;
+  border: 1px solid #fecaca !important;
+  animation: shake 0.4s ease-in-out;
+}
+
+/* de PhotoGallery.css */
+.section-title{
+    text-align: center;
+    color: var(--color-secundario);
+    margin-bottom: 2rem;
+    font-size: 2rem;
+}
+
+/* de home.css */
+.section-title {
+    font-size: 2.5rem;
+    color: var(--color-secundario);
+    margin-bottom: 3rem;
+}
+
+@media (max-width: 768px) {
+    .section-title {
+        font-size: 2rem;
+    }
+}

@@ -234,3 +234,9 @@
 
 /* Anclas: dejar lugar para el encabezado fijo */
 .sitio [id] { scroll-margin-top: 80px; }
+
+/* Fondo del visor de fotos (como estaba antes) */
+:root {
+  --yarl__color_backdrop: rgba(0, 0, 0, .8);
+  --yarl__slide_captions_container_background: rgba(0, 0, 0, .5);
+}
