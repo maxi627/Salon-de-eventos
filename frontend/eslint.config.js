@@ -28,7 +28,7 @@ export default defineConfig([
   },
   {
     // Herramientas que corren en Node (API simulada, scripts, configuración)
-    files: ['dev/**/*.js', 'scripts/**/*.mjs', '*.config.js'],
+    files: ['dev/**/*.js', 'scripts/**/*.mjs', '*.config.js', 'src/**/*.test.js'],
     languageOptions: { globals: globals.node },
   },
 ])
