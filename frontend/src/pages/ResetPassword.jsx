@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import './login.css'; // Reutilizamos estilos
+import TarjetaFormulario from '../components/sitio/TarjetaFormulario';
+import Button from '../components/ui/Button';
 
 function ResetPassword() {
-  const { token } = useParams(); // Obtenemos el token de la URL
+  const { token } = useParams(); // Token del enlace del correo
   const navigate = useNavigate();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -36,7 +37,7 @@ function ResetPassword() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.message);
 
-      setMessage(result.message + ' Serás redirigido al inicio de sesión en 3 segundos...');
+      setMessage(result.message + ' En 3 segundos te llevamos a ingresar…');
       setTimeout(() => {
         navigate('/login');
       }, 3000);
@@ -49,37 +50,41 @@ function ResetPassword() {
   };
 
   return (
-    <div className="login-container">
-      <form className="login-form" onSubmit={handleSubmit}>
-        <h2>Ingresa tu Nueva Contraseña</h2>
-        <div className="form-group">
-          <label htmlFor="password">Nueva Contraseña (mín. 8 caracteres)</label>
+    <TarjetaFormulario titulo="Elegí tu contraseña nueva">
+      <form className="sv-formulario" onSubmit={handleSubmit}>
+        <div className="sv-campo">
+          <label className="sv-campo__label" htmlFor="password">Contraseña nueva</label>
           <input
+            className="sv-campo__input"
             type="password"
             id="password"
+            autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength="8"
           />
+          <span className="sv-campo__ayuda">Mínimo 8 caracteres.</span>
         </div>
-        <div className="form-group">
-          <label htmlFor="confirmPassword">Confirmar Contraseña</label>
+        <div className="sv-campo">
+          <label className="sv-campo__label" htmlFor="confirmPassword">Repetí la contraseña</label>
           <input
+            className="sv-campo__input"
             type="password"
             id="confirmPassword"
+            autoComplete="new-password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
           />
         </div>
-        {message && <p className="success-message">{message}</p>}
-        {error && <p className="error-message">{error}</p>}
-        <button type="submit" className="login-button" disabled={isLoading || !!message}>
-          {isLoading ? 'Actualizando...' : 'Actualizar Contraseña'}
-        </button>
+        {message && <p className="sv-exito" role="status">{message}</p>}
+        {error && <p className="sv-error" role="alert">{error}</p>}
+        <Button type="submit" disabled={isLoading || !!message}>
+          {isLoading ? 'Guardando…' : 'Guardar contraseña'}
+        </Button>
       </form>
-    </div>
+    </TarjetaFormulario>
   );
 }
 

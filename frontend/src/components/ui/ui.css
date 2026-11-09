@@ -91,3 +91,47 @@
 }
 .sv-acordeon__item[open] summary::after { content: '−'; }
 .sv-acordeon__item p { color: var(--sv-tinta-suave); padding: 0 0 14px; margin: 0; }
+
+/* Casillas y mensajes de error compartidos por los formularios */
+.sv-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  cursor: pointer;
+  font-size: 15px;
+}
+.sv-check input {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin: 1px 0 0;
+  accent-color: var(--sv-terracota);
+}
+
+.sv-error {
+  color: #9B2C12;
+  background: #FBE9E3;
+  border-radius: var(--sv-radio-chico);
+  padding: 10px 12px;
+  font-size: 14px;
+  margin: 14px 0 0 !important;
+}
+
+
+/* AdminPanel.css trae reglas globales con !important para input, select, textarea y
+   button[type="submit"] (se cargan en todo el sitio). Acá las neutralizamos dentro de .sitio
+   con la misma fuerza, sin tocar el CSS del panel. */
+.sitio .sv-boton[type="submit"] {
+  padding: 10px 22px !important;
+  border: 2px solid transparent !important;
+  border-radius: 999px !important;
+}
+.sitio .sv-boton.sv-boton--primario[type="submit"] { background-color: var(--sv-terracota) !important; color: #fff !important; }
+.sitio .sv-boton.sv-boton--primario[type="submit"]:hover:not(:disabled) { background-color: var(--sv-terracota-osc) !important; }
+.sitio .sv-check input {
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 4px !important;
+  background-color: transparent !important;
+}

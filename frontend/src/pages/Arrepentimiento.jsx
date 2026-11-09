@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
+import TarjetaFormulario from '../components/sitio/TarjetaFormulario';
 import Turnstile from '../components/Turnstile';
-import './arrepentimiento.css'; // Crearemos este archivo ahora
+import Button from '../components/ui/Button';
 
 function Arrepentimiento() {
   const [identificacion, setIdentificacion] = useState('');
@@ -73,7 +74,7 @@ function Arrepentimiento() {
       });
 
       // Éxito: La reserva se canceló y se liberó el calendario
-      setMensaje("Tu solicitud ha sido registrada y la reserva cancelada. Si corresponde la devolución de la seña según los plazos legales, nos contactaremos a la brevedad.");
+      setMensaje("Registramos tu solicitud y la reserva quedó cancelada. Si corresponde la devolución de la seña según los plazos legales, te vamos a contactar a la brevedad.");
       setPaso('listo');
       setIdentificacion('');
       setFechaEvento('');
@@ -95,92 +96,91 @@ function Arrepentimiento() {
   };
 
   return (
-    <div className="arrepentimiento-container">
-      <div className="arrepentimiento-card">
-        <h2>Solicitud de Revocación</h2>
-        <p className="arrepentimiento-subtitle">
-          Según la Res. 424/2020, podés solicitar la cancelación de tu reserva.
-          Completá los datos a continuación para identificar tu evento.
-        </p>
+    <TarjetaFormulario
+      titulo="Botón de arrepentimiento"
+      bajada="Según la Res. 424/2020, podés pedir la cancelación de tu reserva dentro de los 10 días corridos desde que la hiciste, si faltan al menos 7 días para el evento. Completá los datos para identificar tu evento."
+    >
+      {mensaje && <p className="sv-exito" role="status">{mensaje}</p>}
+      {error && <p className="sv-error" role="alert">{error}</p>}
 
-        {mensaje && <div className="success-alert">{mensaje}</div>}
-        {error && <div className="error-alert">{error}</div>}
+      {paso === 'datos' && (
+        <form onSubmit={handleSubmit} className="sv-formulario">
+          <div className="sv-campo">
+            <label className="sv-campo__label" htmlFor="identificacion">DNI o correo electrónico</label>
+            <input
+              className="sv-campo__input"
+              type="text"
+              id="identificacion"
+              value={identificacion}
+              onChange={(e) => setIdentificacion(e.target.value)}
+              required
+              placeholder="Ej.: 35123456 o tu@correo.com"
+            />
+          </div>
 
-        {paso === 'datos' && (
-          <form onSubmit={handleSubmit} className="arrepentimiento-form">
-            <div className="form-group">
-              <label htmlFor="identificacion">DNI o Correo Electrónico</label>
-              <input
-                type="text"
-                id="identificacion"
-                value={identificacion}
-                onChange={(e) => setIdentificacion(e.target.value)}
-                required
-                placeholder="Ej: 35123456 o correo@ejemplo.com"
-              />
-            </div>
+          <div className="sv-campo">
+            <label className="sv-campo__label" htmlFor="fechaEvento">Fecha del evento reservado</label>
+            <input
+              className="sv-campo__input"
+              type="date"
+              id="fechaEvento"
+              value={fechaEvento}
+              onChange={(e) => setFechaEvento(e.target.value)}
+              required
+            />
+          </div>
 
-            <div className="form-group">
-              <label htmlFor="fechaEvento">Fecha del Evento Reservado</label>
-              <input
-                type="date"
-                id="fechaEvento"
-                value={fechaEvento}
-                onChange={(e) => setFechaEvento(e.target.value)}
-                required
-              />
-            </div>
+          <div className="sv-campo">
+            <label className="sv-campo__label" htmlFor="motivo">Motivo (opcional)</label>
+            <textarea
+              className="sv-campo__input"
+              id="motivo"
+              value={motivo}
+              onChange={(e) => setMotivo(e.target.value)}
+              rows="3"
+              maxLength={500}
+              placeholder="Contanos brevemente por qué cancelás…"
+            />
+            <span className="sv-campo__ayuda">La ley no exige un motivo, pero nos ayuda a mejorar.</span>
+          </div>
 
-            <div className="form-group">
-              <label htmlFor="motivo">Motivo (Opcional)</label>
-              <textarea
-                id="motivo"
-                value={motivo}
-                onChange={(e) => setMotivo(e.target.value)}
-                rows="3"
-                maxLength={500}
-                placeholder="Contanos brevemente por qué cancelás..."
-              ></textarea>
-              <small>La ley no exige un motivo, pero nos ayuda a mejorar.</small>
-            </div>
+          <Turnstile ref={turnstileRef} onToken={setTurnstileToken} />
 
-            <Turnstile ref={turnstileRef} onToken={setTurnstileToken} />
+          <Button type="submit" disabled={loading || !turnstileToken}>
+            {loading ? 'Procesando…' : 'Pedir la cancelación'}
+          </Button>
+        </form>
+      )}
 
-            <button type="submit" className="submit-button" disabled={loading || !turnstileToken}>
-              {loading ? 'Procesando...' : 'Solicitar Cancelación'}
-            </button>
-          </form>
-        )}
+      {paso === 'codigo' && (
+        <form onSubmit={handleConfirmar} className="sv-formulario">
+          <div className="sv-campo">
+            <label className="sv-campo__label" htmlFor="codigo">Código que te llegó por correo</label>
+            <input
+              className="sv-campo__input"
+              type="text"
+              id="codigo"
+              value={codigo}
+              onChange={(e) => setCodigo(e.target.value.replace(/\D/g, ''))}
+              required
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="\d{6}"
+              maxLength={6}
+              placeholder="123456"
+            />
+            <span className="sv-campo__ayuda">El código vence en 15 minutos.</span>
+          </div>
 
-        {paso === 'codigo' && (
-          <form onSubmit={handleConfirmar} className="arrepentimiento-form">
-            <div className="form-group">
-              <label htmlFor="codigo">Código recibido por correo</label>
-              <input
-                type="text"
-                id="codigo"
-                value={codigo}
-                onChange={(e) => setCodigo(e.target.value.replace(/\D/g, ''))}
-                required
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                pattern="\d{6}"
-                maxLength={6}
-                placeholder="123456"
-              />
-              <small>El código vence en 15 minutos.</small>
-            </div>
-
-            <button type="submit" className="submit-button" disabled={loading || codigo.length !== 6}>
-              {loading ? 'Procesando...' : 'Confirmar Cancelación'}
-            </button>
-            <button type="button" className="submit-button" onClick={handleVolver} disabled={loading}>
-              Volver / Reenviar código
-            </button>
-          </form>
-        )}
-      </div>
-    </div>
+          <Button type="submit" disabled={loading || codigo.length !== 6}>
+            {loading ? 'Procesando…' : 'Confirmar la cancelación'}
+          </Button>
+          <Button variant="secundario" onClick={handleVolver} disabled={loading}>
+            Volver / reenviar el código
+          </Button>
+        </form>
+      )}
+    </TarjetaFormulario>
   );
 }
 

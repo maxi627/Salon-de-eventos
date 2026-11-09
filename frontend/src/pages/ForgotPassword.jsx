@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import TarjetaFormulario from '../components/sitio/TarjetaFormulario';
 import Turnstile from '../components/Turnstile';
-import './login.css'; // Reutilizamos los estilos del login
+import Button from '../components/ui/Button';
 
 function ForgotPassword() {
   const [correo, setCorreo] = useState('');
@@ -41,42 +42,42 @@ function ForgotPassword() {
   };
 
   return (
-    <div className="login-container">
-      <form className="login-form" onSubmit={handleSubmit}>
-        <h2>Restablecer Contraseña</h2>
-        <p style={{marginBottom: '1.5rem', textAlign: 'center', lineHeight: '1.6'}}>
-          Ingresa tu correo electrónico y te enviaremos un enlace para recuperar tu cuenta.
-        </p>
-        
+    <TarjetaFormulario
+      titulo="Recuperá tu contraseña"
+      bajada="Escribí tu correo y te mandamos un enlace para crear una contraseña nueva."
+    >
+      <form className="sv-formulario" onSubmit={handleSubmit}>
         {!message && (
-          <div className="form-group">
-            <label htmlFor="correo">Correo Electrónico</label>
+          <div className="sv-campo">
+            <label className="sv-campo__label" htmlFor="correo">Correo electrónico</label>
             <input
+              className="sv-campo__input"
               type="email"
               id="correo"
+              autoComplete="email"
               value={correo}
               onChange={(e) => setCorreo(e.target.value)}
               required
-              placeholder="tu@email.com"
+              placeholder="tu@correo.com"
             />
           </div>
         )}
 
         {!message && <Turnstile ref={turnstileRef} onToken={setTurnstileToken} />}
-        {message && <p className="success-message">{message}</p>}
-        {error && <p className="error-message">{error}</p>}
+        {message && <p className="sv-exito" role="status">{message}</p>}
+        {error && <p className="sv-error" role="alert">{error}</p>}
 
         {!message && (
-            <button type="submit" className="login-button" disabled={isLoading || !turnstileToken}>
-                {isLoading ? 'Enviando...' : 'Enviar Enlace de Recuperación'}
-            </button>
+          <Button type="submit" disabled={isLoading || !turnstileToken}>
+            {isLoading ? 'Enviando…' : 'Enviar el enlace'}
+          </Button>
         )}
 
-        <div className="forgot-password-link">
-            <Link to="/login">Volver a Iniciar Sesión</Link>
+        <div className="sv-formulario__enlaces">
+          <Link to="/login">Volver a ingresar</Link>
         </div>
       </form>
-    </div>
+    </TarjetaFormulario>
   );
 }
 

@@ -1,0 +1,96 @@
+/* Formularios del sitio (login, registro, contraseña, arrepentimiento) y páginas de texto */
+.sv-pagina-formulario { padding-top: 32px; padding-bottom: 104px; }
+@media (min-width: 720px) { .sv-pagina-formulario { padding-top: 48px; padding-bottom: 64px; } }
+.sv-pagina-formulario--angosto .sv-tarjeta-formulario { max-width: 440px; margin: 0 auto; }
+.sv-pagina-formulario--ancho .sv-tarjeta-formulario { max-width: 720px; margin: 0 auto; }
+
+.sv-tarjeta-formulario.sv-tarjeta { padding: 22px 18px; }
+@media (min-width: 720px) { .sv-tarjeta-formulario.sv-tarjeta { padding: 32px; } }
+.sitio .sv-tarjeta-formulario h1 { font-size: clamp(1.7rem, 5vw, 2.1rem); }
+.sv-tarjeta-formulario__bajada { color: var(--sv-tinta-suave); }
+
+.sv-formulario { display: flex; flex-direction: column; gap: 14px; }
+
+.sv-campo { display: flex; flex-direction: column; gap: 6px; }
+.sv-campo__label { font-size: 14px; font-weight: 600; color: var(--sv-tinta); }
+.sv-campo__ayuda { font-size: 12.5px; color: var(--sv-tinta-suave); }
+.sv-campo__input {
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 14px;
+  border: 1.5px solid var(--sv-borde);
+  border-radius: var(--sv-radio-chico);
+  background: var(--sv-superficie);
+  color: var(--sv-tinta);
+  font-family: var(--sv-fuente-texto);
+  font-size: 16px; /* 16 px evita el zoom automático de iOS */
+}
+textarea.sv-campo__input { min-height: 96px; resize: vertical; }
+.sv-campo__input::placeholder { color: #A99E91; }
+.sv-campo__input:focus {
+  outline: none;
+  border-color: var(--sv-terracota);
+  box-shadow: var(--sv-foco);
+}
+
+.sv-campo__clave { position: relative; }
+.sv-campo__clave .sv-campo__input { padding-right: 52px; }
+.sv-campo__mostrar {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: transparent;
+  color: var(--sv-tinta-suave);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  border-radius: var(--sv-radio-chico);
+}
+
+.sv-formulario .sv-boton { width: 100%; }
+.sv-formulario__enlaces {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 14.5px;
+}
+
+.sv-exito {
+  color: var(--sv-verde);
+  background: var(--sv-verde-50);
+  border-radius: var(--sv-radio-chico);
+  padding: 10px 12px;
+  font-size: 14px;
+  margin: 0 !important;
+}
+
+/* Páginas de texto legal */
+.sv-texto-legal h2 { font-size: 1.25rem; margin-top: 1.6em; }
+.sv-texto-legal ul { padding-left: 20px; margin: 0 0 1em; }
+.sv-texto-legal li { margin-bottom: 6px; }
+.sv-texto-legal__fecha { color: var(--sv-tinta-suave); font-size: 14px; }
+.sv-texto-legal__nota {
+  background: var(--sv-crema);
+  border-left: 4px solid var(--sv-borde);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: var(--sv-tinta-suave);
+  margin-top: 1.5em;
+}
+
+/* Ver la nota en ui.css: AdminPanel.css pisa todos los input/textarea con !important. */
+.sitio .sv-campo__input {
+  background-color: var(--sv-superficie) !important;
+  color: var(--sv-tinta) !important;
+  border: 1.5px solid var(--sv-borde) !important;
+  padding: 11px 14px !important;
+  border-radius: var(--sv-radio-chico) !important;
+}
+.sitio .sv-campo__clave .sv-campo__input { padding-right: 52px !important; }
+.sitio .sv-campo__input:focus { border-color: var(--sv-terracota) !important; }

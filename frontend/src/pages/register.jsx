@@ -1,21 +1,36 @@
 import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from 'react-icons/fa6';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import TarjetaFormulario from '../components/sitio/TarjetaFormulario';
 import Turnstile from '../components/Turnstile';
-import './register.css';
+import Button from '../components/ui/Button';
+import { volverSeguro } from '../lib/volver';
+
+function Campo({ id, etiqueta, ...props }) {
+  return (
+    <div className="sv-campo">
+      <label className="sv-campo__label" htmlFor={id}>{etiqueta}</label>
+      <input className="sv-campo__input" id={id} {...props} />
+    </div>
+  );
+}
 
 function Register() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const volver = volverSeguro(searchParams.get('volver'));
 
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
   const [dni, setDni] = useState('');
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
+  const [mostrarClave, setMostrarClave] = useState(false);
   const [telefono, setTelefono] = useState('');
-  
-  // Nuevo estado para el consentimiento de datos
+
+  // Consentimiento de datos (obligatorio)
   const [consentimientoDatos, setConsentimientoDatos] = useState(false);
-  
+
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState('');
@@ -28,7 +43,7 @@ function Register() {
 
     // Validación estricta en el frontend
     if (!consentimientoDatos) {
-      setError("Debes aceptar la Política de Privacidad y Tratamiento de Datos para registrarte.");
+      setError('Tenés que aceptar la Política de Privacidad para registrarte.');
       return;
     }
 
@@ -59,11 +74,10 @@ function Register() {
         throw new Error(errorMessage);
       }
       
-      console.log('Usuario registrado:', result.data);
       setSuccess(true);
 
       setTimeout(() => {
-        navigate('/login');
+        navigate(volver ? `/login?volver=${encodeURIComponent(volver)}` : '/login');
       }, 2000);
 
     } catch (err) {
@@ -74,100 +88,79 @@ function Register() {
     }
   };
 
+  const login = volver ? `/login?volver=${encodeURIComponent(volver)}` : '/login';
+
   return (
-    <div className="register-container">
-      <form className="register-form" onSubmit={handleSubmit}>
-        <h2>Crear una Cuenta</h2>
-
+    <TarjetaFormulario titulo="Creá tu cuenta" bajada="La necesitás para reservar. Las reservas son para mayores de 18 años.">
+      <form className="sv-formulario" onSubmit={handleSubmit}>
         {success && (
-          <p className="success-message">
-            ¡Registro exitoso! Redirigiendo al inicio de sesión...
-          </p>
+          <p className="sv-exito" role="status">¡Listo, ya tenés cuenta! Te llevamos a ingresar…</p>
         )}
-        
-        <div className="form-group">
-          <label htmlFor="nombre">Nombre</label>
-          <input
-            type="text" id="nombre" value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            required
-            placeholder='Ingresa tu nombre'
-          />
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="apellido">Apellido</label>
-          <input
-            type="text" id="apellido" value={apellido}
-            onChange={(e) => setApellido(e.target.value)}
-            required
-            placeholder='Ingresa tu apellido'
-          />
-        </div>
 
-        <div className="form-group">
-          <label htmlFor="dni">DNI</label>
-          <input
-            type="number" id="dni" value={dni}
-            onChange={(e) => setDni(e.target.value)}
-            required
-            placeholder='Ingresa tu DNI'
-          />
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="correo">Correo Electrónico</label>
-          <input
-            type="email" id="correo" value={correo}
-            onChange={(e) => setCorreo(e.target.value)}
-            required
-            placeholder="Ingresa tu email"
-          />
-        </div>
+        <Campo id="nombre" etiqueta="Nombre" type="text" autoComplete="given-name" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
+        <Campo id="apellido" etiqueta="Apellido" type="text" autoComplete="family-name" value={apellido} onChange={(e) => setApellido(e.target.value)} required />
+        <Campo
+          id="dni"
+          etiqueta="DNI"
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          value={dni}
+          onChange={(e) => setDni(e.target.value.replace(/\D/g, ''))}
+          required
+        />
+        <Campo id="correo" etiqueta="Correo electrónico" type="email" autoComplete="email" value={correo} onChange={(e) => setCorreo(e.target.value)} required />
+        <Campo id="telefono" etiqueta="Teléfono (opcional)" type="tel" autoComplete="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
 
-        <div className="form-group">
-          <label htmlFor="telefono">Teléfono (Opcional)</label>
-          <input
-            type="tel" id="telefono" value={telefono}
-            onChange={(e) => setTelefono(e.target.value)}
-            placeholder="Ingresa tu número de teléfono"
-          />
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="password">Contraseña</label>
-          <input
-            type="password" id="password" value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            minLength="8"
-            required
-            placeholder='Ingresa tu contraseña'
-          />
-        </div>
-
-        {/* --- CASILLA DE CONSENTIMIENTO --- */}
-        <div className="consent-group">
-          <label className="consent-label">
-            <input 
-              type="checkbox" 
-              checked={consentimientoDatos}
-              onChange={(e) => setConsentimientoDatos(e.target.checked)}
-              className="consent-input"
+        <div className="sv-campo">
+          <label className="sv-campo__label" htmlFor="password">Contraseña</label>
+          <div className="sv-campo__clave">
+            <input
+              className="sv-campo__input"
+              type={mostrarClave ? 'text' : 'password'}
+              id="password"
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              minLength="8"
+              required
             />
-            <span>
-              Acepto la <a href="/privacidad" target="_blank" rel="noopener noreferrer" className="consent-link">Política de Privacidad</a>.
-            </span>
-          </label>
+            <button
+              type="button"
+              className="sv-campo__mostrar"
+              aria-pressed={mostrarClave}
+              aria-label={mostrarClave ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+              onClick={() => setMostrarClave((v) => !v)}
+            >
+              {mostrarClave ? <FaEyeSlash aria-hidden="true" /> : <FaEye aria-hidden="true" />}
+            </button>
+          </div>
+          <span className="sv-campo__ayuda">Mínimo 8 caracteres.</span>
         </div>
-        
-        <Turnstile ref={turnstileRef} onToken={setTurnstileToken} />
-        {error && <p className="error-message">{error}</p>}
 
-        <button type="submit" className="register-button" disabled={success || !turnstileToken}>
-          {success ? 'Registrado' : 'Registrarse'}
-        </button>
+        <label className="sv-check">
+          <input
+            type="checkbox"
+            checked={consentimientoDatos}
+            onChange={(e) => setConsentimientoDatos(e.target.checked)}
+          />
+          <span>
+            Acepto la <a href="/privacidad" target="_blank" rel="noopener noreferrer">Política de Privacidad</a>.
+          </span>
+        </label>
+
+        <Turnstile ref={turnstileRef} onToken={setTurnstileToken} />
+        {error && <p className="sv-error" role="alert">{error}</p>}
+
+        <Button type="submit" disabled={success || !turnstileToken}>
+          {success ? 'Cuenta creada' : 'Crear cuenta'}
+        </Button>
+
+        <div className="sv-formulario__enlaces">
+          <span>¿Ya tenés cuenta? <Link to={login}>Ingresá</Link></span>
+        </div>
       </form>
-    </div>
+    </TarjetaFormulario>
   );
 }
 

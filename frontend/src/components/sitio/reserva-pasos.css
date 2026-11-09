@@ -31,22 +31,6 @@
 
 .sv-reserva__leer.sv-boton { width: 100%; margin-bottom: 14px; }
 
-.sv-check {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px 0;
-  cursor: pointer;
-  font-size: 15px;
-}
-.sv-check input {
-  flex: none;
-  width: 22px;
-  height: 22px;
-  margin: 1px 0 0;
-  accent-color: var(--sv-terracota);
-}
-
 .sv-reserva__botones { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
 @media (max-width: 719px) {
   .sv-reserva__botones .sv-boton { width: 100%; }
@@ -117,15 +101,6 @@
 .sv-subir__previa { max-height: 180px; max-width: 100%; border-radius: 10px; object-fit: contain; }
 .sv-subir__nombre { color: var(--sv-tinta); font-weight: 600; overflow-wrap: anywhere; }
 .sv-subir__cambiar { color: var(--sv-terracota); }
-
-.sv-error {
-  color: #9B2C12;
-  background: #FBE9E3;
-  border-radius: var(--sv-radio-chico);
-  padding: 10px 12px;
-  font-size: 14px;
-  margin: 14px 0 0 !important;
-}
 
 .sv-reserva__listo { text-align: left; }
 .sv-reserva__icono-listo { font-size: 44px; color: var(--sv-verde); margin-bottom: 10px; }
