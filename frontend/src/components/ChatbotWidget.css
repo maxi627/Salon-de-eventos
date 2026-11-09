@@ -6,7 +6,7 @@
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background-color: var(--color-primario, #3b82f6);
+  background-color: var(--sv-terracota, #B4532A);
   color: white;
   border: none;
   font-size: 1.8rem;
@@ -47,7 +47,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.2rem;
-  background-color: var(--color-secundario, #1e293b);
+  background-color: var(--sv-tinta, #2E2A24);
   color: white;
 }
 
@@ -106,7 +106,7 @@
 }
 
 .chat-message.user {
-  background-color: var(--color-primario, #3b82f6);
+  background-color: var(--sv-terracota, #B4532A);
   color: white;
   align-self: flex-end;
   border-bottom-right-radius: 4px;
@@ -139,13 +139,13 @@
 
 .chat-footer input:focus {
   outline: none !important;
-  border-color: var(--color-primario, #3b82f6) !important;
+  border-color: var(--sv-terracota, #B4532A) !important;
   background-color: #ffffff !important;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+  box-shadow: 0 0 0 3px rgba(180, 83, 42, 0.15) !important;
 }
 /* --- BOTÓN DE ENVIAR MEJORADO --- */
 .chat-footer button {
-  background-color: var(--color-primario, #3b82f6) !important;
+  background-color: var(--sv-terracota, #B4532A) !important;
   border: none !important;
   width: 48px !important;        /* Círculo un poco más grande */
   height: 48px !important;       /* Círculo un poco más grande */
@@ -172,7 +172,7 @@
 }
 
 .chat-footer button:hover:not(:disabled) {
-  background-color: #2563eb !important;
+  background-color: var(--sv-terracota-osc, #93421F) !important;
   transform: scale(1.08);
 }
 

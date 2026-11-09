@@ -1,0 +1,151 @@
+/* Encabezado y pie del sitio público. */
+.sv-encabezado {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(251, 246, 239, 0.94);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--sv-borde);
+  font-family: var(--sv-fuente-texto);
+}
+
+.sv-encabezado__barra {
+  max-width: var(--sv-ancho);
+  margin: 0 auto;
+  padding: 10px 16px;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.sv-logo {
+  font-family: var(--sv-fuente-titulo);
+  font-weight: 700;
+  font-size: 21px;
+  color: var(--sv-tinta);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.sv-logo span { color: var(--sv-terracota); }
+.sv-logo:hover { color: var(--sv-tinta); }
+
+.sv-encabezado__enlaces {
+  display: none;
+  align-items: center;
+  gap: 20px;
+}
+.sv-encabezado__enlaces a:not(.sv-boton) {
+  color: var(--sv-tinta-suave);
+  font-size: 14.5px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.sv-encabezado__enlaces a:not(.sv-boton):hover { color: var(--sv-tinta); }
+.sv-encabezado__reservar.sv-boton { min-height: 40px; padding: 8px 18px; font-size: 14px; }
+
+.sv-encabezado__menu {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--sv-radio-chico);
+  border: 1px solid var(--sv-borde);
+  background: var(--sv-superficie);
+  color: var(--sv-tinta);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.sv-menu-movil {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 16px 18px;
+  border-top: 1px solid var(--sv-borde);
+  background: var(--sv-crema);
+}
+.sv-menu-movil[hidden] { display: none; }
+.sv-menu-movil a:not(.sv-boton) {
+  color: var(--sv-tinta);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--sv-borde);
+}
+.sv-menu-movil .sv-boton { margin-top: 12px; }
+
+@media (min-width: 860px) {
+  .sv-encabezado__barra { padding: 12px 28px; }
+  .sv-encabezado__enlaces { display: flex; }
+  .sv-encabezado__menu,
+  .sv-menu-movil { display: none !important; }
+}
+
+.sv-pie {
+  background: var(--sv-tinta);
+  color: #E9E1D6;
+  font-family: var(--sv-fuente-texto);
+  font-size: 14px;
+  /* Margen para que el botón flotante del chat no tape el final del pie */
+  padding: 36px 16px 96px;
+}
+.sv-pie p { margin: 0 0 4px; }
+.sv-pie a { color: #E9E1D6; text-decoration: underline; text-underline-offset: 3px; }
+.sv-pie a:hover { color: #fff; }
+
+.sv-pie__contenido {
+  max-width: var(--sv-ancho);
+  margin: 0 auto;
+  display: grid;
+  gap: 24px;
+}
+.sv-pie__nombre {
+  font-family: var(--sv-fuente-titulo);
+  font-size: 19px;
+  font-weight: 700;
+  color: #fff;
+}
+.sv-pie__redes,
+.sv-pie__legales {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.sv-pie__redes a { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+.sv-pie__copy {
+  max-width: var(--sv-ancho);
+  margin: 28px auto 0 !important;
+  padding-top: 18px;
+  border-top: 1px solid rgba(233, 225, 214, 0.2);
+  color: #B9AFA2;
+  font-size: 13px;
+}
+
+@media (min-width: 720px) {
+  .sv-pie { padding: 40px 28px 40px; }
+  .sv-pie__contenido { grid-template-columns: 1.4fr 1fr 1.2fr; }
+}
+
+/* App.css (del panel) trae reglas sueltas para nav, nav a, footer y ul que se aplican a
+   todo el documento; acá las neutralizamos sin tocar ese archivo. */
+.sv-encabezado nav {
+  width: auto;
+  height: auto;
+  padding: 0;
+  background: none;
+  border: 0;
+  position: static;
+  z-index: auto;
+  justify-content: flex-start;
+}
+.sv-encabezado nav a { border-bottom: 0; padding: 0; }
+.sv-encabezado .sv-menu-movil a:not(.sv-boton) { padding: 12px 4px; border-bottom: 1px solid var(--sv-borde); }
+.sv-encabezado nav a.sv-boton { padding: 8px 18px; color: #fff; }
+.sv-encabezado .sv-menu-movil { padding: 8px 16px 18px; border-top: 1px solid var(--sv-borde); background: var(--sv-crema); }
+@media (max-width: 768px) {
+  .sv-encabezado nav { height: auto; padding: 0; }
+  .sv-encabezado .sv-menu-movil { padding: 8px 16px 18px; }
+}
+.sv-pie { margin-top: 0; text-align: left; width: auto; }

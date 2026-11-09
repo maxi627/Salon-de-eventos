@@ -1,0 +1,28 @@
+/* Tokens del sitio público ("Campo cálido"). Prefijo --sv- para no chocar con App.css (panel). */
+:root {
+  --sv-terracota: #B4532A;
+  --sv-terracota-osc: #93421F;
+  --sv-terracota-50: #F6E9DE;
+  --sv-verde: #2F5D3A;
+  --sv-verde-50: #E4EEE4;
+  --sv-verde-borde: #9DBF9F;
+  --sv-crema: #FBF6EF;
+  --sv-superficie: #FFFFFF;
+  --sv-borde: #EADBC8;
+  --sv-tinta: #2E2A24;
+  --sv-tinta-suave: #6B6157;
+  --sv-ambar-50: #FBF0D6;
+  --sv-ambar-borde: #EBCB86;
+  --sv-ambar-txt: #8A6212;
+  --sv-gris: #EDE8E1;
+  --sv-gris-txt: #8C8378;
+
+  --sv-fuente-titulo: 'Fraunces Variable', Georgia, serif;
+  --sv-fuente-texto: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --sv-radio: 16px;
+  --sv-radio-chico: 12px;
+  --sv-sombra: 0 6px 20px rgba(80, 50, 20, 0.06);
+  --sv-foco: 0 0 0 4px rgba(180, 83, 42, 0.18);
+  --sv-ancho: 1040px;
+}

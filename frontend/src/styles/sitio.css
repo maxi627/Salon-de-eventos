@@ -1,0 +1,76 @@
+/* Base de las páginas públicas. Todo cuelga de .sitio para no afectar al panel. */
+.sitio {
+  font-family: var(--sv-fuente-texto);
+  color: var(--sv-tinta);
+  background: var(--sv-crema);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  min-height: 60vh;
+  overflow-x: clip;
+}
+
+.sitio *,
+.sitio *::before,
+.sitio *::after {
+  box-sizing: border-box;
+}
+
+.sitio h1,
+.sitio h2,
+.sitio h3 {
+  font-family: var(--sv-fuente-titulo);
+  font-weight: 700;
+  color: var(--sv-tinta);
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  margin: 0 0 0.4em;
+}
+
+.sitio h1 { font-size: clamp(2rem, 6vw, 3.25rem); }
+.sitio h2 { font-size: clamp(1.6rem, 4vw, 2.1rem); }
+.sitio h3 { font-size: 1.2rem; font-weight: 600; }
+
+.sitio p { margin: 0 0 1em; }
+
+.sitio a {
+  color: var(--sv-terracota);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.sitio :focus-visible,
+.sv-encabezado :focus-visible,
+.sv-pie :focus-visible {
+  outline: 3px solid rgba(180, 83, 42, 0.45);
+  outline-offset: 2px;
+}
+
+.sitio img { max-width: 100%; }
+
+.sv-oculto {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.sv-fantasma {
+  background: linear-gradient(90deg, #F1E9DE 25%, #F8F2EA 50%, #F1E9DE 75%);
+  background-size: 200% 100%;
+  animation: sv-brillo 1.4s ease-in-out infinite;
+  border-radius: var(--sv-radio-chico);
+}
+
+@keyframes sv-brillo {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sv-fantasma { animation: none; }
+}
+
+.sitio a:hover { color: var(--sv-terracota-osc); }
