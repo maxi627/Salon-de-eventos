@@ -19,3 +19,6 @@ node_modules/
 opt/backups_locales/
 opt/backup.log
 *.sql.gz.enc
+
+# Bocetos del brainstorming visual
+.superpowers/
