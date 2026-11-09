@@ -61,10 +61,6 @@ export const PREGUNTAS = [
     pregunta: '¿Qué pasa si cancelo?',
     respuesta: 'Si cancelás, la seña no se devuelve. Con el botón de arrepentimiento podés cancelar con devolución dentro de los 10 días corridos desde que reservaste, si faltan al menos 7 días para el evento.',
   },
-  {
-    pregunta: '¿Qué tengo que llevar?',
-    respuesta: 'Vajilla, utensilios, carbón o leña, insumos de baño (salvo el papel higiénico) y tu equipo de música si querés. El salón pone sillas, mesones, cocina con garrafa, heladera y freezer.',
-  },
 ];
 
 export const PASOS_RESERVA = [
