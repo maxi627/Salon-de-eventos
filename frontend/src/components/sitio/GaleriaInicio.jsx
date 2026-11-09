@@ -4,7 +4,7 @@ import 'yet-another-react-lightbox/styles.css';
 import { FOTOS, FOTOS_GRILLA } from '../../content/fotos';
 import Section from '../ui/Section';
 
-const SLIDES = FOTOS.map((f) => ({ src: f.src, alt: f.alt, width: f.ancho, height: f.alto }));
+const SLIDES = FOTOS.map((f) => ({ src: f.grande ?? f.src, alt: f.alt, width: f.ancho, height: f.alto }));
 
 export default function GaleriaInicio() {
   const [indice, setIndice] = useState(-1);
