@@ -55,7 +55,7 @@
 
 ---
 
-### Tarea 1: Herramientas de desarrollo (pruebas, API simulada, capturas)
+### Task 1: Herramientas de desarrollo (pruebas, API simulada, capturas)
 
 **Files:**
 - Modify: `frontend/package.json` (scripts y dependencias de desarrollo)
@@ -107,7 +107,7 @@
 - [ ] **Paso 7: Commit.**
   `chore(frontend): pruebas, API simulada y capturas para el rediseño`
 
-### Tarea 2: Reglas de fechas, montos y sesión
+### Task 2: Reglas de fechas, montos y sesión
 
 **Files:**
 - Create: `frontend/src/lib/fechas.js`
@@ -176,7 +176,7 @@
 - [ ] **Paso 5: Commit.**
   `feat(frontend): reglas de fechas, seña y sesión con pruebas`
 
-### Tarea 3: Base visual, encabezado, pie y chat
+### Task 3: Base visual, encabezado, pie y chat
 
 **Files:**
 - Modify: `frontend/package.json` (`@fontsource-variable/fraunces`, `@fontsource-variable/inter`)
@@ -245,7 +245,7 @@
 - [ ] **Paso 10: Commit.**
   `feat(frontend): base visual Campo cálido, encabezado y pie nuevos`
 
-### Tarea 4: Página de inicio
+### Task 4: Página de inicio
 
 **Files:**
 - Create: `frontend/src/hooks/useFechas.js`
@@ -307,7 +307,7 @@
 - [ ] **Paso 9: Commit.**
   `feat(frontend): nueva página de inicio`
 
-### Tarea 5: Calendario de reservas
+### Task 5: Calendario de reservas
 
 **Files:**
 - Modify: `frontend/src/pages/reservas.jsx` (reescritura)
@@ -349,7 +349,7 @@
 - [ ] **Paso 5: Commit.**
   `feat(frontend): calendario con resumen de precio y seña`
 
-### Tarea 6: Contrato, seña y confirmación
+### Task 6: Contrato, seña y confirmación
 
 **Files:**
 - Modify: `frontend/src/pages/confirmacion.jsx` (se reescribe la presentación; `ContractTerms` y las llamadas a la API quedan iguales)
@@ -392,7 +392,7 @@
 - [ ] **Paso 5: Commit.**
   `feat(frontend): pasos de contrato y seña con monto exacto`
 
-### Tarea 7: Mis reservas
+### Task 7: Mis reservas
 
 **Files:**
 - Create: `frontend/src/pages/MisReservas.jsx`, `frontend/src/pages/mis-reservas.css`
@@ -428,7 +428,7 @@
 - [ ] **Paso 4: Commit.**
   `feat(frontend): página Mis reservas con pagado y saldo`
 
-### Tarea 8: Login, registro y páginas secundarias
+### Task 8: Login, registro y páginas secundarias
 
 **Files:**
 - Modify: `frontend/src/pages/login.jsx`, `register.jsx`, `ForgotPassword.jsx`, `ResetPassword.jsx`, `Arrepentimiento.jsx`, `Privacidad.jsx`
@@ -464,7 +464,7 @@
 - [ ] **Paso 6: Commit.**
   `feat(frontend): formularios con el estilo nuevo y vuelta a la fecha tras el login`
 
-### Tarea 9: Fotos optimizadas
+### Task 9: Fotos optimizadas
 
 **Files:**
 - Create: `frontend/scripts/optimizar-fotos.mjs`
@@ -496,7 +496,7 @@
 - [ ] **Paso 5: Commit.**
   `perf(frontend): fotos en WebP, sin marca de agua y con tamaños por pantalla`
 
-### Tarea 10: Verificación final y documentación
+### Task 10: Verificación final y documentación
 
 **Files:**
 - Modify: `README.md` (sección Frontend: `npm test`, `npm run dev:mock` y `node scripts/capturas.mjs`)
