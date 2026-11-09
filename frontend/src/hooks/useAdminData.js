@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { sesionValida } from '../lib/sesion';
 import api from '../api/client';
 
 export const useReservas = () => {
@@ -35,6 +36,7 @@ export const useMisReservas = () => {
   return useQuery({
     queryKey: ['mis-reservas'],
     queryFn: () => api.get('/reserva/mis-reservas'),
-    enabled: !!localStorage.getItem('authToken'),
+    // Solo con una sesión vigente: con el token vencido el interceptor mandaría a /login sin 'volver'.
+    enabled: !!sesionValida(localStorage.getItem('authToken')),
   });
 };

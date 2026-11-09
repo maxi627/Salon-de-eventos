@@ -19,6 +19,7 @@ import Confirmacion from './pages/confirmacion.jsx';
 import ForgotPassword from './pages/ForgotPassword.jsx';
 import Home from './pages/home.jsx';
 import Login from './pages/login.jsx';
+import MisReservas from './pages/MisReservas.jsx';
 import Privacidad from './pages/Privacidad';
 import Register from './pages/register.jsx';
 import Reservas from './pages/reservas.jsx';
@@ -69,6 +70,7 @@ const router = createBrowserRouter([
       { path: "/reset-password/:token", element: <ResetPassword /> },
       { path: "/reservar", element: <Reservas /> },
       { path: "/reservar/:dateString", element: <Confirmacion /> },
+      { path: "/mis-reservas", element: <MisReservas /> },
       { path: "/privacidad", element: <Privacidad />},
       { path: "/arrepentimiento", element: <Arrepentimiento /> },
       {

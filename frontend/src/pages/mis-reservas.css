@@ -1,0 +1,38 @@
+/* Mis reservas */
+.sv-mis-reservas { max-width: 640px; padding-top: 28px; padding-bottom: 104px; }
+@media (min-width: 720px) { .sv-mis-reservas { padding-bottom: 56px; } }
+.sv-mis-reservas__saludo { color: var(--sv-tinta-suave); }
+
+.sv-mis-reservas__lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+
+.sv-mi-reserva__cabecera { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.sitio .sv-mi-reserva__cabecera h2 { font-size: 19px; margin: 0; }
+
+.sv-insignia {
+  flex: none;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+.sv-insignia--confirmada { background: var(--sv-verde-50); color: var(--sv-verde); }
+.sv-insignia--pendiente { background: var(--sv-ambar-50); color: var(--sv-ambar-txt); }
+.sv-insignia--cancelada { background: var(--sv-gris); color: var(--sv-gris-txt); }
+
+.sv-barra { height: 8px; border-radius: 99px; background: var(--sv-gris); overflow: hidden; margin: 14px 0 8px; }
+.sv-barra span { display: block; height: 100%; background: var(--sv-verde); border-radius: 99px; }
+
+.sv-mi-reserva__montos { margin: 0; }
+.sv-mi-reserva__montos div { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; font-size: 14.5px; }
+.sv-mi-reserva__montos dt { color: var(--sv-tinta-suave); }
+.sv-mi-reserva__montos dd { margin: 0; text-align: right; }
+.sv-mi-reserva__pagado { color: var(--sv-verde); font-weight: 600; }
+
+.sv-mi-reserva__nota { color: var(--sv-tinta-suave); font-size: 14px; margin: 10px 0 0 !important; }
+.sv-mi-reserva__boton.sv-boton { width: 100%; margin-top: 12px; }
+
+.sv-mi-reserva--fantasma { height: 150px; border-radius: var(--sv-radio); }
+
+.sv-mis-reservas__vacio { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.sv-mis-reservas__vacio p { margin: 0; }
