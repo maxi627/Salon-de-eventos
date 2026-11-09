@@ -50,6 +50,16 @@ En desarrollo se puede usar la clave de prueba de Turnstile (`VITE_TURNSTILE_SIT
 npm run build
 ```
 
+#### Pruebas y revisión sin backend
+```bash
+npm test                          # pruebas de las reglas de fechas, seña, sesión y "volver" del login
+npm run dev:mock                  # sitio con una API simulada (dev/mockApi.js), sin Docker ni datos reales
+node scripts/capturas.mjs <nombre> # con dev:mock corriendo: capturas a 320/390/1366 px en .capturas/<nombre>; falla si algo desborda
+```
+>`dev:mock` usa la clave de prueba de Turnstile (`frontend/.env.mock`). Para entrar como cliente, cualquier correo; como administrador, uno que empiece con `admin`.
+
+>Las fotos del sitio se generan en WebP con `node scripts/optimizar-fotos.mjs <carpeta-con-los-originales>`.
+
 ### Backend, base de datos e infraestructura (Docker)
 El stack completo —PostgreSQL, Redis, Traefik, la aplicación Flask, el worker de Celery y el frontend— está orquestado con Docker Compose.
 >Deben asegurarse de tener el archivo .env configurado dentro de App/ antes de ejecutar cualquier comando de Docker.
