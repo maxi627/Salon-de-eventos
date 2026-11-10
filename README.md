@@ -186,3 +186,11 @@ salon-de-eventos/
 ├── .gitignore
 └── README.md
 ```
+
+## Licencia
+
+Copyright © 2025-2026 Maximiliano Eula. **Todos los derechos reservados.**
+
+Este repositorio se publica solo para que pueda verse y evaluarse. No se concede ninguna licencia
+de uso: no se permite usar, copiar, modificar ni distribuir el código sin autorización escrita del
+autor. Ver [LICENSE](LICENSE).
