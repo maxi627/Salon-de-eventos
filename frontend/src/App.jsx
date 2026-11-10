@@ -5,6 +5,7 @@ import './App.css';
 import ChatbotWidget from './components/ChatbotWidget';
 import SiteFooter from './components/sitio/SiteFooter';
 import SiteHeader from './components/sitio/SiteHeader';
+import UrlCanonica from './components/sitio/UrlCanonica';
 import { sesionValida } from './lib/sesion';
 
 function leerSesion() {
@@ -55,6 +56,7 @@ function App() {
     <div className="app-main-wrapper">
       {/* Al cambiar de página arranca arriba; con #ancla, baja a esa sección */}
       <ScrollRestoration />
+      <UrlCanonica />
       <SiteHeader user={user} onLogout={handleLogout} />
       <main className="sitio">
         <Outlet context={{ handleLogin, user }} />

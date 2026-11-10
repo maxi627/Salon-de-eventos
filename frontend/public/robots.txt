@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin-panel
+Disallow: /mis-reservas
+
+Sitemap: https://saloneventos.cloud/sitemap.xml

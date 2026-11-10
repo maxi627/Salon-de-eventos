@@ -9,6 +9,51 @@
     <meta name="theme-color" content="#B4532A" />
     <link rel="preload" as="image" href="/fotos/ia-pileta-800.webp" imagesrcset="/fotos/ia-pileta-800.webp 800w, /fotos/ia-pileta-1600.webp 1600w" imagesizes="100vw" fetchpriority="high" />
     <title>Salón de Eventos · San Rafael</title>
+
+    <!-- Vista previa al compartir el link (WhatsApp, Facebook, etc.) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_AR" />
+    <meta property="og:site_name" content="Salón de Eventos" />
+    <meta property="og:title" content="Salón de Eventos · San Rafael, Mendoza" />
+    <meta property="og:description" content="Salón para eventos de hasta 50 personas en San Rafael, Mendoza, con parque, pileta y parrilla. Mirá las fechas libres con su precio y reservá online." />
+    <meta property="og:url" content="https://saloneventos.cloud/" />
+    <meta property="og:image" content="https://saloneventos.cloud/compartir.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Datos del negocio para Google. Tienen que coincidir con src/content/salon.js (lo verifica seo.test.js). -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": ["LocalBusiness", "EventVenue"],
+        "name": "Salón de Eventos",
+        "description": "Salón para eventos de hasta 50 personas en San Rafael, Mendoza, con parque, pileta y parrilla.",
+        "url": "https://saloneventos.cloud/",
+        "image": "https://saloneventos.cloud/compartir.jpg",
+        "telephone": "+5492604119865",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Bolívar 1425",
+          "addressLocality": "San Rafael",
+          "addressRegion": "Mendoza",
+          "addressCountry": "AR"
+        },
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+            "opens": "11:00",
+            "closes": "20:00"
+          }
+        ],
+        "maximumAttendeeCapacity": 50,
+        "sameAs": [
+          "https://www.facebook.com/saljjuh/",
+          "https://www.instagram.com/saloneventos_?igsh=amVocnl5dGdkdXN2"
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
