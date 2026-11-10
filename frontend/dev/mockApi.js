@@ -52,6 +52,25 @@ function reservasDePrueba(fechas) {
   ];
 }
 
+// Reservas que ve el administrador: dos pedidas desde la web (nacen con valor 0), una en un día
+// con precio cargado y otra en el día sin precio, y una confirmada con su valor ya guardado.
+function reservasDelPanel(fechas) {
+  const usuario = { id: 7, nombre: 'Laura', apellido: 'Gómez', correo: 'laura@ejemplo.com', telefono: '2604000000' };
+  const conPrecio = fechas.find((f) => f.estado === 'pendiente' && f.valor_estimado > 0) ?? fechas[0];
+  const sinPrecio = fechas.find((f) => f.valor_estimado === null) ?? fechas[1];
+  const confirmada = fechas.find((f) => f.estado === 'reservada') ?? fechas[2];
+  const reserva = (id, estado, valor, f) => ({
+    id, estado, valor_alquiler: valor, saldo_restante: valor, cantidad_personas: 40,
+    hora_inicio: null, hora_fin: null, comprobante_url: null, pagos: [],
+    usuario, fecha: { id: f.id, dia: f.dia },
+  });
+  return [
+    reserva(21, 'pendiente', 0, conPrecio),
+    reserva(22, 'pendiente', 0, sinPrecio),
+    reserva(23, 'confirmada', 210000, confirmada),
+  ];
+}
+
 function responder(res, status, data, message = 'ok') {
   res.statusCode = status;
   res.setHeader('Content-Type', 'application/json');
@@ -95,6 +114,7 @@ export default function mockApi() {
           return responder(res, 200, { token: tokenFalso(rol, 'Laura') });
         }
 
+        if (req.method === 'GET' && ruta === '/reserva') return responder(res, 200, reservasDelPanel(fechas));
         if (req.method === 'GET' && ruta === '/reserva/mis-reservas') return responder(res, 200, reservasDePrueba(fechas));
         if (req.method === 'POST' && ruta === '/reserva/solicitar') return responder(res, 201, { id: 10 }, 'Solicitud enviada');
 

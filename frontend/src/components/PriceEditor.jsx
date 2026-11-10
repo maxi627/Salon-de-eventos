@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 import './PriceEditor.css';
 
@@ -15,6 +16,7 @@ const formatPriceShort = (value) => {
 };
 
 function PriceEditor() {
+  const queryClient = useQueryClient();
   const [mode, setMode] = useState('calendar'); // 'calendar', 'individual', 'bulk'
   const [selectedDate, setSelectedDate] = useState('');
   const [fechaData, setFechaData] = useState(null);
@@ -105,6 +107,7 @@ function PriceEditor() {
       if (!response.ok) throw new Error(result.message || "Error al actualizar");
 
       await fetchAllPrices(); 
+      queryClient.invalidateQueries({ queryKey: ['fechas'] });
       setMessage(`¡Precio de ${fechaData.dia} actualizado!`);
     } catch (err) {
       setError(err.message);
@@ -159,6 +162,7 @@ function PriceEditor() {
         }
       }
       await fetchAllPrices();
+      queryClient.invalidateQueries({ queryKey: ['fechas'] });
       setMessage(`Se procesaron y actualizaron ${count} fechas con éxito.`);
     } catch (err) {
       setError("Error en proceso masivo: " + err.message);

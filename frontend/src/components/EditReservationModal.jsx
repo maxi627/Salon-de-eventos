@@ -1,10 +1,14 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
+import { useFechas } from '../hooks/useFechas';
+import { formatoPesos } from '../lib/fechas';
+import { valorAlquilerSugerido } from '../lib/precioReserva';
 import './EditReservationModal.css';
 
 function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
   const queryClient = useQueryClient();
-  
+  const { porDia, isLoading: cargandoFechas } = useFechas();
+
   const [formData, setFormData] = useState({
     usuario_id: reservation?.usuario?.id || '',
     fecha_dia: reservation?.fecha?.dia || '',
@@ -14,6 +18,13 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
     hora_inicio: reservation?.hora_inicio || '', 
     hora_fin: reservation?.hora_fin || '',
   });
+
+  // Mientras nadie fije el valor (ni guardado en la reserva ni escrito a mano), se muestra el
+  // precio estimado que el calendario tiene para la fecha elegida.
+  const [valorFijado, setValorFijado] = useState(() => valorAlquilerSugerido(reservation?.valor_alquiler, 0) > 0);
+  const valorEstimado = porDia[formData.fecha_dia]?.valor_estimado;
+  const valorAlquiler = valorFijado ? formData.valor_alquiler : valorAlquilerSugerido(0, valorEstimado);
+  const hayPrecioEstimado = valorAlquilerSugerido(0, valorEstimado) > 0;
 
   const [localReservation, setLocalReservation] = useState(reservation);
   
@@ -177,7 +188,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
     setMessage('');
     const token = localStorage.getItem('authToken');
     
-    const dataToSend = { ...formData };
+    const dataToSend = { ...formData, valor_alquiler: valorAlquiler };
     if (!dataToSend.hora_inicio) delete dataToSend.hora_inicio;
     if (!dataToSend.hora_fin) delete dataToSend.hora_fin;
 
@@ -320,7 +331,22 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
           <div className="form-group-row">
             <div className="form-group">
               <label htmlFor="valor_alquiler">Valor del Alquiler ($)</label>
-              <input type="number" name="valor_alquiler" value={formData.valor_alquiler} onChange={handleChange} min="0" />
+              <input
+                type="number"
+                name="valor_alquiler"
+                id="valor_alquiler"
+                value={valorAlquiler}
+                onChange={(e) => { setValorFijado(true); handleChange(e); }}
+                min="0"
+              />
+              {formData.fecha_dia && !cargandoFechas && (
+                <p className="status-help-text" style={{ marginTop: 0 }}>
+                  <i className="fa-solid fa-circle-info"></i>{' '}
+                  {hayPrecioEstimado
+                    ? `Precio estimado del calendario: ${formatoPesos(valorEstimado)}`
+                    : 'Ese día no tiene precio cargado en el calendario.'}
+                </p>
+              )}
             </div>
         
             {/* <div className="form-group">
