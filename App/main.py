@@ -1,14 +1,15 @@
 import os
 
 from app import create_app, db
+from app.db_arranque import crear_tablas_sin_conexiones_abiertas
 
 # Crear la aplicación
 app = create_app()
 app.app_context().push()
 
-# Crear las tablas de la base de datos si no existen
+# Crear las tablas que falten, sin dejar conexiones que hereden los workers de gunicorn
 with app.app_context():
-    db.create_all()
+    crear_tablas_sin_conexiones_abiertas(db)
 
 # Configurar ejecución según el entorno
 if __name__ == "__main__":
