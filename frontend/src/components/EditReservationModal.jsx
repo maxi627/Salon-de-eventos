@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useFechas } from '../hooks/useFechas';
 import { formatoPesos } from '../lib/fechas';
-import { valorAlquilerSugerido } from '../lib/precioReserva';
+import { saldoRestante, valorAlquilerSugerido } from '../lib/precioReserva';
 import './EditReservationModal.css';
 
 function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
@@ -27,6 +27,10 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
   const hayPrecioEstimado = valorAlquilerSugerido(0, valorEstimado) > 0;
 
   const [localReservation, setLocalReservation] = useState(reservation);
+  // El saldo se recalcula en vivo con el valor del campo; el servidor, en cambio, valida los
+  // pagos contra el valor guardado, por eso se avisa cuando hay un cambio sin guardar.
+  const saldo = saldoRestante(valorAlquiler, localReservation?.pagos);
+  const valorSinGuardar = Number(valorAlquiler) !== Number(localReservation?.valor_alquiler || 0);
   
   // Estados para el buscador en vivo
   const [userSearchTerm, setUserSearchTerm] = useState('');
@@ -112,7 +116,11 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
       setError('El monto del pago debe ser un número positivo.');
       return;
     }
-    if (montoAAgregar > localReservation.saldo_restante) {
+    if (valorSinGuardar) {
+      setError('Guardá primero el nuevo valor del alquiler: los pagos se validan contra el valor guardado.');
+      return;
+    }
+    if (montoAAgregar > saldo) {
       setError('El pago no puede ser mayor que el saldo restante.');
       return;
     }
@@ -422,8 +430,13 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
               )}
             </ul>
             <p className="saldo-restante">
-              Saldo Restante: <strong>${(localReservation.saldo_restante || 0).toLocaleString('es-AR')}</strong>
+              Saldo Restante: <strong>${saldo.toLocaleString('es-AR')}</strong>
             </p>
+            {valorSinGuardar && (
+              <p className="status-help-text" style={{ marginTop: 0, textAlign: 'right' }}>
+                <i className="fa-solid fa-circle-info"></i> Calculado con el valor del campo, todavía sin guardar.
+              </p>
+            )}
 
             <div className="add-payment-form">
               <input

@@ -9,3 +9,15 @@ export function valorAlquilerSugerido(valorGuardado, valorEstimado) {
   if (esMontoPositivo(valorEstimado)) return valorEstimado;
   return 0;
 }
+
+function aNumero(valor) {
+  const n = Number(valor);
+  return Number.isFinite(n) ? n : 0;
+}
+
+// Saldo que se muestra en el modal: el valor del campo (aunque todavía no se haya guardado)
+// menos los pagos registrados.
+export function saldoRestante(valorAlquiler, pagos = []) {
+  const pagado = (pagos ?? []).reduce((total, pago) => total + aNumero(pago.monto), 0);
+  return aNumero(valorAlquiler) - pagado;
+}

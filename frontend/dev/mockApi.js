@@ -59,15 +59,16 @@ function reservasDelPanel(fechas) {
   const conPrecio = fechas.find((f) => f.estado === 'pendiente' && f.valor_estimado > 0) ?? fechas[0];
   const sinPrecio = fechas.find((f) => f.valor_estimado === null) ?? fechas[1];
   const confirmada = fechas.find((f) => f.estado === 'reservada') ?? fechas[2];
-  const reserva = (id, estado, valor, f) => ({
-    id, estado, valor_alquiler: valor, saldo_restante: valor, cantidad_personas: 40,
-    hora_inicio: null, hora_fin: null, comprobante_url: null, pagos: [],
+  const reserva = (id, estado, valor, f, pagos = []) => ({
+    id, estado, valor_alquiler: valor, cantidad_personas: 40,
+    saldo_restante: valor - pagos.reduce((t, p) => t + p.monto, 0),
+    hora_inicio: null, hora_fin: null, comprobante_url: null, pagos,
     usuario, fecha: { id: f.id, dia: f.dia },
   });
   return [
     reserva(21, 'pendiente', 0, conPrecio),
     reserva(22, 'pendiente', 0, sinPrecio),
-    reserva(23, 'confirmada', 210000, confirmada),
+    reserva(23, 'confirmada', 210000, confirmada, [{ id: 5, monto: 63000, fecha_pago: '2026-11-01T12:00:00' }]),
   ];
 }
 
