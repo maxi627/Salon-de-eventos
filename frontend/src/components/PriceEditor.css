@@ -368,3 +368,47 @@
     display: block !important;
   }
 }
+/* --- FERIADOS (solo panel) --- */
+.calendar-cell.is-feriado {
+  border-color: rgba(245, 158, 11, 0.6);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.feriado-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  vertical-align: middle;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.15);
+}
+
+.feriado-leyenda,
+.feriado-aviso {
+  margin: 12px 0 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #94a3b8);
+}
+
+.feriado-leyenda .feriado-badge,
+.feriado-aviso .feriado-badge {
+  margin: 0 4px 0 0;
+}
+
+@media (max-width: 768px) {
+  /* En la grilla chica, el cartel se reduce a un punto */
+  .calendar-cell .feriado-badge {
+    width: 6px;
+    height: 6px;
+    margin-left: 3px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 0;
+    background: #f59e0b;
+  }
+}

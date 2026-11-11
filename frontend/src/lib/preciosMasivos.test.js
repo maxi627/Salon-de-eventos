@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fechasDelDiaDeSemana, motivoDelError, resumenActualizacion } from './preciosMasivos';
+import { fechasDeFeriados, fechasDelDiaDeSemana, motivoDelError, resumenActualizacion } from './preciosMasivos';
 
 const SABADO = 6;
 const DOMINGO = 0;
@@ -74,5 +74,40 @@ describe('motivoDelError', () => {
   it('usa el mensaje del servidor para el resto', () => {
     expect(motivoDelError(422, 'Error de validación')).toBe('Error de validación');
     expect(motivoDelError(500)).toBe('error 500 del servidor');
+  });
+});
+
+describe('fechasDeFeriados', () => {
+  const FERIADOS = [
+    { fecha: '2026-11-09', nombre: 'Visita del papa', tipo: 'inamovible' },
+    { fecha: '2026-11-23', nombre: 'Soberanía Nacional', tipo: 'trasladable' },
+    { fecha: '2026-12-07', nombre: 'Puente turístico', tipo: 'puente' },
+    { fecha: '2026-12-08', nombre: 'Inmaculada Concepción', tipo: 'inamovible' },
+    { fecha: '2027-03-24', nombre: 'Memoria', tipo: 'inamovible' },
+  ];
+
+  it('devuelve los feriados de hoy en adelante dentro del rango, de todos los tipos', () => {
+    const ahora = new Date(2026, 10, 10, 22, 49);
+    expect(fechasDeFeriados(FERIADOS, 1, ahora)).toEqual(['2026-11-23', '2026-12-07', '2026-12-08']);
+  });
+
+  it('el rango más largo incluye los siguientes', () => {
+    expect(fechasDeFeriados(FERIADOS, 6, new Date(2026, 10, 10, 10, 0))).toEqual([
+      '2026-11-23', '2026-12-07', '2026-12-08', '2027-03-24',
+    ]);
+  });
+
+  it('incluye un feriado que es hoy', () => {
+    expect(fechasDeFeriados(FERIADOS, 1, new Date(2026, 10, 23, 23, 0))[0]).toBe('2026-11-23');
+  });
+
+  it('ordena y no repite', () => {
+    const desordenados = [FERIADOS[3], FERIADOS[1], FERIADOS[3]];
+    expect(fechasDeFeriados(desordenados, 3, new Date(2026, 10, 10))).toEqual(['2026-11-23', '2026-12-08']);
+  });
+
+  it('sin feriados cargados devuelve una lista vacía', () => {
+    expect(fechasDeFeriados([], 3, new Date(2026, 10, 10))).toEqual([]);
+    expect(fechasDeFeriados(undefined, 3, new Date(2026, 10, 10))).toEqual([]);
   });
 });

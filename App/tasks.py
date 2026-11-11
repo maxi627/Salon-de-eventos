@@ -15,6 +15,16 @@ from app.utils.storage import upload_file_to_r2
 from app.services import NotificationService
 
 @shared_task
+def sincronizar_feriados_task():
+    """Actualiza los feriados del año actual y del siguiente (los puentes se decretan durante el año)."""
+    from app.feriados import sincronizar_feriados
+    anio = datetime.now().year
+    resumen = sincronizar_feriados([anio, anio + 1])
+    print(f"Tarea 'sincronizar_feriados_task': {resumen}")
+    return {str(k): v for k, v in resumen.items()}
+
+
+@shared_task
 def check_pending_reservations():
     """
     Busca reservas pendientes y envía una notificación si encuentra alguna.

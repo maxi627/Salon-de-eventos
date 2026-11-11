@@ -17,6 +17,16 @@ export function fechasDelDiaDeSemana(diaSemana, meses, ahora = new Date()) {
   return fechas;
 }
 
+// Fechas ('YYYY-MM-DD') de los feriados que caen desde hoy hasta dentro de `meses` meses.
+export function fechasDeFeriados(feriados, meses, ahora = new Date()) {
+  const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+  const fin = new Date(hoy);
+  fin.setMonth(fin.getMonth() + Number(meses));
+  const [desde, hasta] = [aTextoFecha(hoy), aTextoFecha(fin)];
+  const fechas = (feriados ?? []).map((f) => f.fecha).filter((f) => f >= desde && f <= hasta);
+  return [...new Set(fechas)].sort();
+}
+
 function fechaCorta(texto) {
   const [y, m, d] = texto.split('-');
   return `${d}/${m}/${y}`;

@@ -59,6 +59,7 @@ def create_app(config_name=None):
     from app.routes.chatbot_resource import ChatbotBP
     from app.routes.config_resource import Config
     from app.routes.fecha_resource import Fecha
+    from app.routes.feriado_resource import FeriadoBP
     from app.routes.gasto_resource import GastoBP
     from app.routes.pago_resource import PagoBP
     from app.routes.persona_resource import Persona
@@ -69,6 +70,7 @@ def create_app(config_name=None):
     app.register_blueprint(Administrador, url_prefix='/api/v1')
     app.register_blueprint(Usuario, url_prefix='/api/v1')
     app.register_blueprint(Fecha, url_prefix='/api/v1')
+    app.register_blueprint(FeriadoBP, url_prefix='/api/v1')
     app.register_blueprint(Reserva, url_prefix='/api/v1')
     app.register_blueprint(Persona, url_prefix='/api/v1')
     app.register_blueprint(Auth, url_prefix='/api/v1')

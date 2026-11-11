@@ -44,4 +44,8 @@ celery.conf.beat_schedule = {
         'task': 'app.tasks.check_upcoming_reservations',
         'schedule': crontab(hour=10, minute=0),
     },
+    'sincronizar-feriados-lunes-6am': {
+        'task': 'app.tasks.sincronizar_feriados_task',
+        'schedule': crontab(hour=6, minute=0, day_of_week='mon'),
+    },
 }

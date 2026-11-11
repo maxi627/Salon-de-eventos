@@ -113,6 +113,15 @@ export default function mockApi() {
           return responder(res, 200, { id: Number(fechaPorId[1]), ...cuerpo }, 'Fecha actualizada con éxito');
         }
 
+        if (req.method === 'GET' && ruta === '/feriado') {
+          return responder(res, 200, [
+            { fecha: '2026-11-23', nombre: 'Día de la Soberanía Nacional (20/11)', tipo: 'trasladable' },
+            { fecha: '2026-12-07', nombre: 'Puente turístico no laborable', tipo: 'puente' },
+            { fecha: '2026-12-08', nombre: 'Día de la Inmaculada Concepción de María', tipo: 'inamovible' },
+            { fecha: '2026-12-25', nombre: 'Navidad', tipo: 'inamovible' },
+          ]);
+        }
+
         if (req.method === 'GET' && ruta === '/payment-info') return responder(res, 200, { alias: 'salon.eventos.prueba' });
 
         if (req.method === 'POST' && ruta === '/login') {

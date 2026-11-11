@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useState } from 'react';
-import { fechasDelDiaDeSemana, motivoDelError, resumenActualizacion } from '../lib/preciosMasivos';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { fechasDeFeriados, fechasDelDiaDeSemana, motivoDelError, resumenActualizacion } from '../lib/preciosMasivos';
 import './PriceEditor.css';
 
 const DAYS_OF_WEEK = [
@@ -49,6 +49,16 @@ function PriceEditor() {
   useEffect(() => {
     fetchAllPrices();
   }, [fetchAllPrices]);
+
+  // --- FERIADOS (solo se muestran en el panel) ---
+  const [feriados, setFeriados] = useState([]);
+  useEffect(() => {
+    fetch('/api/v1/feriado', { headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` } })
+      .then((r) => (r.ok ? r.json() : { data: [] }))
+      .then((r) => setFeriados(r.data ?? []))
+      .catch(() => setFeriados([]));
+  }, []);
+  const feriadoPorDia = useMemo(() => Object.fromEntries(feriados.map((f) => [f.fecha, f])), [feriados]);
 
   // --- 2. BUSCAR FECHA ESPECÍFICA ---
   const handleManualSearch = async (date) => {
@@ -128,7 +138,9 @@ function PriceEditor() {
     setError('');
     const token = localStorage.getItem('authToken');
 
-    const targetDates = fechasDelDiaDeSemana(bulkDay, bulkMonths);
+    const targetDates = bulkDay === 'feriados'
+      ? fechasDeFeriados(feriados, bulkMonths)
+      : fechasDelDiaDeSemana(bulkDay, bulkMonths);
 
     // Se revisa la respuesta de cada fecha: si alguna falla, se informa cuál y por qué.
     const resultados = [];
@@ -213,13 +225,22 @@ function PriceEditor() {
             {daysArray.map(day => {
               const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
               const dayData = monthPrices[dateStr];
-              
+              const feriado = feriadoPorDia[dateStr];
+
               return (
-                <div key={day} className="calendar-cell" onClick={() => {
-                  setMode('individual');
-                  handleManualSearch(dateStr);
-                }}>
-                  <span className="day-number">{day}</span>
+                <div
+                  key={day}
+                  className={feriado ? 'calendar-cell is-feriado' : 'calendar-cell'}
+                  title={feriado ? `Feriado: ${feriado.nombre}` : undefined}
+                  onClick={() => {
+                    setMode('individual');
+                    handleManualSearch(dateStr);
+                  }}
+                >
+                  <span className="day-number">
+                    {day}
+                    {feriado && <span className="feriado-badge">Feriado</span>}
+                  </span>
                   {dayData ? (
                     <span className="price-tag">{formatPriceShort(dayData.valor)}</span>
                   ) : (
@@ -229,6 +250,11 @@ function PriceEditor() {
               );
             })}
           </div>
+          {feriados.length > 0 && (
+            <p className="feriado-leyenda">
+              <span className="feriado-badge">Feriado</span> Feriados nacionales (incluye trasladables y puentes). Pasá el mouse por el día para ver cuál es.
+            </p>
+          )}
         </div>
       )}
 
@@ -239,6 +265,9 @@ function PriceEditor() {
             <div className="form-group">
               <label>Seleccionar Fecha</label>
               <input type="date" value={selectedDate} onChange={(e) => handleManualSearch(e.target.value)} />
+              {feriadoPorDia[selectedDate] && (
+                <p className="feriado-aviso"><span className="feriado-badge">Feriado</span> {feriadoPorDia[selectedDate].nombre}</p>
+              )}
             </div>
             <div className="form-group">
               <label>Nuevo Precio ($)</label>
@@ -271,6 +300,7 @@ function PriceEditor() {
               <label>Día de la semana</label>
               <select value={bulkDay} onChange={(e) => setBulkDay(e.target.value)}>
                 {DAYS_OF_WEEK.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+                <option value="feriados">Feriados</option>
               </select>
             </div>
             <div className="form-group">
