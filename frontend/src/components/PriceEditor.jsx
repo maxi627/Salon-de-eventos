@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
+import { fechasDelDiaDeSemana, motivoDelError, resumenActualizacion } from '../lib/preciosMasivos';
 import './PriceEditor.css';
 
 const DAYS_OF_WEEK = [
@@ -127,43 +128,45 @@ function PriceEditor() {
     setError('');
     const token = localStorage.getItem('authToken');
 
-    const targetDates = [];
-    const start = new Date();
-    const end = new Date();
-    end.setMonth(end.getMonth() + parseInt(bulkMonths));
+    const targetDates = fechasDelDiaDeSemana(bulkDay, bulkMonths);
 
-    let curr = new Date(start);
-    while (curr <= end) {
-      if (curr.getDay() === parseInt(bulkDay)) {
-        targetDates.push(curr.toISOString().split('T')[0]);
-      }
-      curr.setDate(curr.getDate() + 1);
-    }
-
+    // Se revisa la respuesta de cada fecha: si alguna falla, se informa cuál y por qué.
+    const resultados = [];
     try {
-      let count = 0;
       for (const d of targetDates) {
-        const getOrCreateRes = await fetch(`/api/v1/fecha/by-date/${d}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const getOrCreateResult = await getOrCreateRes.json();
-        
-        if (getOrCreateRes.ok && getOrCreateResult.data) {
-          const idParaActualizar = getOrCreateResult.data.id;
-          await fetch(`/api/v1/fecha/${idParaActualizar}`, {
+        try {
+          const getOrCreateRes = await fetch(`/api/v1/fecha/by-date/${d}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const getOrCreateResult = await getOrCreateRes.json().catch(() => ({}));
+          if (!getOrCreateRes.ok || !getOrCreateResult.data) {
+            resultados.push({ dia: d, ok: false, motivo: motivoDelError(getOrCreateRes.status, getOrCreateResult.message) });
+            continue;
+          }
+
+          const putRes = await fetch(`/api/v1/fecha/${getOrCreateResult.data.id}`, {
             method: 'PUT',
-            headers: { 
-              'Content-Type': 'application/json', 
-              'Authorization': `Bearer ${token}` 
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({ dia: d, valor_estimado: parseFloat(price) }),
           });
-          count++;
+          if (putRes.ok) {
+            resultados.push({ dia: d, ok: true });
+          } else {
+            const putResult = await putRes.json().catch(() => ({}));
+            resultados.push({ dia: d, ok: false, motivo: motivoDelError(putRes.status, putResult.message) });
+          }
+        } catch {
+          resultados.push({ dia: d, ok: false, motivo: 'sin conexión con el servidor' });
         }
       }
       await fetchAllPrices();
       queryClient.invalidateQueries({ queryKey: ['fechas'] });
-      setMessage(`Se procesaron y actualizaron ${count} fechas con éxito.`);
+      const resumen = resumenActualizacion(resultados);
+      if (resumen.ok) setMessage(resumen.texto);
+      else setError(resumen.texto);
     } catch (err) {
       setError("Error en proceso masivo: " + err.message);
     } finally {

@@ -107,6 +107,12 @@ export default function mockApi() {
           return responder(res, 200, encontrada ?? { id: 999, dia: porFecha[1], estado: 'disponible', valor_estimado: null });
         }
 
+        const fechaPorId = ruta.match(/^\/fecha\/(\d+)$/);
+        if (req.method === 'PUT' && fechaPorId) {
+          const cuerpo = await leerCuerpo(req);
+          return responder(res, 200, { id: Number(fechaPorId[1]), ...cuerpo }, 'Fecha actualizada con éxito');
+        }
+
         if (req.method === 'GET' && ruta === '/payment-info') return responder(res, 200, { alias: 'salon.eventos.prueba' });
 
         if (req.method === 'POST' && ruta === '/login') {
