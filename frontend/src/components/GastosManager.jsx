@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { hoyLocal } from '../lib/fechas';
 import './GastosManager.css';
 
 function GastosManager() {
@@ -7,7 +8,7 @@ function GastosManager() {
     descripcion: '',
     monto: '',
     categoria: 'Servicios',
-    fecha: new Date().toISOString().slice(0, 10),
+    fecha: hoyLocal(),
   });
   
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -83,7 +84,7 @@ function GastosManager() {
         descripcion: '',
         monto: '',
         categoria: 'Servicios',
-        fecha: new Date().toISOString().slice(0, 10),
+        fecha: hoyLocal(),
       });
 
     } catch (err) {

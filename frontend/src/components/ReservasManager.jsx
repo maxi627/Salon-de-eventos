@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useReservas } from '../hooks/useAdminData';
+import { hoyLocal } from '../lib/fechas';
 import ArchivedReservations from './ArchivedReservations';
 import EditReservationModal from './EditReservationModal';
 import Pagination from './Pagination'; 
@@ -30,8 +31,8 @@ const ReservasManager = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Obtener la fecha de hoy en formato YYYY-MM-DD para comparar strings
-  const today = new Date().toISOString().split('T')[0];
+  // Fecha de hoy (hora local, YYYY-MM-DD) para comparar strings
+  const today = hoyLocal();
 
   const formatDisplayDate = (isoDate) => {
     if (!isoDate) return 'N/A';
