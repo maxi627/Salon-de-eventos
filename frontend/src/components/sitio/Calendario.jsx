@@ -1,16 +1,9 @@
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
-import { DIAS_MAXIMOS, estadoDelDia, formatoFechaLarga, formatoPesos, precioDe, sumarDias } from '../../lib/fechas';
+import { etiquetaDelDia } from '../../lib/calendario';
+import { DIAS_MAXIMOS, estadoDelDia, formatoPesos, precioDe, sumarDias } from '../../lib/fechas';
 
 const DIAS_SEMANA = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
 const NOMBRES_DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-
-const DESCRIPCION = {
-  pendiente: 'pendiente',
-  ocupado: 'ocupado',
-  domingo: 'no se alquila',
-  pasado: 'ya pasó',
-  'fuera-de-rango': 'todavía no se puede reservar',
-};
 
 const ETIQUETA_VISIBLE = { pendiente: 'Pendiente', ocupado: 'Ocupado', domingo: 'No se alquila' };
 
@@ -22,8 +15,8 @@ function precioCorto(valor) {
   return valor >= 1000 ? `$${Math.round(valor / 1000)}k` : formatoPesos(valor);
 }
 
-// mes: { anio, mes } con mes 0-11.
-export default function Calendario({ porDia, hoy, mes, onCambiarMes, seleccionada, onSeleccionar, cargando }) {
+// mes: { anio, mes } con mes 0-11. feriados: { 'YYYY-MM-DD': { nombre, ... } } (opcional).
+export default function Calendario({ porDia, feriados = {}, hoy, mes, onCambiarMes, seleccionada, onSeleccionar, cargando }) {
   const [anioHoy, mesHoy] = hoy.split('-').map(Number);
   const [anioMax, mesMax] = sumarDias(hoy, DIAS_MAXIMOS).split('-').map(Number);
   const indice = (a, m) => a * 12 + m;
@@ -48,21 +41,22 @@ export default function Calendario({ porDia, hoy, mes, onCambiarMes, seleccionad
     const precio = precioDe(info);
     const libre = estado === 'libre';
     const elegido = texto === seleccionada;
-    const etiqueta = libre
-      ? `${formatoFechaLarga(texto)}, libre, ${precio ? formatoPesos(precio) : 'precio a consultar'}`
-      : `${formatoFechaLarga(texto)}, ${DESCRIPCION[estado]}`;
+    const feriado = feriados[texto];
+    const etiqueta = etiquetaDelDia(texto, estado, precio, feriado);
 
     celdas.push(
       <button
         key={texto}
         type="button"
-        className={`sv-dia sv-dia--${estado}${elegido ? ' sv-dia--elegido' : ''}`}
+        className={`sv-dia sv-dia--${estado}${elegido ? ' sv-dia--elegido' : ''}${feriado ? ' sv-dia--feriado' : ''}`}
+        title={feriado ? `Feriado: ${feriado.nombre}` : undefined}
         disabled={!libre}
         aria-pressed={libre ? elegido : undefined}
         aria-label={etiqueta}
         onClick={() => onSeleccionar(texto)}
       >
         <span className="sv-dia__numero">{dia}</span>
+        {feriado && <span className="sv-dia__feriado" aria-hidden="true" />}
         {libre && (
           <span className="sv-dia__precio">
             {precio ? (
@@ -100,6 +94,7 @@ export default function Calendario({ porDia, hoy, mes, onCambiarMes, seleccionad
         <li><i className="sv-muestra sv-muestra--pendiente" /> Pendiente</li>
         <li><i className="sv-muestra sv-muestra--ocupado" /> Ocupado</li>
         <li><i className="sv-muestra sv-muestra--domingo" /> Domingo (no se alquila)</li>
+        {Object.keys(feriados).length > 0 && <li><i className="sv-muestra sv-muestra--feriado" /> Feriado</li>}
       </ul>
     </div>
   );

@@ -5,6 +5,7 @@ import ResumenFecha from '../components/sitio/ResumenFecha';
 import '../components/sitio/calendario.css';
 import Button from '../components/ui/Button';
 import { useFechas } from '../hooks/useFechas';
+import { useFeriados } from '../hooks/useFeriados';
 import { esReservable, hoyLocal } from '../lib/fechas';
 import { sesionValida } from '../lib/sesion';
 
@@ -17,6 +18,7 @@ function Reservas() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const { porDia, isLoading, isError, refetch } = useFechas();
+  const feriados = useFeriados();
   const hoy = hoyLocal();
 
   const pedida = params.get('fecha');
@@ -60,6 +62,7 @@ function Reservas() {
         ) : (
           <Calendario
             porDia={porDia}
+            feriados={feriados}
             hoy={hoy}
             mes={mes}
             onCambiarMes={cambiarMes}
@@ -71,7 +74,7 @@ function Reservas() {
 
         <aside className="sv-reservar__lateral">
           {seleccionada ? (
-            <ResumenFecha fecha={seleccionada} info={porDia[seleccionada]} onReservar={reservar} />
+            <ResumenFecha fecha={seleccionada} info={porDia[seleccionada]} feriado={feriados[seleccionada]} onReservar={reservar} />
           ) : (
             <div className="sv-reservar__ayuda">
               <p><strong>Tocá un día libre</strong> para ver el precio y la seña.</p>

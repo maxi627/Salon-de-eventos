@@ -241,3 +241,14 @@
   --yarl__color_backdrop: rgba(0, 0, 0, .8);
   --yarl__slide_captions_container_background: rgba(0, 0, 0, .5);
 }
+
+.sv-fecha__feriado {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  background: var(--sv-terracota-50);
+  color: var(--sv-terracota-osc);
+}

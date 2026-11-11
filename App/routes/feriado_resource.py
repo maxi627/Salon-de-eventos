@@ -2,22 +2,21 @@ from datetime import date, datetime, timedelta
 
 import sentry_sdk
 from flask import Blueprint, request
-from flask_jwt_extended import jwt_required
 
 from app.config.response_builder import ResponseBuilder
-from app.extensions import db
+from app.extensions import cache, db, limiter
 from app.models import Feriado
-from app.utils.decorators import admin_required
 
 FeriadoBP = Blueprint('Feriado', __name__)
 
 
 @FeriadoBP.route('/feriado', methods=['GET'])
-@jwt_required()
-@admin_required()
+@limiter.limit("100 per minute")
+@cache.cached(timeout=3600, query_string=True)
 def listar():
     """Feriados desde `desde` (por defecto, ayer: margen por la diferencia horaria) en adelante.
-    Solo para el panel: el calendario público no los muestra."""
+    Es pública: los feriados son información pública y los usan el panel y el calendario de
+    reservas. Se cachea una hora (la sincronización con la API corre una vez por semana)."""
     response_builder = ResponseBuilder()
     try:
         texto = request.args.get('desde')

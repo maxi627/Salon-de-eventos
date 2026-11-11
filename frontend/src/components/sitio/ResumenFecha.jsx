@@ -3,7 +3,7 @@ import { formatoFechaLarga, formatoPesos, montoSena, precioDe } from '../../lib/
 import Button from '../ui/Button';
 
 // Resumen de la fecha elegida: precio, seña y el botón para seguir.
-export default function ResumenFecha({ fecha, info, onReservar }) {
+export default function ResumenFecha({ fecha, info, feriado, onReservar }) {
   const ref = useRef(null);
   const precio = precioDe(info);
   const sena = montoSena(precio);
@@ -18,6 +18,7 @@ export default function ResumenFecha({ fecha, info, onReservar }) {
   return (
     <div ref={ref} className="sv-resumen" aria-live="polite">
       <p className="sv-resumen__fecha">{titulo.charAt(0).toUpperCase() + titulo.slice(1)}</p>
+      {feriado && <p className="sv-resumen__feriado">Feriado: {feriado.nombre}</p>}
       <dl className="sv-resumen__datos">
         <div>
           <dt>Precio estimado</dt>

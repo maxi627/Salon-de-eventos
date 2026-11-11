@@ -2,6 +2,7 @@ import { FaWhatsapp } from 'react-icons/fa6';
 import { Link } from 'react-router-dom';
 import { SALON } from '../../content/salon';
 import { useFechas } from '../../hooks/useFechas';
+import { useFeriados } from '../../hooks/useFeriados';
 import { formatoPesos, hoyLocal, precioDe, proximasFechasLibres } from '../../lib/fechas';
 import Button from '../ui/Button';
 import Section from '../ui/Section';
@@ -17,6 +18,7 @@ function partes(texto) {
 
 export default function ProximasFechas() {
   const { fechas, isLoading, isError } = useFechas();
+  const feriados = useFeriados();
   const proximas = proximasFechasLibres(fechas, hoyLocal());
   const sinFechas = !isLoading && (isError || proximas.length === 0);
 
@@ -49,6 +51,9 @@ export default function ProximasFechas() {
                         <span className="sv-fecha__dia">{diaSemana}</span>
                         <span className="sv-fecha__fecha">{diaMes}</span>
                         <span className="sv-fecha__precio">{formatoPesos(precioDe(f))}</span>
+                        {feriados[f.dia] && (
+                          <span className="sv-fecha__feriado" title={feriados[f.dia].nombre}>Feriado</span>
+                        )}
                       </Link>
                     </li>
                   );

@@ -138,3 +138,33 @@
 .sv-reservar__ayuda p:last-child { margin-bottom: 0; }
 .sv-reservar__error { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
 .sv-reservar__error p { margin: 0; }
+
+/* Feriados: punto terracota en la esquina (el ámbar ya es "pendiente") */
+.sv-dia { position: relative; }
+.sv-dia__feriado {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--sv-terracota);
+}
+@media (min-width: 720px) { .sv-dia__feriado { top: 8px; right: 8px; width: 8px; height: 8px; } }
+.sv-muestra--feriado { position: relative; background: #fff; border-color: var(--sv-borde); }
+.sv-muestra--feriado::after {
+  content: '';
+  position: absolute;
+  top: 1.5px;
+  right: 1.5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--sv-terracota);
+}
+.sitio .sv-resumen__feriado {
+  margin: -4px 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sv-terracota-osc);
+}
