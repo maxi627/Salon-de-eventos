@@ -6,6 +6,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 from marshmallow import ValidationError
 
 from app.config.response_builder import ResponseBuilder
+from app.exenciones import es_administrador_del_token
 from app.extensions import db, limiter, cache
 from app.mapping import FechaSchema, ResponseSchema
 from app.services import FechaService
@@ -89,7 +90,7 @@ def add():
         return response_builder.build(), 500
 
 @Fecha.route('/fecha/<int:id>', methods=['PUT'])
-@limiter.limit("50 per minute")
+@limiter.limit("50 per minute", exempt_when=es_administrador_del_token)
 @admin_required()
 @jwt_required()
 
@@ -159,7 +160,7 @@ def delete(id):
         return response_builder.build(), 500
 
 @Fecha.route('/fecha/by-date/<string:date_string>', methods=['GET'])
-@limiter.limit("100 per minute")
+@limiter.limit("100 per minute", exempt_when=es_administrador_del_token)
 @jwt_required()
 def get_or_create_by_date(date_string):
     service = FechaService()
