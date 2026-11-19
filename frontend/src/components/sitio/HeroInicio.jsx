@@ -27,7 +27,7 @@ export default function HeroInicio() {
           libres con su precio y reservá online.
         </p>
         <div className="sv-hero__botones">
-          <Button to="/reservar">Ver fechas y precios</Button>
+          <Button to="/reservar" className="sv-hero__boton-principal">Ver fechas y precios</Button>
           <Button variant="claro" href={SALON.whatsappUrl} target="_blank" rel="noopener noreferrer">
             <FaWhatsapp aria-hidden="true" /> WhatsApp
           </Button>

@@ -293,6 +293,10 @@
   .sv-boton.sv-boton--claro.sv-oferta__boton { animation: sv-latir 1.8s ease-in-out infinite; }
   .sv-boton.sv-boton--claro.sv-oferta__boton:hover,
   .sv-boton.sv-boton--claro.sv-oferta__boton:focus-visible { animation-play-state: paused; }
+  /* Mismo latido en el botón principal de la portada */
+  .sv-boton.sv-boton--primario.sv-hero__boton-principal { animation: sv-latir 1.8s ease-in-out infinite; }
+  .sv-boton.sv-boton--primario.sv-hero__boton-principal:hover,
+  .sv-boton.sv-boton--primario.sv-hero__boton-principal:focus-visible { animation-play-state: paused; }
 }
 @keyframes sv-titilar {
   0%, 100% { transform: scale(1) rotate(-4deg); }
