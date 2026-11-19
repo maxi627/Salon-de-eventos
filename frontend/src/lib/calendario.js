@@ -9,11 +9,12 @@ const DESCRIPCION = {
 };
 
 // Texto que lee el lector de pantalla para un día del calendario de reservas.
-export function etiquetaDelDia(texto, estado, precio, feriado) {
+export function etiquetaDelDia(texto, estado, precio, feriado, enOferta = false) {
   const partes = [formatoFechaLarga(texto)];
   if (feriado) partes.push(`feriado: ${feriado.nombre}`);
   if (estado === 'libre') partes.push('libre', precio ? formatoPesos(precio) : 'precio a consultar');
   else partes.push(DESCRIPCION[estado]);
+  if (enOferta && estado === 'libre') partes.push('en oferta');
   return partes.join(', ');
 }
 

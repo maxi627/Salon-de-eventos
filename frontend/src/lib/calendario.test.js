@@ -30,6 +30,14 @@ describe('etiquetaDelDia (lo que lee el lector de pantalla)', () => {
   });
 });
 
+describe('etiquetaDelDia con oferta', () => {
+  it('avisa que el día está en oferta', () => {
+    expect(etiquetaDelDia('2026-11-28', 'libre', 130000, undefined, true)).toBe(
+      'sábado 28 de noviembre, libre, $130.000, en oferta',
+    );
+  });
+});
+
 describe('feriadosPorDia', () => {
   it('arma un índice por fecha', () => {
     expect(feriadosPorDia([NAVIDAD])).toEqual({ '2026-12-25': NAVIDAD });

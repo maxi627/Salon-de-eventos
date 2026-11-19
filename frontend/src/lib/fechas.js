@@ -45,9 +45,31 @@ export function estadoDelDia(texto, infoApi, hoy) {
   return ESTADOS_API[infoApi?.estado] ?? 'libre';
 }
 
+function montoPositivo(valor) {
+  const n = Number(valor);
+  return valor != null && Number.isFinite(n) && n > 0 ? n : null;
+}
+
+// Precio que vale para la fecha: el de oferta si tiene uno; si no, el normal.
+// Calendario, resumen, seña y confirmación usan este, así una oferta se ve igual en todos lados.
 export function precioDe(infoApi) {
-  const valor = Number(infoApi?.valor_estimado);
-  return Number.isFinite(valor) && valor > 0 ? valor : null;
+  return montoPositivo(infoApi?.valor_oferta) ?? montoPositivo(infoApi?.valor_estimado);
+}
+
+export function precioNormalDe(infoApi) {
+  return montoPositivo(infoApi?.valor_estimado);
+}
+
+export function estaEnOferta(infoApi) {
+  return montoPositivo(infoApi?.valor_oferta) !== null;
+}
+
+// Porcentaje de descuento sobre el precio normal (null si no hay contra qué comparar).
+export function descuentoPorcentaje(infoApi) {
+  const oferta = montoPositivo(infoApi?.valor_oferta);
+  const normal = precioNormalDe(infoApi);
+  if (oferta === null || normal === null || oferta >= normal) return null;
+  return Math.round((1 - oferta / normal) * 100);
 }
 
 export function esReservable(texto, infoApi, hoy) {
