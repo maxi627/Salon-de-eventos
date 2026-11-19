@@ -168,3 +168,20 @@
   font-weight: 600;
   color: var(--sv-terracota-osc);
 }
+
+/* Fechas en oferta */
+.sv-dia--libre.sv-dia--oferta { border-color: var(--sv-terracota); background: var(--sv-terracota-50); }
+.sv-dia--oferta .sv-dia__precio { color: var(--sv-terracota-osc); font-weight: 700; }
+.sv-dia__estado--oferta { color: var(--sv-terracota-osc); }
+.sv-muestra--oferta { background: var(--sv-terracota-50); border-color: var(--sv-terracota); }
+.sv-resumen__chip {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--sv-terracota);
+  color: #fff;
+}
+.sv-resumen__antes { margin-right: 8px; color: var(--sv-tinta-suave); font-weight: 400; }

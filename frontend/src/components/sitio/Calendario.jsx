@@ -1,6 +1,6 @@
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 import { etiquetaDelDia } from '../../lib/calendario';
-import { DIAS_MAXIMOS, estadoDelDia, formatoPesos, precioDe, sumarDias } from '../../lib/fechas';
+import { DIAS_MAXIMOS, estaEnOferta, estadoDelDia, formatoPesos, precioDe, sumarDias } from '../../lib/fechas';
 
 const DIAS_SEMANA = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
 const NOMBRES_DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -29,6 +29,7 @@ export default function Calendario({ porDia, feriados = {}, hoy, mes, onCambiarM
   const tituloMes = titulo.charAt(0).toUpperCase() + titulo.slice(1);
 
   const celdas = [];
+  let hayOfertas = false;
   for (let i = 0; i < primerDia; i += 1) celdas.push(<div key={`vacio-${i}`} aria-hidden="true" />);
   for (let dia = 1; dia <= diasDelMes; dia += 1) {
     const texto = textoDe(mes.anio, mes.mes, dia);
@@ -42,13 +43,15 @@ export default function Calendario({ porDia, feriados = {}, hoy, mes, onCambiarM
     const libre = estado === 'libre';
     const elegido = texto === seleccionada;
     const feriado = feriados[texto];
-    const etiqueta = etiquetaDelDia(texto, estado, precio, feriado);
+    const oferta = libre && estaEnOferta(info);
+    if (oferta) hayOfertas = true;
+    const etiqueta = etiquetaDelDia(texto, estado, precio, feriado, oferta);
 
     celdas.push(
       <button
         key={texto}
         type="button"
-        className={`sv-dia sv-dia--${estado}${elegido ? ' sv-dia--elegido' : ''}${feriado ? ' sv-dia--feriado' : ''}`}
+        className={`sv-dia sv-dia--${estado}${elegido ? ' sv-dia--elegido' : ''}${feriado ? ' sv-dia--feriado' : ''}${oferta ? ' sv-dia--oferta' : ''}`}
         title={feriado ? `Feriado: ${feriado.nombre}` : undefined}
         disabled={!libre}
         aria-pressed={libre ? elegido : undefined}
@@ -68,6 +71,7 @@ export default function Calendario({ porDia, feriados = {}, hoy, mes, onCambiarM
           </span>
         )}
         {ETIQUETA_VISIBLE[estado] && <span className="sv-dia__estado">{ETIQUETA_VISIBLE[estado]}</span>}
+        {oferta && <span className="sv-dia__estado sv-dia__estado--oferta">Oferta</span>}
       </button>,
     );
   }
@@ -95,6 +99,7 @@ export default function Calendario({ porDia, feriados = {}, hoy, mes, onCambiarM
         <li><i className="sv-muestra sv-muestra--ocupado" /> Ocupado</li>
         <li><i className="sv-muestra sv-muestra--domingo" /> Domingo (no se alquila)</li>
         {Object.keys(feriados).length > 0 && <li><i className="sv-muestra sv-muestra--feriado" /> Feriado</li>}
+        {hayOfertas && <li><i className="sv-muestra sv-muestra--oferta" /> En oferta</li>}
       </ul>
     </div>
   );

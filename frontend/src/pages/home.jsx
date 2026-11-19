@@ -1,5 +1,6 @@
 import ComoReservar from '../components/sitio/ComoReservar';
 import GaleriaInicio from '../components/sitio/GaleriaInicio';
+import BannerOferta from '../components/sitio/BannerOferta';
 import HeroInicio from '../components/sitio/HeroInicio';
 import PreguntasUbicacion from '../components/sitio/PreguntasUbicacion';
 import ProximasFechas from '../components/sitio/ProximasFechas';
@@ -10,6 +11,7 @@ function Home() {
   return (
     <>
       <HeroInicio />
+      <BannerOferta />
       <ProximasFechas />
       <QueIncluye />
       <GaleriaInicio />

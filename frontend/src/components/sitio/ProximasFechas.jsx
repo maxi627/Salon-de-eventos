@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { SALON } from '../../content/salon';
 import { useFechas } from '../../hooks/useFechas';
 import { useFeriados } from '../../hooks/useFeriados';
-import { formatoPesos, hoyLocal, precioDe, proximasFechasLibres } from '../../lib/fechas';
+import { descuentoPorcentaje, formatoPesos, hoyLocal, precioDe, precioNormalDe, proximasFechasLibres } from '../../lib/fechas';
 import Button from '../ui/Button';
 import Section from '../ui/Section';
 
@@ -50,7 +50,14 @@ export default function ProximasFechas() {
                       <Link to={`/reservar?fecha=${f.dia}`} className="sv-fecha">
                         <span className="sv-fecha__dia">{diaSemana}</span>
                         <span className="sv-fecha__fecha">{diaMes}</span>
+                        {descuentoPorcentaje(f) && (
+                          <s className="sv-fecha__antes">
+                            <span className="sv-solo-lector">Antes </span>
+                            {formatoPesos(precioNormalDe(f))}
+                          </s>
+                        )}
                         <span className="sv-fecha__precio">{formatoPesos(precioDe(f))}</span>
+                        {descuentoPorcentaje(f) && <span className="sv-fecha__oferta">Oferta</span>}
                         {feriados[f.dia] && (
                           <span className="sv-fecha__feriado" title={feriados[f.dia].nombre}>Feriado</span>
                         )}

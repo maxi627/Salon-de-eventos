@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { formatoFechaLarga, formatoPesos, montoSena, precioDe } from '../../lib/fechas';
+import { descuentoPorcentaje, formatoFechaLarga, formatoPesos, montoSena, precioDe, precioNormalDe } from '../../lib/fechas';
 import Button from '../ui/Button';
 
 // Resumen de la fecha elegida: precio, seña y el botón para seguir.
@@ -7,6 +7,7 @@ export default function ResumenFecha({ fecha, info, feriado, onReservar }) {
   const ref = useRef(null);
   const precio = precioDe(info);
   const sena = montoSena(precio);
+  const descuento = descuentoPorcentaje(info);
 
   // En el celular el resumen queda abajo del calendario: lo traemos a la vista.
   useEffect(() => {
@@ -21,8 +22,16 @@ export default function ResumenFecha({ fecha, info, feriado, onReservar }) {
       {feriado && <p className="sv-resumen__feriado">Feriado: {feriado.nombre}</p>}
       <dl className="sv-resumen__datos">
         <div>
-          <dt>Precio estimado</dt>
-          <dd>{precio ? formatoPesos(precio) : 'Precio a confirmar'}</dd>
+          <dt>{descuento ? <>Precio de oferta <span className="sv-resumen__chip">{descuento}% menos</span></> : 'Precio estimado'}</dt>
+          <dd>
+            {descuento && (
+              <s className="sv-resumen__antes">
+                <span className="sv-solo-lector">Antes </span>
+                {formatoPesos(precioNormalDe(info))}
+              </s>
+            )}
+            {precio ? formatoPesos(precio) : 'Precio a confirmar'}
+          </dd>
         </div>
         <div>
           <dt>Seña para reservar (30%)</dt>

@@ -7,7 +7,7 @@ import '../components/sitio/reserva-pasos.css';
 import SubirComprobante from '../components/sitio/SubirComprobante';
 import Button from '../components/ui/Button';
 import { SALON, whatsappConTexto } from '../content/salon';
-import { esReservable, formatoFechaLarga, formatoPesos, hoyLocal, montoSena, precioDe } from '../lib/fechas';
+import { descuentoPorcentaje, esReservable, formatoFechaLarga, formatoPesos, hoyLocal, montoSena, precioDe, precioNormalDe } from '../lib/fechas';
 import { sesionValida } from '../lib/sesion';
 
 // Componente con el contrato original
@@ -237,7 +237,10 @@ function Confirmacion() {
           <h1>Transferí la seña</h1>
           <p className="sv-reserva__fecha">
             {fechaLarga.charAt(0).toUpperCase() + fechaLarga.slice(1)}
-            {precio ? ` · precio estimado ${formatoPesos(precio)}` : ''}
+            {precio && !descuentoPorcentaje(fechaInfo) ? ` · precio estimado ${formatoPesos(precio)}` : ''}
+            {precio && descuentoPorcentaje(fechaInfo)
+              ? ` · precio de oferta ${formatoPesos(precio)} (antes ${formatoPesos(precioNormalDe(fechaInfo))})`
+              : ''}
           </p>
 
           <div className="sv-tarjeta">

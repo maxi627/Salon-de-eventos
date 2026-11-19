@@ -19,6 +19,11 @@ function tokenFalso(rol, nombre) {
   return `${base64url({ alg: 'HS256', typ: 'JWT' })}.${base64url({ sub: '1', role: rol, nombre, exp })}.firma-de-prueba`;
 }
 
+// Ofertas cargadas desde el panel mientras corre el modo de prueba (id de fecha -> precio).
+// Arranca con una oferta en la primera fecha libre de fin de semana.
+const ofertas = new Map();
+let ofertasIniciales = false;
+
 // Fechas de los próximos 90 días, con todos los estados posibles.
 function generarFechas() {
   const hoy = new Date();
@@ -39,6 +44,12 @@ function generarFechas() {
   // Una fecha libre sin precio cargado.
   const sinPrecio = fechas.find((f) => f.estado === 'disponible' && f.valor_estimado === 150000);
   if (sinPrecio) sinPrecio.valor_estimado = null;
+  if (!ofertasIniciales) {
+    ofertasIniciales = true;
+    const primera = fechas.find((f) => f.estado === 'disponible' && f.valor_estimado > 150000);
+    if (primera) ofertas.set(primera.id, primera.valor_estimado - 50000);
+  }
+  for (const f of fechas) f.valor_oferta = ofertas.get(f.id) ?? null;
   return fechas;
 }
 
@@ -105,6 +116,25 @@ export default function mockApi() {
         if (req.method === 'GET' && porFecha) {
           const encontrada = fechas.find((f) => f.dia === porFecha[1]);
           return responder(res, 200, encontrada ?? { id: 999, dia: porFecha[1], estado: 'disponible', valor_estimado: null });
+        }
+
+        const ofertaPorId = ruta.match(/^\/fecha\/(\d+)\/oferta$/);
+        if (ofertaPorId && (req.method === 'PUT' || req.method === 'DELETE')) {
+          const id = Number(ofertaPorId[1]);
+          const fecha = fechas.find((f) => f.id === id);
+          if (!fecha) return responder(res, 404, null, 'Fecha no encontrada');
+          if (req.method === 'DELETE') {
+            ofertas.delete(id);
+            return responder(res, 200, { ...fecha, valor_oferta: null }, 'Oferta quitada');
+          }
+          const { valor_oferta: valor } = await leerCuerpo(req);
+          const precio = Number(valor);
+          if (!(precio > 0)) return responder(res, 422, null, 'El precio de oferta tiene que ser un número mayor que 0.');
+          if (fecha.valor_estimado > 0 && precio >= fecha.valor_estimado) {
+            return responder(res, 422, null, 'La oferta tiene que ser menor que el precio normal.');
+          }
+          ofertas.set(id, precio);
+          return responder(res, 200, { ...fecha, valor_oferta: precio }, 'Fecha puesta en oferta');
         }
 
         const fechaPorId = ruta.match(/^\/fecha\/(\d+)$/);
