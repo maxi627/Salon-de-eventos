@@ -3,7 +3,8 @@ import { Navigate } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import { whatsappConTexto } from '../content/salon';
 import { useMisReservas } from '../hooks/useAdminData';
-import { formatoFechaLarga, formatoPesos, hoyLocal, sumarDias } from '../lib/fechas';
+import { formatoFechaLarga, formatoPesos, hoyLocal } from '../lib/fechas';
+import { reservasVisibles } from '../lib/misReservas';
 import { sesionValida } from '../lib/sesion';
 import './mis-reservas.css';
 
@@ -78,11 +79,8 @@ function MisReservas() {
 
   if (!sesion) return <Navigate to="/login?volver=%2Fmis-reservas" replace />;
 
-  // Futuras y pasadas de hace 15 días o menos, sin las archivadas.
-  const desde = sumarDias(hoyLocal(), -15);
-  const reservas = (respuesta?.data ?? [])
-    .filter((r) => r.fecha?.dia && r.estado !== 'archivada' && r.fecha.dia >= desde)
-    .sort((a, b) => a.fecha.dia.localeCompare(b.fecha.dia));
+  // Futuras y de los últimos 30 días, sin las archivadas (ver lib/misReservas.js).
+  const reservas = reservasVisibles(respuesta?.data, hoyLocal());
 
   return (
     <div className="sv-contenedor sv-mis-reservas">
