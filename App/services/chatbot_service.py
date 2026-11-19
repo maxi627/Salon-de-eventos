@@ -86,8 +86,15 @@ def _evaluar_fecha(dia: date, fecha_db, hoy: date) -> dict:
         return {**resultado, "disponible": False, "motivo": "Los domingos el salón no se alquila."}
     if fecha_db is not None and fecha_db.estado != "disponible":
         return {**resultado, "disponible": False, "motivo": "La fecha ya está reservada o tiene una reserva en curso."}
-    precio = fecha_db.valor_estimado if fecha_db is not None and fecha_db.valor_estimado > 0 else None
-    return {**resultado, "disponible": True, "precio_estimado_ars": precio}
+    normal = fecha_db.valor_estimado if fecha_db is not None and (fecha_db.valor_estimado or 0) > 0 else None
+    oferta = getattr(fecha_db, "valor_oferta", None) if fecha_db is not None else None
+    if oferta and oferta > 0:
+        # Fecha en oferta: vale el precio de oferta en todo el sitio, y se informa el normal.
+        datos = {"precio_estimado_ars": oferta, "en_oferta": True}
+        if normal:
+            datos["precio_normal_ars"] = normal
+        return {**resultado, "disponible": True, **datos}
+    return {**resultado, "disponible": True, "precio_estimado_ars": normal}
 
 
 def consultar_fecha(fecha: str) -> dict:
