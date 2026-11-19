@@ -136,6 +136,57 @@ def update(id):
         response_builder.add_message("Error al actualizar la fecha").add_status_code(500)
         return response_builder.build(), 500
 
+@Fecha.route('/fecha/<int:id>/oferta', methods=['PUT'])
+@limiter.limit("50 per minute", exempt_when=es_administrador_del_token)
+@jwt_required()
+@admin_required()
+def poner_oferta(id):
+    service = FechaService()
+    response_builder = ResponseBuilder()
+    try:
+        datos = request.get_json(silent=True) or {}
+        fecha = service.poner_oferta(id, datos.get('valor_oferta'))
+        sentry_sdk.capture_message(
+            f"Admin ID {get_jwt_identity()} puso en oferta el día {fecha.dia} a ${fecha.valor_oferta} "
+            f"(precio normal ${fecha.valor_estimado}).",
+            level="info"
+        )
+        cache.delete('fechas_all')
+        data = FechaSchema().dump(fecha)
+        return response_builder.add_message("Fecha puesta en oferta").add_status_code(200).add_data(data).build(), 200
+    except LookupError:
+        db.session.rollback()
+        return response_builder.add_message("Fecha no encontrada").add_status_code(404).build(), 404
+    except ValueError as err:
+        db.session.rollback()
+        return response_builder.add_message(str(err)).add_status_code(422).build(), 422
+    except Exception as e:
+        sentry_sdk.capture_exception(e)
+        db.session.rollback()
+        return response_builder.add_message("Error al poner la oferta").add_status_code(500).build(), 500
+
+
+@Fecha.route('/fecha/<int:id>/oferta', methods=['DELETE'])
+@limiter.limit("50 per minute", exempt_when=es_administrador_del_token)
+@jwt_required()
+@admin_required()
+def quitar_oferta(id):
+    service = FechaService()
+    response_builder = ResponseBuilder()
+    try:
+        fecha = service.quitar_oferta(id)
+        cache.delete('fechas_all')
+        data = FechaSchema().dump(fecha)
+        return response_builder.add_message("Oferta quitada").add_status_code(200).add_data(data).build(), 200
+    except LookupError:
+        db.session.rollback()
+        return response_builder.add_message("Fecha no encontrada").add_status_code(404).build(), 404
+    except Exception as e:
+        sentry_sdk.capture_exception(e)
+        db.session.rollback()
+        return response_builder.add_message("Error al quitar la oferta").add_status_code(500).build(), 500
+
+
 @Fecha.route('/fecha/<int:id>', methods=['DELETE'])
 @limiter.limit("20 per minute")
 @admin_required()

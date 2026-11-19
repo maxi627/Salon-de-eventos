@@ -93,6 +93,40 @@ class FechaService:
 
             return existing_fecha
 
+    def _limpiar_cache(self, fecha_id: int) -> None:
+        cache.delete(f'fecha_{fecha_id}')
+        cache.delete('fechas')
+        cache.delete('fechas_disponibles')
+        cache.delete('todas_las_fechas')
+
+    @transactional
+    def poner_oferta(self, fecha_id: int, valor_oferta) -> Fecha:
+        """Pone la fecha en oferta. Lanza ValueError si no se puede (ver app/ofertas.py)."""
+        from datetime import datetime, timedelta
+
+        from app.ofertas import validar_oferta
+        with self.redis_lock(fecha_id):
+            fecha = self.repository.get_by_id(fecha_id)
+            if not fecha:
+                raise LookupError(f"Fecha con ID {fecha_id} no encontrada.")
+            # El servidor está en UTC; "hoy" se toma en hora de Argentina (UTC-3).
+            hoy = (datetime.utcnow() - timedelta(hours=3)).date()
+            fecha.valor_oferta = validar_oferta(fecha.dia, fecha.estado, fecha.valor_estimado, valor_oferta, hoy)
+            db.session.add(fecha)
+            self._limpiar_cache(fecha_id)
+            return fecha
+
+    @transactional
+    def quitar_oferta(self, fecha_id: int) -> Fecha:
+        with self.redis_lock(fecha_id):
+            fecha = self.repository.get_by_id(fecha_id)
+            if not fecha:
+                raise LookupError(f"Fecha con ID {fecha_id} no encontrada.")
+            fecha.valor_oferta = None
+            db.session.add(fecha)
+            self._limpiar_cache(fecha_id)
+            return fecha
+
     @transactional
     def delete(self, fecha_id: int) -> bool:
         """
