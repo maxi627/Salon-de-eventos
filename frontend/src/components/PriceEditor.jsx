@@ -37,7 +37,7 @@ function PriceEditor() {
       if (response.ok) {
         const pricesMap = {};
         result.data.forEach(item => {
-          pricesMap[item.dia] = { id: item.id, valor: item.valor_estimado };
+          pricesMap[item.dia] = { id: item.id, valor: item.valor_estimado, oferta: item.valor_oferta };
         });
         setMonthPrices(pricesMap);
       }
@@ -240,6 +240,9 @@ function PriceEditor() {
                   <span className="day-number">
                     {day}
                     {feriado && <span className="feriado-badge">Feriado</span>}
+                    {dayData?.oferta > 0 && (
+                      <span className="oferta-badge" title={`En oferta a $${Number(dayData.oferta).toLocaleString('es-AR')}`}>Oferta</span>
+                    )}
                   </span>
                   {dayData ? (
                     <span className="price-tag">{formatPriceShort(dayData.valor)}</span>

@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useFechas } from '../hooks/useFechas';
-import { formatoPesos } from '../lib/fechas';
+import { estaEnOferta, formatoPesos, precioDe } from '../lib/fechas';
 import { saldoRestante, valorAlquilerSugerido } from '../lib/precioReserva';
 import './EditReservationModal.css';
 
@@ -22,7 +22,9 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
   // Mientras nadie fije el valor (ni guardado en la reserva ni escrito a mano), se muestra el
   // precio estimado que el calendario tiene para la fecha elegida.
   const [valorFijado, setValorFijado] = useState(() => valorAlquilerSugerido(reservation?.valor_alquiler, 0) > 0);
-  const valorEstimado = porDia[formData.fecha_dia]?.valor_estimado;
+  // Precio efectivo del calendario: el de oferta si la fecha tiene uno.
+  const valorEstimado = precioDe(porDia[formData.fecha_dia]);
+  const enOferta = estaEnOferta(porDia[formData.fecha_dia]);
   const valorAlquiler = valorFijado ? formData.valor_alquiler : valorAlquilerSugerido(0, valorEstimado);
   const hayPrecioEstimado = valorAlquilerSugerido(0, valorEstimado) > 0;
 
@@ -351,7 +353,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
                 <p className="status-help-text" style={{ marginTop: 0 }}>
                   <i className="fa-solid fa-circle-info"></i>{' '}
                   {hayPrecioEstimado
-                    ? `Precio estimado del calendario: ${formatoPesos(valorEstimado)}`
+                    ? `${enOferta ? 'Precio de oferta' : 'Precio estimado'} del calendario: ${formatoPesos(valorEstimado)}`
                     : 'Ese día no tiene precio cargado en el calendario.'}
                 </p>
               )}

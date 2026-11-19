@@ -32,6 +32,11 @@ export function sumarDias(texto, n) {
   return aTextoFecha(fecha);
 }
 
+// Días de calendario entre dos fechas 'YYYY-MM-DD' (b - a).
+export function diasEntre(a, b) {
+  return Math.round((aFecha(b) - aFecha(a)) / 86400000);
+}
+
 export function esDomingo(texto) {
   return aFecha(texto).getDay() === 0;
 }

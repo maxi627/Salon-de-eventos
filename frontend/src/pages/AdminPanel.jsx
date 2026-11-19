@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 // Importamos todos los subcomponentes refactorizados
 import AnalyticsDashboard from '../components/AnalyticsDashboard';
 import GastosManager from '../components/GastosManager';
+import OfertasManager from '../components/OfertasManager';
 import PreferencesManager from '../components/PreferencesManager';
 import PriceEditor from '../components/PriceEditor';
 import ReintegrosAdmin from '../components/ReintegrosAdmin';
@@ -42,6 +43,7 @@ function AdminPanel() {
     switch (activeTab) {
       case 'accounting': return 'Resumen de Contabilidad';
       case 'prices': return 'Configuración de Precios';
+      case 'offers': return 'Ofertas';
       case 'expenses': return 'Control de Gastos';
       case 'reservations': return 'Calendario de Reservas';
       case 'reintegros': return 'Gestión de Reintegros';
@@ -89,6 +91,10 @@ function AdminPanel() {
           <button className={`nav-btn ${activeTab === 'prices' ? 'active' : ''}`} onClick={() => handleTabChange('prices')}>
             <i className="fa-solid fa-tag"></i> Precios
           </button>
+
+          <button className={`nav-btn ${activeTab === 'offers' ? 'active' : ''}`} onClick={() => handleTabChange('offers')}>
+            <i className="fa-solid fa-fire"></i> Ofertas
+          </button>
           
           <button className={`nav-btn ${activeTab === 'expenses' ? 'active' : ''}`} onClick={() => handleTabChange('expenses')}>
             <i className="fa-solid fa-arrow-trend-down"></i> Gastos
@@ -127,6 +133,7 @@ function AdminPanel() {
         <section className="admin-content-area">
           {activeTab === 'accounting' && <AnalyticsDashboard />}
           {activeTab === 'prices' && <PriceEditor />}
+          {activeTab === 'offers' && <OfertasManager />}
           {activeTab === 'expenses' && <GastosManager />}
           {activeTab === 'reservations' && <ReservasManager />}
           {activeTab === 'reintegros' && <ReintegrosAdmin />}

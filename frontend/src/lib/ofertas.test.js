@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { descuentoPorcentaje, estaEnOferta, montoSena, precioDe, precioNormalDe } from './fechas';
+import { descuentoPorcentaje, diasEntre, estaEnOferta, montoSena, precioDe, precioNormalDe } from './fechas';
 import { ofertasVisibles } from './ofertas';
 
 const EN_OFERTA = { dia: '2026-11-28', estado: 'disponible', valor_estimado: 180000, valor_oferta: 130000 };
@@ -65,5 +65,13 @@ describe('ofertasVisibles', () => {
 
   it('sin fechas devuelve una lista vacía', () => {
     expect(ofertasVisibles(undefined, HOY)).toEqual([]);
+  });
+});
+
+describe('diasEntre', () => {
+  it('cuenta los días que faltan', () => {
+    expect(diasEntre('2026-11-19', '2026-11-28')).toBe(9);
+    expect(diasEntre('2026-11-19', '2026-11-19')).toBe(0);
+    expect(diasEntre('2026-12-30', '2027-01-02')).toBe(3);
   });
 });
