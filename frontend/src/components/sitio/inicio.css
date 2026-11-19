@@ -285,6 +285,24 @@
   .sitio .sv-oferta__fecha { font-size: 30px; }
 }
 
+/* Animación: el botón late y la llama titila, para que la oferta llame la atención.
+   Quien pide "reducir movimiento" en su dispositivo la ve quieta. */
+.sv-oferta__llama { display: inline-block; transform-origin: 50% 90%; }
+@media (prefers-reduced-motion: no-preference) {
+  .sv-oferta__llama { animation: sv-titilar 1.2s ease-in-out infinite; }
+  .sv-boton.sv-boton--claro.sv-oferta__boton { animation: sv-latir 1.8s ease-in-out infinite; }
+  .sv-boton.sv-boton--claro.sv-oferta__boton:hover,
+  .sv-boton.sv-boton--claro.sv-oferta__boton:focus-visible { animation-play-state: paused; }
+}
+@keyframes sv-titilar {
+  0%, 100% { transform: scale(1) rotate(-4deg); }
+  50% { transform: scale(1.25) rotate(4deg); }
+}
+@keyframes sv-latir {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.55); }
+  50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+}
+
 /* Próximas fechas: precio normal tachado y etiqueta de oferta */
 .sv-fecha__antes { color: var(--sv-tinta-suave); font-size: 12px; }
 .sv-fecha__oferta {

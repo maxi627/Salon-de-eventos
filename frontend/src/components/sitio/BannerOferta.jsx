@@ -22,7 +22,7 @@ export default function BannerOferta() {
       <div className="sv-contenedor">
         <div className="sv-oferta__tarjeta">
           <p className="sv-oferta__etiqueta">
-            <span aria-hidden="true">🔥</span> Fecha en oferta{descuento ? ` · ${descuento}% menos` : ''}
+            <span className="sv-oferta__llama" aria-hidden="true">🔥</span> Fecha en oferta{descuento ? ` · ${descuento}% menos` : ''}
           </p>
           <h2 id="sv-oferta-titulo" className="sv-oferta__fecha">{titulo.charAt(0).toUpperCase() + titulo.slice(1)}</h2>
           <p className="sv-oferta__precios">
