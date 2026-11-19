@@ -5,17 +5,16 @@ import { useNavigate } from 'react-router-dom';
 import AnalyticsDashboard from '../components/AnalyticsDashboard';
 import GastosManager from '../components/GastosManager';
 import OfertasManager from '../components/OfertasManager';
-import PreferencesManager from '../components/PreferencesManager';
 import PriceEditor from '../components/PriceEditor';
 import ReintegrosAdmin from '../components/ReintegrosAdmin';
 import ReservasManager from '../components/ReservasManager'; // Nuevo archivo
 import UserList from '../components/UserList';
+import { pestanaInicial } from '../lib/panel';
 import './AdminPanel.css';
 
 function AdminPanel() {
-  const [activeTab, setActiveTab] = useState(() => {
-    return localStorage.getItem('adminActiveTab') || 'accounting';
-  });
+  // Si la pestaña guardada ya no existe (por ejemplo, la de Preferencias), abre Contabilidad.
+  const [activeTab, setActiveTab] = useState(() => pestanaInicial(localStorage.getItem('adminActiveTab')));
   
   // Estado para controlar si el menú móvil está abierto
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -111,11 +110,7 @@ function AdminPanel() {
           <button className={`nav-btn ${activeTab === 'users' ? 'active' : ''}`} onClick={() => handleTabChange('users')}>
             <i className="fa-solid fa-users"></i> Usuarios
           </button>
-          
-          <button className={`nav-btn ${activeTab === 'preferences' ? 'active' : ''}`} onClick={() => handleTabChange('preferences')}>
-            <i className="fa-solid fa-gear"></i> Preferencias
-          </button>
-          
+
           <div className="sidebar-footer">
             <button className="nav-btn logout-btn" onClick={handleLogout}>
               <i className="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
@@ -138,7 +133,6 @@ function AdminPanel() {
           {activeTab === 'reservations' && <ReservasManager />}
           {activeTab === 'reintegros' && <ReintegrosAdmin />}
           {activeTab === 'users' && <UserList />}
-          {activeTab === 'preferences' && <PreferencesManager />}
         </section>
       </main>
     </div>

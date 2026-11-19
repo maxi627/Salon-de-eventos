@@ -3,7 +3,7 @@
    Se copian tal cual y en el mismo orden para que el panel se vea idéntico.
    Las usan: .error-message (AnalyticsDashboard, ArchivedReservations, EditReservationModal,
    GastosManager, ReservasManager, UserList), .error-alert (ReintegrosAdmin),
-   .section-title (PreferencesManager, ReservasManager). */
+   .section-title (ReservasManager). */
 
 /* de arrepentimiento.css */
 .error-alert {
