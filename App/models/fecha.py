@@ -16,6 +16,8 @@ class Fecha(db.Model):
     dia = db.Column(db.Date, nullable=False, unique=True)
     estado = db.Column(db.String(20), nullable=False, default='disponible')  # 'disponible', 'pendiente', 'reservada'
     valor_estimado = db.Column(db.Float, nullable=False, default=0.0)
+    # Precio de oferta (nulo = sin oferta). Mientras la fecha sea reservable, es el precio que vale.
+    valor_oferta = db.Column(db.Float, nullable=True)
 
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=True)
 
