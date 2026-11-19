@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useFechas } from '../hooks/useFechas';
 import { estaEnOferta, formatoPesos, precioDe } from '../lib/fechas';
 import { saldoRestante, valorAlquilerSugerido } from '../lib/precioReserva';
+import { numeroWhatsapp } from '../lib/telefono';
 import './EditReservationModal.css';
 
 function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
@@ -60,7 +61,12 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
       return;
     }
 
-    const cleanPhone = telefono.replace(/\s+/g, '').replace(/-/g, '');
+    // WhatsApp necesita el número internacional (549 + área + número), no "0260 ..." ni con 15.
+    const cleanPhone = numeroWhatsapp(telefono);
+    if (!cleanPhone) {
+      alert(`No se pudo interpretar el teléfono "${telefono}" como un celular argentino. Revisalo en los datos del cliente.`);
+      return;
+    }
     const texto = `Hola ${localReservation.usuario.nombre}, te contacto desde el Salón de Eventos por tu reserva del día ${formData.fecha_dia}. Queríamos coordinar los detalles: capacidad para ${formData.cantidad_personas} personas y horario de ${formData.hora_inicio || '11:00'} a ${formData.hora_fin || '20:00'} hs.`;
     const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(texto)}`;
     window.open(url, '_blank');

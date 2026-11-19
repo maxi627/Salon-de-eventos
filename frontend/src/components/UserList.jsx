@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { numeroWhatsapp } from '../lib/telefono';
 import EditReservationModal from './EditReservationModal';
 import './UserList.css';
 
@@ -86,7 +87,12 @@ function UserList() {
       alert("Este cliente no tiene un teléfono registrado.");
       return;
     }
-    const cleanPhone = user.telefono.replace(/\D/g, '');
+    // WhatsApp necesita el número internacional (549 + área + número), no "0260 ..." ni con 15.
+    const cleanPhone = numeroWhatsapp(user.telefono);
+    if (!cleanPhone) {
+      alert(`No se pudo interpretar el teléfono "${user.telefono}" como un celular argentino. Revisalo en los datos del cliente.`);
+      return;
+    }
     const texto = `Hola ${user.nombre}, te contacto del Salón de Eventos`;
     const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(texto)}`;
     window.open(url, '_blank');
