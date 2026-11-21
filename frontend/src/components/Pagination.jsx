@@ -1,4 +1,5 @@
 import React from 'react';
+import './UserList.css'; // estilos de la paginación del panel
 
 const Pagination = ({ itemsPerPage, totalItems, paginate, currentPage }) => {
   const pageNumbers = [];
