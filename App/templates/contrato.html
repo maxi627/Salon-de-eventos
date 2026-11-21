@@ -144,7 +144,7 @@
         </tr>
         <tr>
             <th>Capacidad Máxima Autorizada:</th>
-            <td>50 Personas (Límite Estricto)</td>
+            <td>{{ cantidad_personas or 40 }} Personas (Límite Estricto)</td>
         </tr>
     </table>
 
@@ -174,7 +174,7 @@
             <strong>Penalidades:</strong> En caso de constatarse el incumplimiento de alguna cláusula (como la comercialización de entradas/bebidas o disturbios graves), EL LOCADOR podrá suspender el evento de forma inmediata sin derecho a reclamo o reembolso por parte del LOCATARIO, además de iniciar las acciones legales correspondientes.
         </li>
         <li>
-            <strong>Capacidad Máxima Infranqueable:</strong> Por razones de seguridad y de comodidad del espacio, se establece un límite de capacidad máximo y estricto de <strong>50 personas en total</strong> dentro del establecimiento. Bajo ninguna circunstancia se permitirá el ingreso de un flujo superior de asistentes. El incumplimiento de esta norma facultará al LOCADOR a dar por finalizado el evento de forma inmediata por razones de seguridad.
+            <strong>Capacidad Máxima Infranqueable:</strong> Por razones de seguridad y de comodidad del espacio, se establece un límite de capacidad máximo y estricto de <strong>{{ cantidad_personas or 40 }} personas en total</strong> dentro del establecimiento. Bajo ninguna circunstancia se permitirá el ingreso de un flujo superior de asistentes. El incumplimiento de esta norma facultará al LOCADOR a dar por finalizado el evento de forma inmediata por razones de seguridad.
         </li>
         <li>
             <strong>Exceso de Horario y Finalización:</strong> El evento contempla exclusivamente la franja horaria pactada en la reserva. Cualquier extensión del horario deberá solicitarse con anticipación, quedando sujeta a la disponibilidad del salón y al abono de la tarifa de "hora extra" vigente. De excederse el límite horario sin autorización previa, se aplicará de forma automática el cobro del tiempo excedido. Si el salón no tuviera disponibilidad para extender el turno, EL LOCATARIO se compromete a finalizar el evento y desocupar las instalaciones a la hora acordada, facultando a EL LOCADOR a dar por concluido el servicio para iniciar las tareas de acondicionamiento.

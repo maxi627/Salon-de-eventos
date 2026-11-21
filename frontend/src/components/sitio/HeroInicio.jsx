@@ -4,7 +4,7 @@ import { SALON } from '../../content/salon';
 import Button from '../ui/Button';
 import Chip from '../ui/Chip';
 
-const ETIQUETAS = ['Hasta 50 personas', 'Pileta en verano', 'Parrilla', 'Pool, ping pong y arcade'];
+const ETIQUETAS = ['Hasta 40 personas', 'Pileta en verano', 'Parrilla', 'Pool, ping pong y arcade'];
 
 export default function HeroInicio() {
   return (
@@ -23,7 +23,7 @@ export default function HeroInicio() {
       <div className="sv-hero__contenido">
         <h1>Tu evento con parque, pileta y parrilla</h1>
         <p className="sv-hero__bajada">
-          Un salón para hasta 50 personas en San Rafael, de lunes a sábado de 11 a 20 hs. Mirá las fechas
+          Un salón para hasta 40 personas en San Rafael, de lunes a sábado de 11 a 20 hs. Mirá las fechas
           libres con su precio y reservá online.
         </p>
         <div className="sv-hero__botones">

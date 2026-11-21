@@ -18,7 +18,7 @@ export const SALON = {
   whatsappTexto: '260 411-9865',
   whatsappUrl: 'https://wa.me/5492604119865', // 54 + 9 (celular) + 260 + número
   horario: 'Lunes a sábado de 11 a 20 hs',
-  capacidad: 50,
+  capacidad: 40,
   redes: {
     facebook: 'https://www.facebook.com/saljjuh/',
     instagram: 'https://www.instagram.com/saloneventos_?igsh=amVocnl5dGdkdXN2',
@@ -32,7 +32,7 @@ export function whatsappConTexto(texto) {
 }
 
 export const QUE_INCLUYE = [
-  { icono: FaUsers, titulo: 'Hasta 50 personas', detalle: '25 sillas y 4 mesones' },
+  { icono: FaUsers, titulo: 'Hasta 40 personas', detalle: '25 sillas y 4 mesones' },
   { icono: FaKitchenSet, titulo: 'Cocina completa', detalle: 'Heladera, freezer y gas' },
   { icono: FaFire, titulo: 'Parrilla', detalle: 'En el parque' },
   { icono: FaPersonSwimming, titulo: 'Pileta', detalle: 'En verano, de uso libre' },

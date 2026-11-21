@@ -48,7 +48,7 @@ function Reservas() {
       <header className="sv-reservar__encabezado">
         <h1>Elegí la fecha</h1>
         <p>
-          De lunes a sábado, hasta 90 días adelante. Los precios son estimaciones base para 50 personas y pueden
+          De lunes a sábado, hasta 90 días adelante. Los precios son estimaciones base para 40 personas y pueden
           variar según el tipo de evento y el horario.
         </p>
       </header>
