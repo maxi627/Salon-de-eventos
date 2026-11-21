@@ -203,3 +203,46 @@
     padding: 0.8rem !important;
   }
 }
+/* --- Filtro por rango de fechas --- */
+.filtro-rango {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filtro-rango label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.filtro-rango input[type="date"] {
+  color-scheme: dark;
+  min-width: 9.5rem;
+}
+
+.filtro-rango__limpiar {
+  background: transparent !important;
+  border: 1px solid var(--border-dark) !important;
+  color: var(--text-secondary) !important;
+  border-radius: 6px;
+  width: 2.2rem;
+  height: 2.2rem;
+  cursor: pointer;
+}
+
+.filtro-rango__limpiar:hover {
+  color: var(--text-primary) !important;
+  border-color: var(--text-secondary) !important;
+}
+
+@media (max-width: 600px) {
+  .filters-inputs,
+  .filtro-rango { width: 100%; }
+  .filtro-rango label { flex: 1 1 8rem; }
+  .filtro-rango label span { min-width: 2.9rem; }
+  .filtro-rango input[type="date"] { flex: 1; min-width: 0; }
+}

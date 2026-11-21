@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useReservas } from '../hooks/useAdminData';
 import { hoyLocal } from '../lib/fechas';
+import { filtrarReservas, leerFechaEscrita } from '../lib/filtroReservas';
 import ArchivedReservations from './ArchivedReservations';
 import EditReservationModal from './EditReservationModal';
 import Pagination from './Pagination'; 
@@ -24,6 +25,9 @@ const ReservasManager = () => {
   
   const [statusFilter, setStatusFilter] = useState('todas');
   const [monthFilter, setMonthFilter] = useState('todos');
+  // Rango de fechas del evento (YYYY-MM-DD); vacío = sin límite
+  const [desde, setDesde] = useState('');
+  const [hasta, setHasta] = useState('');
   
   // Estado para mostrar u ocultar reservas pasadas
   const [showPastReservations, setShowPastReservations] = useState(false);
@@ -49,7 +53,11 @@ const ReservasManager = () => {
     setCurrentPage(1);
     if (searchTimeout) clearTimeout(searchTimeout);
 
-    if (term.trim().length >= 2) {
+    // Una fecha escrita (24/12, 24/12/2026...) se filtra acá, sin consultar al servidor
+    if (leerFechaEscrita(term)) {
+      setSearchResults(null);
+      setIsSearching(false);
+    } else if (term.trim().length >= 2) {
       setIsSearching(true);
       const timeoutId = setTimeout(async () => {
         const token = localStorage.getItem('authToken');
@@ -70,26 +78,30 @@ const ReservasManager = () => {
   };
 
   const availableMonths = Object.keys(reservas || {});
-  let listToRender = [];
-  
+  const fechaEscrita = leerFechaEscrita(searchTerm);
+  const hayRango = Boolean(desde || hasta);
+  const usaMes = monthFilter !== 'todos' && !hayRango && !fechaEscrita && searchResults === null;
+
+  let base;
   if (searchResults !== null) {
-    listToRender = searchResults;
-  } else if (monthFilter !== 'todos') {
-    listToRender = reservas[monthFilter] || [];
+    base = searchResults;
+  } else if (usaMes) {
+    base = reservas[monthFilter] || [];
   } else {
-    listToRender = availableMonths.reduce((acc, month) => [...acc, ...reservas[month]], []);
+    base = availableMonths.flatMap(month => reservas[month]);
   }
 
-  // --- FILTRO CRUCIAL: Solo próximas o incluir pasadas ---
-  if (!showPastReservations && searchResults === null) {
-    listToRender = listToRender.filter(r => r.fecha?.dia >= today);
-  }
+  const listToRender = filtrarReservas(base, {
+    hoy: today,
+    verPasadas: showPastReservations,
+    estado: statusFilter,
+    desde,
+    hasta,
+    fechaEscrita,
+    esBusqueda: searchResults !== null,
+  });
 
-  if (statusFilter !== 'todas') {
-    listToRender = listToRender.filter(r => r.estado === statusFilter);
-  }
-
-  listToRender.sort((a, b) => new Date(a.fecha?.dia || 0) - new Date(b.fecha?.dia || 0));
+  const limpiarRango = () => { setDesde(''); setHasta(''); setCurrentPage(1); };
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -112,18 +124,34 @@ const ReservasManager = () => {
         <div className="filters-inputs">
           <input
             type="text"
-            placeholder="Buscar cliente, DNI o fecha..."
+            placeholder="Buscar cliente, DNI o fecha (24/12)"
             className="search-input toolbar-input"
             value={searchTerm}
             onChange={handleSearchChange}
           />
           
-          <select className="toolbar-select" value={monthFilter} onChange={(e) => { setMonthFilter(e.target.value); setCurrentPage(1); }} disabled={searchResults !== null}>
+          <select className="toolbar-select" value={monthFilter} onChange={(e) => { setMonthFilter(e.target.value); setCurrentPage(1); }} disabled={searchResults !== null || hayRango || Boolean(fechaEscrita)}>
             <option value="todos">Todos los meses</option>
             {availableMonths.map(month => (
               <option key={month} value={month}>{month.charAt(0).toUpperCase() + month.slice(1)}</option>
             ))}
           </select>
+
+          <div className="filtro-rango" role="group" aria-label="Filtrar por fecha del evento">
+            <label>
+              <span>Desde</span>
+              <input type="date" className="toolbar-input" value={desde} onChange={(e) => { setDesde(e.target.value); setCurrentPage(1); }} />
+            </label>
+            <label>
+              <span>Hasta</span>
+              <input type="date" className="toolbar-input" value={hasta} onChange={(e) => { setHasta(e.target.value); setCurrentPage(1); }} />
+            </label>
+            {hayRango && (
+              <button type="button" className="filtro-rango__limpiar" onClick={limpiarRango} title="Quitar el filtro de fechas" aria-label="Quitar el filtro de fechas">
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            )}
+          </div>
 
           <select className="toolbar-select" value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}>
             <option value="todas">Todos los estados</option>
