@@ -82,15 +82,20 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
     window.open(url, '_blank');
   };
 
-  // Al elegir el turno se cargan sus horarios si los campos de hora están vacíos
+  // Al elegir el turno se cargan sus horarios si los campos están vacíos o tienen los del turno
+  // anterior; un horario escrito a mano se respeta.
   const handleTurnoChange = (e) => {
     const turno = e.target.value;
-    setFormData((prev) => ({
-      ...prev,
-      turno,
-      hora_inicio: prev.hora_inicio || TURNOS[turno].desde,
-      hora_fin: prev.hora_fin || TURNOS[turno].hasta,
-    }));
+    setFormData((prev) => {
+      const anterior = TURNOS[prev.turno];
+      const reemplazar = (actual, delAnterior) => !actual || actual === delAnterior;
+      return {
+        ...prev,
+        turno,
+        hora_inicio: reemplazar(prev.hora_inicio, anterior.desde) ? TURNOS[turno].desde : prev.hora_inicio,
+        hora_fin: reemplazar(prev.hora_fin, anterior.hasta) ? TURNOS[turno].hasta : prev.hora_fin,
+      };
+    });
   };
 
   const handleChange = (e) => {

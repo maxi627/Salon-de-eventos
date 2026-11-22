@@ -186,16 +186,19 @@
 }
 .sv-resumen__antes { margin-right: 8px; color: var(--sv-tinta-suave); font-weight: 400; }
 
-/* Turno noche: luna abajo a la derecha. Llena = noche libre; contorno = noche tomada. */
+/* Turno noche: luna arriba a la derecha, al lado del número (abajo están el precio y el estado).
+   Llena = noche libre; contorno = noche tomada. Si además es feriado, el punto se corre a la izquierda. */
 .sv-dia__noche {
   position: absolute;
-  right: 4px;
-  bottom: 4px;
+  top: 5px;
+  right: 5px;
   display: inline-flex;
   font-size: 9px;
   line-height: 1;
 }
-@media (min-width: 720px) { .sv-dia__noche { right: 8px; bottom: 8px; font-size: 12px; } }
+@media (min-width: 720px) { .sv-dia__noche { top: 8px; right: 8px; font-size: 12px; } }
+.sv-dia--con-noche .sv-dia__feriado { top: 17px; right: 6px; }
+@media (min-width: 720px) { .sv-dia--con-noche .sv-dia__feriado { top: 10px; right: 25px; } }
 .sv-dia__noche--libre { color: #3E4A89; }
 .sv-dia__noche--tomada { color: #B9B0A4; }
 .sv-dia--solo-noche { cursor: pointer; }

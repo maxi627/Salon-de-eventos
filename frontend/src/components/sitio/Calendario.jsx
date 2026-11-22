@@ -54,7 +54,7 @@ export default function Calendario({ porDia, feriados = {}, hoy, mes, onCambiarM
       <button
         key={texto}
         type="button"
-        className={`sv-dia sv-dia--${estado}${elegido ? ' sv-dia--elegido' : ''}${feriado ? ' sv-dia--feriado' : ''}${oferta ? ' sv-dia--oferta' : ''}${!libre && elegible ? ' sv-dia--solo-noche' : ''}`}
+        className={`sv-dia sv-dia--${estado}${elegido ? ' sv-dia--elegido' : ''}${feriado ? ' sv-dia--feriado' : ''}${oferta ? ' sv-dia--oferta' : ''}${!libre && elegible ? ' sv-dia--solo-noche' : ''}${noche ? ' sv-dia--con-noche' : ''}`}
         title={feriado ? `Feriado: ${feriado.nombre}` : undefined}
         disabled={!elegible}
         aria-pressed={elegible ? elegido : undefined}
