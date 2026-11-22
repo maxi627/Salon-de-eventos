@@ -1,6 +1,7 @@
 from marshmallow import Schema, fields, post_load, validate
 
 from app.models import Reserva
+from app.turnos import TURNOS
 
 
 class ReservaSchema(Schema):
@@ -15,6 +16,7 @@ class ReservaSchema(Schema):
     cantidad_personas = fields.Int()
     usuario = fields.Nested('UsuarioSchema', only=("id", "nombre", "apellido", "correo", "telefono"), dump_only=True)
     fecha = fields.Nested('FechaSchema', only=("id", "dia"), dump_only=True)
+    turno = fields.Str(validate=validate.OneOf(TURNOS), load_default='dia')
     hora_inicio = fields.Time(format='%H:%M', allow_none=True)
     hora_fin = fields.Time(format='%H:%M', allow_none=True)
     observaciones = fields.Str(allow_none=True)

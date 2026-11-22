@@ -5,6 +5,9 @@ from sqlalchemy import inspect, text
 # (tabla, columna, tipo en PostgreSQL, tipo en otros motores)
 COLUMNAS_NUEVAS = [
     ("fecha", "valor_oferta", "DOUBLE PRECISION", "REAL"),
+    # Turnos (día / noche): estado del turno noche de la fecha y turno de cada reserva.
+    ("fecha", "estado_noche", "VARCHAR(20) NOT NULL DEFAULT 'disponible'", "VARCHAR(20) NOT NULL DEFAULT 'disponible'"),
+    ("reserva", "turno", "VARCHAR(10) NOT NULL DEFAULT 'dia'", "VARCHAR(10) NOT NULL DEFAULT 'dia'"),
 ]
 
 
