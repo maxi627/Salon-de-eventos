@@ -1,6 +1,6 @@
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
+import { FaChevronLeft, FaChevronRight, FaMoon, FaRegMoon } from 'react-icons/fa6';
 import { etiquetaDelDia } from '../../lib/calendario';
-import { DIAS_MAXIMOS, estaEnOferta, estadoDelDia, formatoPesos, precioDe, sumarDias } from '../../lib/fechas';
+import { DIAS_MAXIMOS, esElegible, estaEnOferta, estadoDelDia, estadoNoche, formatoPesos, precioDe, sumarDias } from '../../lib/fechas';
 
 const DIAS_SEMANA = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
 const NOMBRES_DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -41,20 +41,23 @@ export default function Calendario({ porDia, feriados = {}, hoy, mes, onCambiarM
     const estado = estadoDelDia(texto, info, hoy);
     const precio = precioDe(info);
     const libre = estado === 'libre';
+    // Turno noche: se muestra con una luna; si el día está tomado y la noche libre, igual se puede elegir.
+    const noche = estadoNoche(texto, info, hoy);
+    const elegible = esElegible(texto, info, hoy);
     const elegido = texto === seleccionada;
     const feriado = feriados[texto];
     const oferta = libre && estaEnOferta(info);
     if (oferta) hayOfertas = true;
-    const etiqueta = etiquetaDelDia(texto, estado, precio, feriado, oferta);
+    const etiqueta = etiquetaDelDia(texto, estado, precio, feriado, oferta, noche);
 
     celdas.push(
       <button
         key={texto}
         type="button"
-        className={`sv-dia sv-dia--${estado}${elegido ? ' sv-dia--elegido' : ''}${feriado ? ' sv-dia--feriado' : ''}${oferta ? ' sv-dia--oferta' : ''}`}
+        className={`sv-dia sv-dia--${estado}${elegido ? ' sv-dia--elegido' : ''}${feriado ? ' sv-dia--feriado' : ''}${oferta ? ' sv-dia--oferta' : ''}${!libre && elegible ? ' sv-dia--solo-noche' : ''}`}
         title={feriado ? `Feriado: ${feriado.nombre}` : undefined}
-        disabled={!libre}
-        aria-pressed={libre ? elegido : undefined}
+        disabled={!elegible}
+        aria-pressed={elegible ? elegido : undefined}
         aria-label={etiqueta}
         onClick={() => onSeleccionar(texto)}
       >
@@ -72,6 +75,11 @@ export default function Calendario({ porDia, feriados = {}, hoy, mes, onCambiarM
         )}
         {ETIQUETA_VISIBLE[estado] && <span className="sv-dia__estado">{ETIQUETA_VISIBLE[estado]}</span>}
         {oferta && <span className="sv-dia__estado sv-dia__estado--oferta">Oferta</span>}
+        {noche && (
+          <span className={`sv-dia__noche sv-dia__noche--${noche === 'libre' ? 'libre' : 'tomada'}`} aria-hidden="true">
+            {noche === 'libre' ? <FaMoon /> : <FaRegMoon />}
+          </span>
+        )}
       </button>,
     );
   }
@@ -98,6 +106,7 @@ export default function Calendario({ porDia, feriados = {}, hoy, mes, onCambiarM
         <li><i className="sv-muestra sv-muestra--pendiente" /> Pendiente</li>
         <li><i className="sv-muestra sv-muestra--ocupado" /> Ocupado</li>
         <li><i className="sv-muestra sv-muestra--domingo" /> Domingo (no se alquila)</li>
+        <li><FaMoon className="sv-leyenda__noche" aria-hidden="true" /> Noche libre (20:30 a 4:30, por WhatsApp)</li>
         {Object.keys(feriados).length > 0 && <li><i className="sv-muestra sv-muestra--feriado" /> Feriado</li>}
         {hayOfertas && <li><i className="sv-muestra sv-muestra--oferta" /> En oferta</li>}
       </ul>

@@ -185,3 +185,37 @@
   color: #fff;
 }
 .sv-resumen__antes { margin-right: 8px; color: var(--sv-tinta-suave); font-weight: 400; }
+
+/* Turno noche: luna abajo a la derecha. Llena = noche libre; contorno = noche tomada. */
+.sv-dia__noche {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  display: inline-flex;
+  font-size: 9px;
+  line-height: 1;
+}
+@media (min-width: 720px) { .sv-dia__noche { right: 8px; bottom: 8px; font-size: 12px; } }
+.sv-dia__noche--libre { color: #3E4A89; }
+.sv-dia__noche--tomada { color: #B9B0A4; }
+.sv-dia--solo-noche { cursor: pointer; }
+.sv-dia--solo-noche:hover { border-color: #3E4A89; }
+.sv-leyenda__noche { color: #3E4A89; font-size: 12px; }
+
+/* Resumen por turno */
+.sv-resumen__turno + .sv-resumen__turno { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--sv-borde); }
+.sv-resumen__turno-titulo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  color: var(--sv-tinta-suave);
+}
+.sv-resumen__turno--noche .sv-resumen__turno-titulo svg { color: #3E4A89; }
+.sv-resumen__tomado { margin: 0; font-weight: 600; color: var(--sv-gris-txt, #7A7066); }
+.sv-resumen__noche-libre { margin: 0; font-weight: 600; color: #3E4A89; }
+.sv-resumen__turno--noche .sv-resumen__boton { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }

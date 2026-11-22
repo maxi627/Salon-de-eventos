@@ -17,7 +17,7 @@ export const SALON = {
   ciudad: 'San Rafael, Mendoza',
   whatsappTexto: '260 411-9865',
   whatsappUrl: 'https://wa.me/5492604119865', // 54 + 9 (celular) + 260 + número
-  horario: 'Lunes a sábado de 11 a 20 hs',
+  horario: 'Lunes a sábado · día de 11 a 19 hs y noche de 20:30 a 4:30 hs',
   capacidad: 40,
   redes: {
     facebook: 'https://www.facebook.com/saljjuh/',
@@ -48,6 +48,10 @@ export const PREGUNTAS = [
   {
     pregunta: '¿Se alquila los domingos?',
     respuesta: 'No. Los domingos el salón está ocupado todo el año; se alquila de lunes a sábado.',
+  },
+  {
+    pregunta: '¿Se puede alquilar de noche?',
+    respuesta: 'Sí, el turno noche es de 20:30 a 4:30. En el calendario ves qué noches están libres; se consulta y se reserva por WhatsApp.',
   },
   {
     pregunta: '¿Puedo entrar antes a decorar?',
