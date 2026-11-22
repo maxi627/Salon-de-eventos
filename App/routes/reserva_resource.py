@@ -11,6 +11,8 @@ from app.config.response_builder import ResponseBuilder
 from app.extensions import db, limiter
 from app.mapping import ReservaSchema, ResponseSchema
 from app.mapping.reserva_schema import ArrepentimientoSchema, ConfirmarArrepentimientoSchema
+from app.reserva_datos import datos_reserva_online, horarios_del_contrato
+from app.turnos import normalizar_turno
 from app.services import NotificationService, ReservaService
 from app.tasks import enviar_contrato_background, procesar_reserva_background
 from app.utils.client_ip import get_client_ip
@@ -34,8 +36,8 @@ def _enviar_contrato_confirmacion(reserva_obj):
             "acceptance_date": reserva_obj.fecha_aceptacion.strftime('%d/%m/%Y a las %H:%M:%S UTC'),
             "acceptance_ip": reserva_obj.ip_aceptacion,
             "cantidad_personas": reserva_obj.cantidad_personas,
-            "hora_inicio": reserva_obj.hora_inicio.strftime('%H:%M') if reserva_obj.hora_inicio else None,
-            "hora_fin": reserva_obj.hora_fin.strftime('%H:%M') if reserva_obj.hora_fin else None
+            # hora_inicio, hora_fin y turno_nombre: el horario cargado o el del turno
+            **horarios_del_contrato(reserva_obj),
         }
         html_contrato = render_template('contrato.html', **template_data)
         
@@ -121,15 +123,8 @@ def request_by_user():
         ruta_local = os.path.join('/home/flaskapp/app/uploads', nombre_seguro)
         archivo.save(ruta_local)
 
-        reserva_data = {
-            'fecha_id': int(fecha_id),
-            'usuario_id': user_id,
-            'comprobante_url': 'procesando...',
-            'estado': 'pendiente',
-            'cantidad_personas': request.form.get('cantidad_personas', 40),
-            'hora_inicio': request.form.get('hora_inicio'), 
-            'hora_fin': request.form.get('hora_fin')
-        }
+        # Por el sitio solo se reserva el turno día (el turno noche se pide por WhatsApp)
+        reserva_data = datos_reserva_online(request.form, fecha_id, user_id)
         
         reserva = reserva_schema.load(reserva_data)
         
@@ -191,6 +186,11 @@ def create_for_admin():
                 json_data['fecha_id'] = fecha_entidad.id
             except (ValueError, TypeError):
                 raise ValidationError("El formato de fecha_dia es inválido. Usar YYYY-MM-DD.")
+
+        try:
+            json_data['turno'] = normalizar_turno(json_data.get('turno'))
+        except ValueError as err:
+            raise ValidationError({'turno': [str(err)]})
 
         reserva = reserva_schema.load(json_data)
         

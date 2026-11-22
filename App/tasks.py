@@ -10,6 +10,7 @@ from werkzeug.datastructures import FileStorage
 
 from app.extensions import cache, db
 from app.models import Fecha, Reserva
+from app.turnos import aplicar_estados
 from app.services.push_notification_service import PushNotificationService
 from app.utils.storage import upload_file_to_r2
 from app.services import NotificationService
@@ -111,10 +112,10 @@ def procesar_reserva_background(reserva_id: int, ruta_archivo_local: str = None)
                 if os.path.exists(ruta_archivo_local):
                     os.remove(ruta_archivo_local)
 
-        # 3. Actualizamos el estado de la fecha en el calendario a 'pendiente'
+        # 3. Estados de los turnos de la fecha según sus reservas activas (esta queda pendiente)
         fecha = db.session.get(Fecha, reserva.fecha_id)
         if fecha:
-            fecha.estado = 'pendiente'
+            aplicar_estados(fecha, Reserva.query.filter_by(fecha_id=fecha.id).all())
             db.session.add(fecha)
 
         # 4. Guardamos los cambios definitivos (URL de R2 + Estado de la Fecha)

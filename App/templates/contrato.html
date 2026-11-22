@@ -130,13 +130,11 @@
         </tr>
         <tr>
             <th>Horario Pactado:</th>
-            <td>
-            {% if hora_inicio and hora_fin %}
-                de {{ hora_inicio }} a {{ hora_fin }} hs.
-            {% else %}
-                de 11:00 a 20:00 hs (Horario Base).
-            {% endif %}
-            </td>
+            <td>de {{ hora_inicio }} a {{ hora_fin }} hs.</td>
+        </tr>
+        <tr>
+            <th>Turno:</th>
+            <td>{{ turno_nombre }}</td>
         </tr>
         <tr>
             <th>Cliente (LOCATARIO):</th>
