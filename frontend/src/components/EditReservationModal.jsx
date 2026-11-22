@@ -4,6 +4,7 @@ import { useFechas } from '../hooks/useFechas';
 import { estaEnOferta, formatoPesos, precioDe } from '../lib/fechas';
 import { saldoRestante, valorAlquilerSugerido } from '../lib/precioReserva';
 import { numeroWhatsapp } from '../lib/telefono';
+import { TURNOS } from '../lib/turnos';
 import './EditReservationModal.css';
 
 function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
@@ -18,14 +19,23 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
     cantidad_personas: reservation?.cantidad_personas || 40,
     hora_inicio: reservation?.hora_inicio || '', 
     hora_fin: reservation?.hora_fin || '',
+    turno: reservation?.turno || 'dia',
   });
 
   // Mientras nadie fije el valor (ni guardado en la reserva ni escrito a mano), se muestra el
   // precio estimado que el calendario tiene para la fecha elegida.
   const [valorFijado, setValorFijado] = useState(() => valorAlquilerSugerido(reservation?.valor_alquiler, 0) > 0);
   // Precio efectivo del calendario: el de oferta si la fecha tiene uno.
-  const valorEstimado = precioDe(porDia[formData.fecha_dia]);
-  const enOferta = estaEnOferta(porDia[formData.fecha_dia]);
+  // El precio del calendario es el del turno día; la noche y el completo se cotizan aparte (arrancan en 0).
+  const valorEstimado = formData.turno === 'dia' ? precioDe(porDia[formData.fecha_dia]) : null;
+  const enOferta = formData.turno === 'dia' && estaEnOferta(porDia[formData.fecha_dia]);
+  // Disponibilidad del turno elegido en la fecha elegida (solo informativa: el servidor valida)
+  const infoFecha = porDia[formData.fecha_dia];
+  const turnoLibre = {
+    dia: (infoFecha?.estado ?? 'disponible') === 'disponible',
+    noche: (infoFecha?.estado_noche ?? 'disponible') === 'disponible',
+  };
+  turnoLibre.completo = turnoLibre.dia && turnoLibre.noche;
   const valorAlquiler = valorFijado ? formData.valor_alquiler : valorAlquilerSugerido(0, valorEstimado);
   const hayPrecioEstimado = valorAlquilerSugerido(0, valorEstimado) > 0;
 
@@ -67,9 +77,20 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
       alert(`No se pudo interpretar el teléfono "${telefono}" como un celular argentino. Revisalo en los datos del cliente.`);
       return;
     }
-    const texto = `Hola ${localReservation.usuario.nombre}, te contacto desde el Salón de Eventos por tu reserva del día ${formData.fecha_dia}. Queríamos coordinar los detalles: capacidad para ${formData.cantidad_personas} personas y horario de ${formData.hora_inicio || '11:00'} a ${formData.hora_fin || '20:00'} hs.`;
+    const texto = `Hola ${localReservation.usuario.nombre}, te contacto desde el Salón de Eventos por tu reserva del día ${formData.fecha_dia}. Queríamos coordinar los detalles: capacidad para ${formData.cantidad_personas} personas y horario de ${formData.hora_inicio || TURNOS[formData.turno].desde} a ${formData.hora_fin || TURNOS[formData.turno].hasta} hs.`;
     const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(texto)}`;
     window.open(url, '_blank');
+  };
+
+  // Al elegir el turno se cargan sus horarios si los campos de hora están vacíos
+  const handleTurnoChange = (e) => {
+    const turno = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      turno,
+      hora_inicio: prev.hora_inicio || TURNOS[turno].desde,
+      hora_fin: prev.hora_fin || TURNOS[turno].hasta,
+    }));
   };
 
   const handleChange = (e) => {
@@ -339,10 +360,32 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
             </div>
           )}
           
-          <div className="form-group">
-            <label htmlFor="fecha_dia">Fecha del Evento</label>
-            <input type="date" name="fecha_dia" value={formData.fecha_dia} onChange={handleChange} required />
+          <div className="form-group-row">
+            <div className="form-group">
+              <label htmlFor="fecha_dia">Fecha del Evento</label>
+              <input type="date" name="fecha_dia" value={formData.fecha_dia} onChange={handleChange} required />
+            </div>
+            <div className="form-group">
+              <label htmlFor="turno">Turno</label>
+              {isCreating ? (
+                <select name="turno" id="turno" value={formData.turno} onChange={handleTurnoChange}>
+                  {Object.entries(TURNOS).map(([clave, t]) => (
+                    <option key={clave} value={clave}>{t.nombre} ({t.desde} a {t.hasta})</option>
+                  ))}
+                </select>
+              ) : (
+                <p className="turno-fijo">{TURNOS[formData.turno].nombre} ({TURNOS[formData.turno].desde} a {TURNOS[formData.turno].hasta})</p>
+              )}
+            </div>
           </div>
+          {isCreating && formData.fecha_dia && !cargandoFechas && (
+            <p className={`status-help-text ${turnoLibre[formData.turno] ? '' : 'turno-ocupado'}`}>
+              <i className={`fa-solid ${turnoLibre[formData.turno] ? 'fa-circle-check' : 'fa-triangle-exclamation'}`}></i>{' '}
+              {turnoLibre[formData.turno]
+                ? `El turno ${TURNOS[formData.turno].nombre.toLowerCase()} de esa fecha está libre.`
+                : `El turno ${TURNOS[formData.turno].nombre.toLowerCase()} de esa fecha ya está tomado.`}
+            </p>
+          )}
 
           <div className="form-group-row">
             <div className="form-group">
@@ -360,7 +403,9 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
                   <i className="fa-solid fa-circle-info"></i>{' '}
                   {hayPrecioEstimado
                     ? `${enOferta ? 'Precio de oferta' : 'Precio estimado'} del calendario: ${formatoPesos(valorEstimado)}`
-                    : 'Ese día no tiene precio cargado en el calendario.'}
+                    : formData.turno === 'dia'
+                      ? 'Ese día no tiene precio cargado en el calendario.'
+                      : 'El calendario solo tiene el precio del turno día: cargá el valor a mano.'}
                 </p>
               )}
             </div>
@@ -399,7 +444,7 @@ function EditReservationModal({ reservation, onClose, onUpdate, isCreating }) {
             </div>
           </div>
           <p className="status-help-text">
-            <i className="fa-solid fa-circle-info"></i> Si se dejan vacíos, el contrato usará el horario base (11:00 a 20:00).
+            <i className="fa-solid fa-circle-info"></i> Si se dejan vacíos, el contrato usará el horario del turno ({TURNOS[formData.turno].desde} a {TURNOS[formData.turno].hasta}).
           </p>
           
           <div className="form-group">
