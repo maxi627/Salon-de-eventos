@@ -33,10 +33,10 @@ describe('datos estructurados del negocio (index.html)', () => {
     expect(datos.sameAs).toEqual([SALON.redes.facebook, SALON.redes.instagram]);
   });
 
-  it('tiene el horario de lunes a sábado de 11 a 20', () => {
+  it('tiene el horario de lunes a sábado, del turno día al fin del turno noche', () => {
     const [horario] = datosEstructurados().openingHoursSpecification;
     expect(horario.dayOfWeek).toEqual(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']);
-    expect([horario.opens, horario.closes]).toEqual(['11:00', '20:00']);
+    expect([horario.opens, horario.closes]).toEqual(['11:00', '04:30']);
   });
 });
 

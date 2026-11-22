@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useReservas } from '../hooks/useAdminData';
 import { hoyLocal } from '../lib/fechas';
 import { filtrarReservas, leerFechaEscrita } from '../lib/filtroReservas';
+import { TURNOS } from '../lib/turnos';
 import ArchivedReservations from './ArchivedReservations';
 import EditReservationModal from './EditReservationModal';
 import Pagination from './Pagination'; 
@@ -202,7 +203,10 @@ const ReservasManager = () => {
             ) : currentItems.length > 0 ? (
               currentItems.map(reserva => (
                 <tr key={reserva.id} className={reserva.fecha?.dia < today ? 'row-past-reservation' : ''}>
-                  <td data-label="Fecha del Evento"><strong>{formatDisplayDate(reserva.fecha?.dia)}</strong></td>
+                  <td data-label="Fecha del Evento">
+                    <strong>{formatDisplayDate(reserva.fecha?.dia)}</strong>{' '}
+                    <span className={`turno-badge turno-badge--${reserva.turno || 'dia'}`}>{TURNOS[reserva.turno || 'dia'].nombre}</span>
+                  </td>
                   <td data-label="Cliente">{`${reserva.usuario?.nombre || ''} ${reserva.usuario?.apellido || ''}`}</td>
                   <td data-label="Estado">
                     <span className={`status-badge ${reserva.estado}`}>

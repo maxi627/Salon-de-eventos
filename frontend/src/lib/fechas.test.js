@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   DIAS_MAXIMOS,
   esDomingo,
+  esElegible,
   esReservable,
   estadoDelDia,
+  estadoNoche,
   formatoFechaLarga,
   formatoPesos,
   hoyLocal,
@@ -123,5 +125,40 @@ describe('formatos', () => {
   });
   it('formatea la fecha larga en español', () => {
     expect(formatoFechaLarga('2026-11-14')).toBe('sábado 14 de noviembre');
+  });
+});
+
+describe('estadoNoche', () => {
+  const SABADO = '2026-11-14';
+  it('mapea el estado del turno noche', () => {
+    expect(estadoNoche(SABADO, { estado_noche: 'disponible' }, HOY)).toBe('libre');
+    expect(estadoNoche(SABADO, { estado_noche: 'pendiente' }, HOY)).toBe('pendiente');
+    expect(estadoNoche(SABADO, { estado_noche: 'reservada' }, HOY)).toBe('ocupado');
+  });
+
+  it('sin datos de la fecha, la noche está libre', () => {
+    expect(estadoNoche(SABADO, undefined, HOY)).toBe('libre');
+    expect(estadoNoche(SABADO, { estado: 'reservada' }, HOY)).toBe('libre');
+  });
+
+  it('no aplica a domingos, fechas pasadas ni fuera de rango', () => {
+    expect(estadoNoche('2026-11-15', undefined, HOY)).toBeNull();
+    expect(estadoNoche('2026-11-09', undefined, HOY)).toBeNull();
+    expect(estadoNoche(sumarDias(HOY, DIAS_MAXIMOS + 1), undefined, HOY)).toBeNull();
+  });
+});
+
+describe('esElegible', () => {
+  const SABADO = '2026-11-14';
+  it('se puede elegir si el día o la noche están libres', () => {
+    expect(esElegible(SABADO, { estado: 'reservada', estado_noche: 'disponible' }, HOY)).toBe(true);
+    expect(esElegible(SABADO, { estado: 'disponible', estado_noche: 'reservada' }, HOY)).toBe(true);
+    expect(esElegible(SABADO, undefined, HOY)).toBe(true);
+  });
+
+  it('no se puede elegir con los dos turnos tomados, un domingo o un texto inválido', () => {
+    expect(esElegible(SABADO, { estado: 'reservada', estado_noche: 'pendiente' }, HOY)).toBe(false);
+    expect(esElegible('2026-11-15', undefined, HOY)).toBe(false);
+    expect(esElegible('2026-13-01', undefined, HOY)).toBe(false);
   });
 });

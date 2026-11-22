@@ -6,7 +6,7 @@ import '../components/sitio/calendario.css';
 import Button from '../components/ui/Button';
 import { useFechas } from '../hooks/useFechas';
 import { useFeriados } from '../hooks/useFeriados';
-import { esReservable, hoyLocal } from '../lib/fechas';
+import { esElegible, hoyLocal } from '../lib/fechas';
 import { sesionValida } from '../lib/sesion';
 
 function mesDe(texto) {
@@ -22,11 +22,11 @@ function Reservas() {
   const hoy = hoyLocal();
 
   const pedida = params.get('fecha');
-  // Una fecha inválida, pasada, de domingo u ocupada en la URL se ignora sin error.
+  // Una fecha inválida, pasada, de domingo o con los dos turnos tomados en la URL se ignora sin error.
   // Mientras cargan las fechas no se sabe si está ocupada: recién después se acepta.
-  const seleccionada = !isLoading && !isError && pedida && esReservable(pedida, porDia[pedida], hoy) ? pedida : null;
+  const seleccionada = !isLoading && !isError && pedida && esElegible(pedida, porDia[pedida], hoy) ? pedida : null;
 
-  const [mes, setMes] = useState(() => mesDe(pedida && esReservable(pedida, undefined, hoy) ? pedida : hoy));
+  const [mes, setMes] = useState(() => mesDe(pedida && esElegible(pedida, undefined, hoy) ? pedida : hoy));
 
   const cambiarMes = (desplazamiento) => {
     setMes(({ anio, mes: m }) => {
@@ -74,10 +74,11 @@ function Reservas() {
 
         <aside className="sv-reservar__lateral">
           {seleccionada ? (
-            <ResumenFecha fecha={seleccionada} info={porDia[seleccionada]} feriado={feriados[seleccionada]} onReservar={reservar} />
+            <ResumenFecha fecha={seleccionada} info={porDia[seleccionada]} feriado={feriados[seleccionada]} hoy={hoy} onReservar={reservar} />
           ) : (
             <div className="sv-reservar__ayuda">
               <p><strong>Tocá un día libre</strong> para ver el precio y la seña.</p>
+              <p>La luna marca las noches libres (20:30 a 4:30): se consultan por WhatsApp.</p>
               <p>La seña es el 30% del precio estimado y se paga por transferencia.</p>
             </div>
           )}

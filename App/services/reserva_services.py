@@ -13,6 +13,7 @@ from app.models import Fecha, Reserva
 from app.repositories import ReservaRepository
 from app.services import NotificationService
 from app.services.fecha_services import FechaService
+from app.turnos import aplicar_estados, validar_reactivacion, validar_turno_disponible
 from app.utils.decorators import transactional
 from app.utils.file_validation import detectar_tipo_archivo
 from app.utils.storage import upload_bytes_to_r2
@@ -48,6 +49,13 @@ class ReservaService:
         else:
             raise Exception(f"El recurso está bloqueado para la reserva {reserva_id}.")
 
+    def _recalcular_turnos(self, fecha) -> None:
+        """Recalcula el estado del turno día y del turno noche de la fecha según sus reservas activas."""
+        if fecha is None:
+            return
+        db.session.flush()
+        aplicar_estados(fecha, Reserva.query.filter_by(fecha_id=fecha.id).all())
+
     def all(self) -> list[Reserva]:
         """
         Obtiene la lista de todas las reservas, con caché.
@@ -72,19 +80,13 @@ class ReservaService:
             if not fecha_a_reservar:
                 raise ValueError("La fecha seleccionada no existe.")
 
-            if fecha_a_reservar.estado != 'disponible':
-                raise ValueError("La fecha seleccionada ya no está disponible.")
+            # El turno pedido (día, noche o completo) tiene que estar libre; el otro turno no importa
+            validar_turno_disponible(fecha_a_reservar.estado, fecha_a_reservar.estado_noche, reserva.turno or 'dia')
 
-            # 3. Sincronización exacta de estados ('reservada' o 'pendiente')
-            if reserva.estado == 'confirmada':
-                fecha_a_reservar.estado = 'reservada'
-            else:
-                fecha_a_reservar.estado = 'pendiente'
-            
             db.session.add(reserva)
-            
-            # Generamos el ID en la BD sin cerrar la transacción
-            db.session.flush()
+
+            # 3. Estados de los turnos de la fecha, recalculados con la reserva nueva (genera el ID)
+            self._recalcular_turnos(fecha_a_reservar)
             
             # 4. Limpieza y actualización de caché
             cache.clear() 
@@ -100,20 +102,23 @@ class ReservaService:
             if not reserva_a_actualizar:
                 raise Exception(f"Reserva con ID {reserva_id} no encontrada.")
 
-            estado_anterior = reserva_a_actualizar.estado
+            # El turno no se cambia en una reserva existente: se cancela y se carga de nuevo
+            updated_data.pop('turno', None)
+
+            # Volver a activar una reserva cancelada o archivada: su turno tiene que seguir libre
             nuevo_estado = updated_data.get('estado')
+            if reserva_a_actualizar.estado in ('cancelada', 'archivada') and nuevo_estado in ('pendiente', 'confirmada'):
+                db.session.query(Fecha).filter_by(id=reserva_a_actualizar.fecha_id).with_for_update().first()
+                otras = Reserva.query.filter(Reserva.fecha_id == reserva_a_actualizar.fecha_id,
+                                             Reserva.id != reserva_a_actualizar.id).all()
+                validar_reactivacion(otras, reserva_a_actualizar.turno)
 
             for key, value in updated_data.items():
                 if hasattr(reserva_a_actualizar, key):
                     setattr(reserva_a_actualizar, key, value)
-            
-            # Comprobamos los estados para actualizar la fecha
-            if nuevo_estado == 'confirmada' and estado_anterior != 'confirmada':
-                reserva_a_actualizar.fecha.estado = 'reservada'
-            elif nuevo_estado == 'cancelada' and estado_anterior != 'cancelada':
-                reserva_a_actualizar.fecha.estado = 'disponible'
-            elif nuevo_estado == 'pendiente' and estado_anterior != 'pendiente':
-                reserva_a_actualizar.fecha.estado = 'pendiente'
+
+            # Los estados de los turnos de la fecha salen de sus reservas activas
+            self._recalcular_turnos(reserva_a_actualizar.fecha)
                 
             reserva_fresca = self.repository.get_by_id(reserva_id)
             cache.clear() 
@@ -130,9 +135,8 @@ class ReservaService:
             
             reserva_a_archivar.estado = 'archivada'
 
-            fecha_asociada = reserva_a_archivar.fecha
-            if fecha_asociada:
-                fecha_asociada.estado = 'disponible'
+            # Libera su turno solo si ninguna otra reserva activa de la fecha lo ocupa
+            self._recalcular_turnos(reserva_a_archivar.fecha)
 
             # El decorador @transactional hará el commit() al finalizar la función
             cache.clear() 
@@ -293,8 +297,7 @@ class ReservaService:
         reserva.estado = 'cancelada'
         reserva.requiere_reintegro = True
         
-        if reserva.fecha:
-            reserva.fecha.estado = 'disponible' 
+        self._recalcular_turnos(reserva.fecha)
 
         reserva.observaciones = f"Cancelación por Botón de Arrepentimiento. Motivo: {motivo}" if motivo else "Cancelación por Botón de Arrepentimiento. Sin motivo especificado."
             
@@ -330,6 +333,7 @@ class ReservaService:
         # 1. Bajamos la bandera y archivamos la reserva
         reserva.requiere_reintegro = False
         reserva.estado = 'archivada'
+        self._recalcular_turnos(reserva.fecha)
         
         # 2. Leer los bytes del archivo que subiste desde React en memoria
         file_bytes = comprobante_file.read()

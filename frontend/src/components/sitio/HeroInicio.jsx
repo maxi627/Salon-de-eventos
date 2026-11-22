@@ -23,7 +23,7 @@ export default function HeroInicio() {
       <div className="sv-hero__contenido">
         <h1>Tu evento con parque, pileta y parrilla</h1>
         <p className="sv-hero__bajada">
-          Un salón para hasta 40 personas en San Rafael, de lunes a sábado de 11 a 20 hs. Mirá las fechas
+          Un salón para hasta 40 personas en San Rafael, de lunes a sábado, de día o de noche. Mirá las fechas
           libres con su precio y reservá online.
         </p>
         <div className="sv-hero__botones">

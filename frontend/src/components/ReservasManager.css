@@ -246,3 +246,26 @@
   .filtro-rango label span { min-width: 2.9rem; }
   .filtro-rango input[type="date"] { flex: 1; min-width: 0; }
 }
+
+/* --- Insignia del turno de la reserva --- */
+.turno-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  vertical-align: middle;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-dark);
+}
+.turno-badge--noche {
+  color: #c4b5fd;
+  background-color: rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.4);
+}
+.turno-badge--completo {
+  color: #93c5fd;
+  background-color: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+}

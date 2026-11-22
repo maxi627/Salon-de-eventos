@@ -423,3 +423,11 @@
   .form-group-row { flex-direction: column; gap: 0; }
   .add-payment-form { flex-direction: column; }
 }
+/* Turno de la reserva */
+.turno-fijo {
+  margin: 0;
+  padding: 0.6rem 0;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.status-help-text.turno-ocupado { color: #fbbf24; }

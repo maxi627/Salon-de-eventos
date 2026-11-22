@@ -22,8 +22,8 @@ HOY = date(2026, 11, 19)
 SABADO = date(2026, 11, 28)
 
 
-def _fecha(valor_estimado, valor_oferta=None, estado="disponible"):
-    return SimpleNamespace(estado=estado, valor_estimado=valor_estimado, valor_oferta=valor_oferta)
+def _fecha(valor_estimado, valor_oferta=None, estado="disponible", estado_noche="disponible"):
+    return SimpleNamespace(estado=estado, estado_noche=estado_noche, valor_estimado=valor_estimado, valor_oferta=valor_oferta)
 
 
 def test_fecha_en_oferta_informa_el_precio_de_oferta_y_el_normal():
@@ -56,3 +56,32 @@ def test_fecha_reservada_con_oferta_guardada_no_la_ofrece():
     r = _evaluar_fecha(SABADO, _fecha(180000, 130000, estado="reservada"), HOY)
     assert r["disponible"] is False
     assert "en_oferta" not in r
+
+
+# --- Turno noche ---
+
+def test_dia_ocupado_noche_libre():
+    r = _evaluar_fecha(SABADO, _fecha(180000, estado="reservada"), HOY)
+    assert r["disponible"] is False
+    assert r["noche_disponible"] is True
+
+
+def test_noche_ocupada():
+    r = _evaluar_fecha(SABADO, _fecha(180000, estado_noche="pendiente"), HOY)
+    assert r["disponible"] is True
+    assert r["noche_disponible"] is False
+
+
+def test_fecha_sin_fila_tiene_noche_libre():
+    r = _evaluar_fecha(SABADO, None, HOY)
+    assert r["disponible"] is True and r["noche_disponible"] is True
+
+
+def test_domingo_no_informa_noche():
+    r = _evaluar_fecha(date(2026, 11, 29), None, HOY)
+    assert r["disponible"] is False
+    assert "noche_disponible" not in r
+
+
+def test_fecha_pasada_no_informa_noche():
+    assert "noche_disponible" not in _evaluar_fecha(date(2026, 11, 1), None, HOY)

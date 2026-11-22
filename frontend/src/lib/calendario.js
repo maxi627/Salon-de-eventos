@@ -9,12 +9,16 @@ const DESCRIPCION = {
 };
 
 // Texto que lee el lector de pantalla para un día del calendario de reservas.
-export function etiquetaDelDia(texto, estado, precio, feriado, enOferta = false) {
+const NOCHE = { libre: 'noche libre', pendiente: 'noche pendiente', ocupado: 'noche ocupada' };
+
+// `noche`: estado del turno noche ('libre' | 'pendiente' | 'ocupado') o null si no aplica.
+export function etiquetaDelDia(texto, estado, precio, feriado, enOferta = false, noche = null) {
   const partes = [formatoFechaLarga(texto)];
   if (feriado) partes.push(`feriado: ${feriado.nombre}`);
   if (estado === 'libre') partes.push('libre', precio ? formatoPesos(precio) : 'precio a consultar');
   else partes.push(DESCRIPCION[estado]);
   if (enOferta && estado === 'libre') partes.push('en oferta');
+  if (noche) partes.push(NOCHE[noche]);
   return partes.join(', ');
 }
 
