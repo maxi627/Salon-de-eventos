@@ -81,6 +81,19 @@ export function esReservable(texto, infoApi, hoy) {
   return esTextoValido(texto) && estadoDelDia(texto, infoApi, hoy) === 'libre';
 }
 
+// Estado del turno noche (20:30 a 4:30). null cuando la fecha no se alquila (pasada, domingo o
+// fuera de rango). La noche no se reserva online: se consulta por WhatsApp.
+export function estadoNoche(texto, infoApi, hoy) {
+  const estadoDia = estadoDelDia(texto, infoApi, hoy);
+  if (estadoDia === 'pasado' || estadoDia === 'domingo' || estadoDia === 'fuera-de-rango') return null;
+  return ESTADOS_API[infoApi?.estado_noche] ?? 'libre';
+}
+
+// La fecha se puede elegir en el calendario si el día (se reserva online) o la noche están libres.
+export function esElegible(texto, infoApi, hoy) {
+  return esTextoValido(texto) && (esReservable(texto, infoApi, hoy) || estadoNoche(texto, infoApi, hoy) === 'libre');
+}
+
 export function montoSena(valor) {
   return valor == null ? null : Math.round(valor * PORCENTAJE_SENA);
 }

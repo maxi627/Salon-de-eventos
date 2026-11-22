@@ -48,3 +48,16 @@ describe('feriadosPorDia', () => {
     expect(feriadosPorDia(null)).toEqual({});
   });
 });
+
+describe('etiquetaDelDia con el turno noche', () => {
+  it('agrega el estado de la noche al final', () => {
+    expect(etiquetaDelDia('2026-11-14', 'libre', 150000, null, false, 'libre')).toBe('sábado 14 de noviembre, libre, $150.000, noche libre');
+    expect(etiquetaDelDia('2026-11-14', 'ocupado', null, null, false, 'libre')).toBe('sábado 14 de noviembre, ocupado, noche libre');
+    expect(etiquetaDelDia('2026-11-14', 'libre', 150000, null, false, 'ocupado')).toBe('sábado 14 de noviembre, libre, $150.000, noche ocupada');
+    expect(etiquetaDelDia('2026-11-14', 'libre', 150000, null, false, 'pendiente')).toBe('sábado 14 de noviembre, libre, $150.000, noche pendiente');
+  });
+
+  it('sin noche queda igual que antes', () => {
+    expect(etiquetaDelDia('2026-11-15', 'domingo', null, null, false, null)).toBe('domingo 15 de noviembre, no se alquila');
+  });
+});
