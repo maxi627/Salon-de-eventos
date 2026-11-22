@@ -27,7 +27,8 @@ HERRAMIENTAS = [
     {
         "name": "consultar_fecha",
         "description": (
-            "Devuelve si una fecha está disponible para alquilar el salón y su precio estimado. "
+            "Devuelve si el turno día de una fecha está disponible para alquilar el salón y su precio "
+            "estimado, y si el turno noche está libre (noche_disponible). "
             "Usala cada vez que pregunten por una fecha concreta."
         ),
         "input_schema": {
@@ -43,7 +44,8 @@ HERRAMIENTAS = [
     {
         "name": "fechas_disponibles",
         "description": (
-            "Lista las fechas disponibles (con precio estimado si está cargado) de un mes. "
+            "Lista las fechas con el turno día disponible (con precio estimado si está cargado) de un mes; "
+            "cada una indica también si el turno noche está libre (noche_disponible). "
             "Usala para sugerir fechas cuando pregunten qué hay libre en un mes."
         ),
         "input_schema": {
@@ -84,8 +86,11 @@ def _evaluar_fecha(dia: date, fecha_db, hoy: date) -> dict:
                 "motivo": f"Sólo se reserva con hasta {DIAS_MAXIMOS_ANTICIPACION} días de anticipación."}
     if dia.weekday() == 6:
         return {**resultado, "disponible": False, "motivo": "Los domingos el salón no se alquila."}
+    # Turno noche (20:30 a 4:30): no se reserva por el sitio, se informa para derivar a WhatsApp.
+    resultado["noche_disponible"] = fecha_db is None or getattr(fecha_db, "estado_noche", "disponible") == "disponible"
+    # "disponible" se refiere al turno día (11 a 19), el que se reserva por el sitio.
     if fecha_db is not None and fecha_db.estado != "disponible":
-        return {**resultado, "disponible": False, "motivo": "La fecha ya está reservada o tiene una reserva en curso."}
+        return {**resultado, "disponible": False, "motivo": "El turno día ya está reservado o tiene una reserva en curso."}
     normal = fecha_db.valor_estimado if fecha_db is not None and (fecha_db.valor_estimado or 0) > 0 else None
     oferta = getattr(fecha_db, "valor_oferta", None) if fecha_db is not None else None
     if oferta and oferta > 0:
