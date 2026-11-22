@@ -248,7 +248,11 @@ def update(id):
         data = reserva_schema.dump(updated_reserva)
         response_builder.add_message("Reserva actualizada").add_status_code(200).add_data(data)
         return response_builder.build(), 200
-        
+
+    except ValueError as e:
+        # Regla de negocio: por ejemplo, reactivar una reserva en un turno que ya tomó otra
+        db.session.rollback()
+        return response_builder.add_message(str(e)).add_status_code(409).build(), 409
     except Exception as e:
         sentry_sdk.capture_exception(e)
         db.session.rollback()

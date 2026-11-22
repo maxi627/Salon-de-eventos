@@ -90,3 +90,20 @@ def test_aplicar_estados():
     fecha = SimpleNamespace(estado=None, estado_noche=None)
     aplicar_estados(fecha, [r("noche", "confirmada")])
     assert (fecha.estado, fecha.estado_noche) == ("disponible", "reservada")
+
+
+# --- Reactivar una reserva cancelada (revisión final) ---
+from app.turnos import validar_reactivacion  # noqa: E402
+
+
+def test_reactivar_en_turno_tomado_por_otra_falla():
+    otras = [r("noche", "confirmada"), r("completo", "cancelada")]
+    with pytest.raises(ValueError, match="no se puede reservar completa"):
+        validar_reactivacion(otras, "completo")
+    with pytest.raises(ValueError, match="turno noche"):
+        validar_reactivacion(otras, "noche")
+
+
+def test_reactivar_en_turno_libre_se_permite():
+    validar_reactivacion([r("noche", "confirmada"), r("dia", "archivada")], "dia")
+    validar_reactivacion([], "completo")

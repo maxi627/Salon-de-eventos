@@ -65,6 +65,15 @@ def aplicar_estados(fecha, reservas) -> None:
     fecha.estado, fecha.estado_noche = estados_de_turnos(reservas)
 
 
+def validar_reactivacion(otras_reservas, turno: str) -> None:
+    """
+    Al volver a activar una reserva cancelada o archivada, su turno tiene que estar libre según las
+    demás reservas de la fecha. Lanza ValueError si otra reserva activa ya lo ocupa.
+    """
+    estado_dia, estado_noche = estados_de_turnos(otras_reservas)
+    validar_turno_disponible(estado_dia, estado_noche, turno or "dia")
+
+
 def validar_turno_disponible(estado_dia: str, estado_noche: str, turno: str) -> None:
     """Lanza ValueError si algún turno que cubre `turno` no está disponible."""
     actuales = {"dia": estado_dia, "noche": estado_noche}

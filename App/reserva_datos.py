@@ -14,8 +14,9 @@ def datos_reserva_online(form, fecha_id, user_id) -> dict:
         'estado': 'pendiente',
         'turno': 'dia',
         'cantidad_personas': form.get('cantidad_personas', 40),
-        'hora_inicio': form.get('hora_inicio'),
-        'hora_fin': form.get('hora_fin'),
+        # El horario lo define el turno día; no se aceptan horarios mandados desde el sitio
+        'hora_inicio': None,
+        'hora_fin': None,
     }
 
 

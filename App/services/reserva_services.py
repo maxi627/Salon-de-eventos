@@ -13,7 +13,7 @@ from app.models import Fecha, Reserva
 from app.repositories import ReservaRepository
 from app.services import NotificationService
 from app.services.fecha_services import FechaService
-from app.turnos import aplicar_estados, validar_turno_disponible
+from app.turnos import aplicar_estados, validar_reactivacion, validar_turno_disponible
 from app.utils.decorators import transactional
 from app.utils.file_validation import detectar_tipo_archivo
 from app.utils.storage import upload_bytes_to_r2
@@ -104,6 +104,14 @@ class ReservaService:
 
             # El turno no se cambia en una reserva existente: se cancela y se carga de nuevo
             updated_data.pop('turno', None)
+
+            # Volver a activar una reserva cancelada o archivada: su turno tiene que seguir libre
+            nuevo_estado = updated_data.get('estado')
+            if reserva_a_actualizar.estado in ('cancelada', 'archivada') and nuevo_estado in ('pendiente', 'confirmada'):
+                db.session.query(Fecha).filter_by(id=reserva_a_actualizar.fecha_id).with_for_update().first()
+                otras = Reserva.query.filter(Reserva.fecha_id == reserva_a_actualizar.fecha_id,
+                                             Reserva.id != reserva_a_actualizar.id).all()
+                validar_reactivacion(otras, reserva_a_actualizar.turno)
 
             for key, value in updated_data.items():
                 if hasattr(reserva_a_actualizar, key):

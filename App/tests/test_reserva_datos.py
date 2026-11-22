@@ -26,6 +26,8 @@ def test_reserva_online_siempre_es_de_dia():
     assert datos["fecha_id"] == 12 and datos["usuario_id"] == 7
     assert datos["estado"] == "pendiente" and datos["comprobante_url"] == "procesando..."
     assert datos["cantidad_personas"] == "30"
+    # tampoco se aceptan horarios de noche desde el sitio: el contrato usa el horario del turno día
+    assert datos["hora_inicio"] is None and datos["hora_fin"] is None
 
 
 def test_reserva_online_sin_cantidad_usa_40():
